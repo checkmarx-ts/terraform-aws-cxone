@@ -1,13 +1,12 @@
 provider "aws" {
-  region      = var.aws_region
-  #profile     = var.aws_profile
+  region = var.aws_region
 
   default_tags {
     tags = {
-      Terraform     = "true"
-      DeploymentID  = var.deployment_id
-      Owner         = var.owner
-      Environment   = var.environment
+      Terraform    = "true"
+      DeploymentID = var.deployment_id
+      Owner        = var.owner
+      Environment  = var.environment
     }
   }
 }
@@ -40,8 +39,8 @@ provider "helm" {
 data "terraform_remote_state" "infra" {
   backend = "s3"
   config = {
-    bucket  = var.s3_backend_infra_bucket
-    key     = var.s3_backend_infra_remote_config_key
-    region  = var.s3_backend_infra_bucket_region
-   }
+    bucket = var.s3_backend_infra_bucket
+    key    = var.s3_backend_infra_remote_config_key
+    region = var.s3_backend_infra_bucket_region
+  }
 }

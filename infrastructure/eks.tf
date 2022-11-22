@@ -19,13 +19,13 @@ module "eks" {
   enable_irsa = true
 
   cluster_addons = {
-    coredns    = {
+    coredns = {
       resolve_conflicts = var.coredns.resolve_conflicts
     }
     kube-proxy = {
       resolve_conflicts = var.kubeproxy.resolve_conflicts
     }
-    vpc-cni    = {
+    vpc-cni = {
       resolve_conflicts = var.vpccni.resolve_conflicts
     }
   }

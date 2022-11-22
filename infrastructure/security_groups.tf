@@ -1,40 +1,40 @@
 # TODO - create one for Postgres and one For Redis instead of all to all
 module "internal_security_group" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
   version = "4.8.0"
 
-  name = "internal-${local.deployment_id}-sg"
+  name        = "internal-${local.deployment_id}-sg"
   description = "Internal security group for AST deployment called ${local.deployment_id}."
-  vpc_id = local.vpc_id
+  vpc_id      = local.vpc_id
 
   ingress_cidr_blocks = [
-    module.vpc.vpc_cidr_block]
+  module.vpc.vpc_cidr_block]
   ingress_rules = [
-    "all-all"]
+  "all-all"]
   egress_rules = [
-    "all-all"]
+  "all-all"]
 
   create = var.sig.create
 }
 
 module "external_security_group" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
   version = "4.8.0"
 
-  name = "external-${local.deployment_id}-sg"
+  name        = "external-${local.deployment_id}-sg"
   description = "External Security group for AST deployment called ${local.deployment_id}."
-  vpc_id = local.vpc_id
+  vpc_id      = local.vpc_id
 
   ingress_cidr_blocks = [
-    "0.0.0.0/0"]
+  "0.0.0.0/0"]
   ingress_rules = [
     "http-80-tcp",
     "https-443-tcp",
     "kubernetes-api-tcp",
     "ssh-tcp",
-    "all-icmp"]
+  "all-icmp"]
   egress_rules = [
-    "all-all"]
+  "all-all"]
 
   create = var.sig.create
 }

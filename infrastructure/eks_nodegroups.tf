@@ -2,10 +2,10 @@
 #https://github.com/terraform-aws-modules/terraform-aws-eks/issues/1886#issuecomment-1044154307
 
 # AST Default
-module "ast_default"{
+module "ast_default" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
-  name            = "${var.ast_nodes.name}-${local.deployment_id}"
+  name            = var.ast_nodes.name
   cluster_name    = local.deployment_id
   cluster_version = var.eks_cluster_version
 
@@ -13,7 +13,7 @@ module "ast_default"{
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  cluster_security_group_id = module.eks.cluster_security_group_id
+  cluster_security_group_id         = module.eks.cluster_security_group_id
 
   min_size     = var.ast_nodes.min_size
   max_size     = var.ast_nodes.max_size
@@ -46,7 +46,7 @@ module "ast_default"{
   tags = {
     Name = "${var.ast_nodes.name}-${local.deployment_id}"
   }
-  
+
 }
 resource "aws_autoscaling_group_tag" "ast_default" {
   for_each = { for k, v in local.cluster_autoscaler_ast_default_asg_tags : k => v }
@@ -63,7 +63,7 @@ resource "aws_autoscaling_group_tag" "ast_default" {
 module "ast_sast_engines" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
-  name            = "${var.sast_nodes.name}-${local.deployment_id}"
+  name            = var.sast_nodes.name
   cluster_name    = local.deployment_id
   cluster_version = var.eks_cluster_version
 
@@ -71,7 +71,7 @@ module "ast_sast_engines" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  cluster_security_group_id = module.eks.cluster_security_group_id
+  cluster_security_group_id         = module.eks.cluster_security_group_id
 
   min_size     = var.sast_nodes.min_size
   max_size     = var.sast_nodes.max_size
@@ -112,9 +112,9 @@ module "ast_sast_engines" {
       effect = var.sast_nodes.effect
     }
   }
-  
+
   tags = {
-    Name  = "${var.sast_nodes.name}-${local.deployment_id}"
+    Name = "${var.sast_nodes.name}-${local.deployment_id}"
   }
 }
 
@@ -133,7 +133,7 @@ resource "aws_autoscaling_group_tag" "ast_sast_engines" {
 module "ast_sast_medium_engines" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
-  name            = "${var.sast_nodes_medium.name}-${local.deployment_id}"
+  name            = var.sast_nodes_medium.name
   cluster_name    = local.deployment_id
   cluster_version = var.eks_cluster_version
 
@@ -141,7 +141,7 @@ module "ast_sast_medium_engines" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  cluster_security_group_id = module.eks.cluster_security_group_id
+  cluster_security_group_id         = module.eks.cluster_security_group_id
 
   min_size     = var.sast_nodes_medium.min_size
   max_size     = var.sast_nodes_medium.max_size
@@ -178,7 +178,7 @@ module "ast_sast_medium_engines" {
       effect = var.sast_nodes_medium.effect
     }
   }
-  
+
   labels = {
     "${var.sast_nodes_medium.label_name}" = var.sast_nodes_medium.label_value
   }
@@ -202,7 +202,7 @@ resource "aws_autoscaling_group_tag" "ast_sast_medium_engines" {
 module "ast_sast_large_engines" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
-  name            = "${var.sast_nodes_large.name}-${local.deployment_id}"
+  name            = var.sast_nodes_large.name
   cluster_name    = local.deployment_id
   cluster_version = var.eks_cluster_version
 
@@ -210,7 +210,7 @@ module "ast_sast_large_engines" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  cluster_security_group_id = module.eks.cluster_security_group_id
+  cluster_security_group_id         = module.eks.cluster_security_group_id
 
   min_size     = var.sast_nodes_large.min_size
   max_size     = var.sast_nodes_large.max_size
@@ -247,7 +247,7 @@ module "ast_sast_large_engines" {
       effect = var.sast_nodes_large.effect
     }
   }
-  
+
   labels = {
     "${var.sast_nodes_large.label_name}" = var.sast_nodes_large.label_value
   }
@@ -271,7 +271,7 @@ resource "aws_autoscaling_group_tag" "ast_sast_large_engines" {
 module "ast_sast_extra_large_engines" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
-  name            = "${var.sast_nodes_extra_large.name}-${local.deployment_id}"
+  name            = var.sast_nodes_extra_large.name
   cluster_name    = local.deployment_id
   cluster_version = var.eks_cluster_version
 
@@ -279,7 +279,7 @@ module "ast_sast_extra_large_engines" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  cluster_security_group_id = module.eks.cluster_security_group_id
+  cluster_security_group_id         = module.eks.cluster_security_group_id
 
   min_size     = var.sast_nodes_extra_large.min_size
   max_size     = var.sast_nodes_extra_large.max_size
@@ -320,7 +320,7 @@ module "ast_sast_extra_large_engines" {
     "${var.sast_nodes_extra_large.label_name}" = var.sast_nodes_extra_large.label_value
   }
   tags = {
-    Name="${var.sast_nodes_extra_large.name}-${local.deployment_id}"
+    Name = "${var.sast_nodes_extra_large.name}-${local.deployment_id}"
   }
 }
 resource "aws_autoscaling_group_tag" "ast_sast_extra_large_engines" {
@@ -338,7 +338,7 @@ resource "aws_autoscaling_group_tag" "ast_sast_extra_large_engines" {
 module "ast_sast_xxl_engines" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
-  name            = "${var.sast_nodes_xxl.name}-${local.deployment_id}"
+  name            = var.sast_nodes_xxl.name
   cluster_name    = local.deployment_id
   cluster_version = var.eks_cluster_version
 
@@ -346,7 +346,7 @@ module "ast_sast_xxl_engines" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  cluster_security_group_id = module.eks.cluster_security_group_id
+  cluster_security_group_id         = module.eks.cluster_security_group_id
 
   min_size     = var.sast_nodes_xxl.min_size
   max_size     = var.sast_nodes_xxl.max_size
@@ -406,7 +406,7 @@ resource "aws_autoscaling_group_tag" "ast_sast_xxl_engines" {
 module "kics_nodes_engines" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
-  name            = "${var.kics_nodes.name}-${local.deployment_id}"
+  name            = var.kics_nodes.name
   cluster_name    = local.deployment_id
   cluster_version = var.eks_cluster_version
 
@@ -414,7 +414,7 @@ module "kics_nodes_engines" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  cluster_security_group_id = module.eks.cluster_security_group_id
+  cluster_security_group_id         = module.eks.cluster_security_group_id
 
   min_size     = var.kics_nodes.min_size
   max_size     = var.kics_nodes.max_size
@@ -452,10 +452,10 @@ module "kics_nodes_engines" {
     }
   }
   labels = {
-     "${var.kics_nodes.label_name}" = var.kics_nodes.label_value
+    "${var.kics_nodes.label_name}" = var.kics_nodes.label_value
   }
   tags = {
-    Name="${var.kics_nodes.name}-${local.deployment_id}"
+    Name = "${var.kics_nodes.name}-${local.deployment_id}"
   }
 }
 
@@ -474,7 +474,7 @@ resource "aws_autoscaling_group_tag" "kics_nodes_engines" {
 module "minio_gateway_nodes" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
-  name            = "${var.minio_gateway_nodes.name}-${local.deployment_id}"
+  name            = var.minio_gateway_nodes.name
   cluster_name    = local.deployment_id
   cluster_version = var.eks_cluster_version
 
@@ -482,7 +482,7 @@ module "minio_gateway_nodes" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  cluster_security_group_id = module.eks.cluster_security_group_id
+  cluster_security_group_id         = module.eks.cluster_security_group_id
 
   min_size     = var.minio_gateway_nodes.min_size
   max_size     = var.minio_gateway_nodes.max_size
@@ -519,10 +519,10 @@ module "minio_gateway_nodes" {
     }
   }
   labels = {
-     "${var.minio_gateway_nodes.label_name}" = var.minio_gateway_nodes.label_value
+    "${var.minio_gateway_nodes.label_name}" = var.minio_gateway_nodes.label_value
   }
   tags = {
-    Name="${var.minio_gateway_nodes.name}-${local.deployment_id}"
+    Name = "${var.minio_gateway_nodes.name}-${local.deployment_id}"
   }
 }
 
@@ -541,7 +541,7 @@ resource "aws_autoscaling_group_tag" "minio_gateway_nodes" {
 module "repostore_nodes" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
-  name            = "${var.repostore_nodes.name}-${local.deployment_id}"
+  name            = var.repostore_nodes.name
   cluster_name    = local.deployment_id
   cluster_version = var.eks_cluster_version
 
@@ -549,7 +549,7 @@ module "repostore_nodes" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  cluster_security_group_id = module.eks.cluster_security_group_id
+  cluster_security_group_id         = module.eks.cluster_security_group_id
 
   min_size     = var.repostore_nodes.min_size
   max_size     = var.repostore_nodes.max_size
@@ -586,21 +586,9 @@ module "repostore_nodes" {
     }
   }
   labels = {
-     "${var.repostore_nodes.label_name}" = var.repostore_nodes.label_value
+    "${var.repostore_nodes.label_name}" = var.repostore_nodes.label_value
   }
   tags = {
-    Name="${var.repostore_nodes.name}-${local.deployment_id}"
+    Name = "${var.repostore_nodes.name}-${local.deployment_id}"
   }
 }
-
-# The Tags for cluster-autoscaler are created, but we will not use it for now.
-# resource "aws_autoscaling_group_tag" "repostore_nodes" {
-#   for_each = { for k, v in local.cluster_autoscaler_repostore_nodes_asg_tags : k => v }
-
-#   autoscaling_group_name = module.repostore_nodes.node_group_autoscaling_group_names[0]
-#   tag {
-#     key                 = each.value.tagKey
-#     value               = each.value.tagValue
-#     propagate_at_launch = false
-#   }
-# }

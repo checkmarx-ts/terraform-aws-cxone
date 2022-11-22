@@ -51,6 +51,6 @@ resource "aws_vpc_endpoint" "s3_gateway_private" {
   vpc_id            = local.vpc_id
   route_table_ids   = module.vpc.private_route_table_ids
   tags = {
-      Name          = "${var.deployment_id}-s3-gateway-private"
+    Name = "${var.deployment_id}-s3-gateway-private"
   }
 }

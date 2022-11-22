@@ -2,7 +2,7 @@
 variable "s3_backend_infra_bucket" {
   type        = string
   description = "S3 name where the infra state is stored"
-  default = ""
+  default     = ""
   validation {
     condition     = (length(var.s3_backend_infra_bucket) > 0)
     error_message = "The s3_backend_infra_bucket variable is required."
@@ -12,8 +12,8 @@ variable "s3_backend_infra_bucket" {
 
 variable "s3_backend_infra_remote_config_key" {
   description = "Path to the infra state file in the S3 Bucket"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   validation {
     condition     = (length(var.s3_backend_infra_remote_config_key) > 0)
     error_message = "The s3_backend_infra_remote_config_key variable is required."
@@ -23,8 +23,8 @@ variable "s3_backend_infra_remote_config_key" {
 
 variable "s3_backend_infra_bucket_region" {
   description = "S3 backend bucket region"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   validation {
     condition     = (length(var.s3_backend_infra_bucket_region) > 0)
     error_message = "The s3_backend_infra_bucket_region variable is required."
@@ -38,18 +38,6 @@ variable "aws_region" {
   type        = string
   description = "AWS region to use"
 }
-
-variable "aws_profile" {
-  description = "The aws profile used to run terraform."
-  type        = string
-  nullable    = false
-
-  validation {
-    condition     = (length(var.aws_profile) > 2)
-    error_message = "Must have at least 3 characters length."
-  }
-}
-
 
 # METADATA VARIABLES
 variable "environment" {
@@ -88,6 +76,6 @@ variable "deployment_id" {
 variable "hosted_zone_id" {
   description = "Route53 hosted Zone ID"
   type        = string
-  default = ""
-  nullable = false
+  default     = ""
+  nullable    = false
 }

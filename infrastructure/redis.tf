@@ -1,6 +1,6 @@
 resource "aws_elasticache_subnet_group" "redis" {
-  count = var.redis_nodes.create ? 1 : 0
-  name = local.deployment_id
+  count      = var.redis_nodes.create ? 1 : 0
+  name       = local.deployment_id
   subnet_ids = local.db_subnets
 }
 
@@ -18,8 +18,8 @@ resource "aws_elasticache_replication_group" "redis" {
 
   node_type = var.redis_nodes.instance_type
 
-  engine               = "redis"
-  parameter_group_name = "default.redis6.x.cluster.on"
+  engine         = "redis"
+  engine_version = "6.x"
 
   port                     = 6379
   snapshot_retention_limit = 2

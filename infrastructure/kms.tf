@@ -1,5 +1,5 @@
 resource "aws_kms_key" "eks" {
-  count = var.kms.create ? 1 : 0
+  count                   = var.kms.create ? 1 : 0
   description             = "EKS Secret Encryption Key"
   deletion_window_in_days = 7
   enable_key_rotation     = true

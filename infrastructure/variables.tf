@@ -5,17 +5,6 @@ variable "aws_region" {
   description = "AWS region to use"
 }
 
-variable "aws_profile" {
-  description = "The aws profile used to run terraform."
-  type        = string
-  nullable    = false
-
-  validation {
-    condition     = (length(var.aws_profile) > 2)
-    error_message = "Must have at least 3 characters length."
-  }
-}
-
 # METADATA VARIABLES
 variable "deployment_id" {
   description = "the id of the deployment. It's goint to be the EKS cluster name"
@@ -51,8 +40,8 @@ variable "owner" {
 variable "eks_cluster_version" {
   description = "EKS Kubernetes version to be used"
   type        = string
-  default = "1.21"
-  nullable = false
+  default     = "1.21"
+  nullable    = false
 }
 
 variable "coredns" {
@@ -80,7 +69,7 @@ variable "vpccni" {
 variable "s3_retention_period" {
   description = "S3 Retention Period"
   type        = string
-  default = "90"
+  default     = "90"
 }
 
 # NODEGROUPS
@@ -89,7 +78,7 @@ variable "ast_nodes" {
     instance_types  = list(string)
     min_size        = number
     desired_size    = number
-    max_size       = number
+    max_size        = number
     capacity_type   = string
     disk_size_gib   = number
     disk_iops       = number
@@ -106,7 +95,7 @@ variable "ast_nodes" {
     instance_types  = ["c5.2xlarge"]
     disk_size_gib   = 50
     disk_iops       = 3000 # this should be the default
-    disk_throughput = 125 # this should be the default
+    disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
     device_name     = "/dev/xvda"
     volume_type     = "gp3"
@@ -137,7 +126,7 @@ variable "sast_nodes" {
     instance_types  = list(string)
     min_size        = number
     desired_size    = number
-    max_size       = number
+    max_size        = number
     capacity_type   = string
     disk_size_gib   = number
     disk_iops       = number
@@ -160,7 +149,7 @@ variable "sast_nodes" {
     instance_types  = ["c6i.2xlarge"]
     disk_size_gib   = 50
     disk_iops       = 3000 # this should be the default
-    disk_throughput = 125 # this should be the default
+    disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
     device_name     = "/dev/xvda"
     volume_type     = "gp3"
@@ -193,7 +182,7 @@ variable "sast_nodes_medium" {
     instance_types  = list(string)
     min_size        = number
     desired_size    = number
-    max_size       = number
+    max_size        = number
     capacity_type   = string
     disk_size_gib   = number
     disk_iops       = number
@@ -216,7 +205,7 @@ variable "sast_nodes_medium" {
     instance_types  = ["m5.2xlarge"]
     disk_size_gib   = 50
     disk_iops       = 3000 # this should be the default
-    disk_throughput = 125 # this should be the default
+    disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
     device_name     = "/dev/xvda"
     volume_type     = "gp3"
@@ -249,7 +238,7 @@ variable "sast_nodes_large" {
     instance_types  = list(string)
     min_size        = number
     desired_size    = number
-    max_size       = number
+    max_size        = number
     capacity_type   = string
     disk_size_gib   = number
     disk_iops       = number
@@ -272,7 +261,7 @@ variable "sast_nodes_large" {
     instance_types  = ["r6i.xlarge"]
     disk_size_gib   = 50
     disk_iops       = 3000 # this should be the default
-    disk_throughput = 125 # this should be the default
+    disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
     device_name     = "/dev/xvda"
     volume_type     = "gp3"
@@ -303,7 +292,7 @@ variable "sast_nodes_extra_large" {
     instance_types  = list(string)
     min_size        = number
     desired_size    = number
-    max_size       = number
+    max_size        = number
     capacity_type   = string
     disk_size_gib   = number
     disk_iops       = number
@@ -323,16 +312,16 @@ variable "sast_nodes_extra_large" {
     min_size        = 0
     desired_size    = 0
     max_size        = 100
-    instance_types   = ["r6i.2xlarge"]
-    disk_size_gib    = 50
-    disk_iops        = 3000 # this should be the default
-    disk_throughput  = 125 # this should be the default
-    capacity_type    = "ON_DEMAND"
-    device_name      = "/dev/xvda"
-    volume_type      = "gp3"
-    key              = "sast-engine-extra-large"
-    value            = "true"
-    effect           = "NO_SCHEDULE"
+    instance_types  = ["r6i.2xlarge"]
+    disk_size_gib   = 50
+    disk_iops       = 3000 # this should be the default
+    disk_throughput = 125  # this should be the default
+    capacity_type   = "ON_DEMAND"
+    device_name     = "/dev/xvda"
+    volume_type     = "gp3"
+    key             = "sast-engine-extra-large"
+    value           = "true"
+    effect          = "NO_SCHEDULE"
     label_name      = "sast-engine-extra-large"
     label_value     = "true"
   }
@@ -357,7 +346,7 @@ variable "sast_nodes_xxl" {
     instance_types  = list(string)
     min_size        = number
     desired_size    = number
-    max_size       = number
+    max_size        = number
     capacity_type   = string
     disk_size_gib   = number
     disk_iops       = number
@@ -380,7 +369,7 @@ variable "sast_nodes_xxl" {
     instance_types  = ["r6i.4xlarge"]
     disk_size_gib   = 50
     disk_iops       = 3000 # this should be the default
-    disk_throughput = 125 # this should be the default
+    disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
     device_name     = "/dev/xvda"
     volume_type     = "gp3"
@@ -408,14 +397,14 @@ variable "sast_nodes_xxl" {
 
 variable "kics_nodes" {
   type = object({
-    name           = string
-    instance_types = list(string)
+    name            = string
+    instance_types  = list(string)
     min_size        = number
     desired_size    = number
-    max_size       = number
-    capacity_type  = string
-    disk_size_gib  = number
-    disk_iops      = number
+    max_size        = number
+    capacity_type   = string
+    disk_size_gib   = number
+    disk_iops       = number
     disk_throughput = number
     device_name     = string
     volume_type     = string
@@ -434,7 +423,7 @@ variable "kics_nodes" {
     instance_types  = ["c5.2xlarge"]
     disk_size_gib   = 50
     disk_iops       = 3000 # this should be the default
-    disk_throughput = 125 # this should be the default
+    disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
     device_name     = "/dev/xvda"
     volume_type     = "gp3"
@@ -463,14 +452,14 @@ variable "kics_nodes" {
 # MINIO
 variable "minio_gateway_nodes" {
   type = object({
-    name           = string
-    instance_types = list(string)
+    name            = string
+    instance_types  = list(string)
     min_size        = number
     desired_size    = number
-    max_size       = number
-    capacity_type  = string
-    disk_size_gib  = number
-    disk_iops      = number
+    max_size        = number
+    capacity_type   = string
+    disk_size_gib   = number
+    disk_iops       = number
     disk_throughput = number
     device_name     = string
     volume_type     = string
@@ -489,7 +478,7 @@ variable "minio_gateway_nodes" {
     instance_types  = ["c6i.2xlarge"]
     disk_size_gib   = 50
     disk_iops       = 3000 # this should be the default
-    disk_throughput = 125 # this should be the default
+    disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
     device_name     = "/dev/xvda"
     volume_type     = "gp3"
@@ -518,14 +507,14 @@ variable "minio_gateway_nodes" {
 # REPOSTORE
 variable "repostore_nodes" {
   type = object({
-    name           = string
-    instance_types = list(string)
+    name            = string
+    instance_types  = list(string)
     min_size        = number
     desired_size    = number
-    max_size       = number
-    capacity_type  = string
-    disk_size_gib  = number
-    disk_iops      = number
+    max_size        = number
+    capacity_type   = string
+    disk_size_gib   = number
+    disk_iops       = number
     disk_throughput = number
     device_name     = string
     volume_type     = string
@@ -544,7 +533,7 @@ variable "repostore_nodes" {
     instance_types  = ["c5.2xlarge"]
     disk_size_gib   = 50
     disk_iops       = 3000 # this should be the default
-    disk_throughput = 125 # this should be the default
+    disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
     device_name     = "/dev/xvda"
     volume_type     = "gp3"
@@ -696,7 +685,7 @@ variable "kms" {
 
 # S3
 variable "enable_s3_bucket_versioning" {
-  type = bool
+  type        = bool
   description = "Enable S3 Bucket versioning"
-  default = false
+  default     = false
 }
