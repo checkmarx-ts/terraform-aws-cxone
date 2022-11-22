@@ -53,18 +53,3 @@ resource "kubernetes_service_account" "aws-ebs-csi-driver" {
     }
   }
 }
-
-
-# SA for Minio
-resource "kubernetes_service_account" "minio" {
-  depends_on = [
-    module.minio_irsa
-  ]
-  metadata {
-    name      = "minio"
-    namespace = "ast"
-    annotations = {
-      "eks.amazonaws.com/role-arn" = module.minio_irsa.iam_role_arn
-    }
-  }
-}
