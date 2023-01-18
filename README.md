@@ -38,20 +38,45 @@ or you can use the full command:
 # Instalation order
 
 - The first terraform module that needs to be installed is `infrastructure`  only after the instalation is complete you should move to the second one.
+
+
+```
+cd infrastructure
+make plan
+make apply
+```
+
+
 - When the infrastructure is ready, apply the module `kubernetes-config`.
 
+```
+cd kubernetes-config
+make plan
+make apply
+```
+
 Please, take a look on the `example.auto.tfvars` file to see the parameters that you need to inform.
+
 
 
 # TF Destroy
 
 
-If you already installed the CxOne solution using Kots, before running `terraform destroy` it is recommended to uninstall the following HELM chart:
+If you already installed the CxOne solution using Kots, before running `make destroy` it is recommended to uninstall the following HELM chart:
 - ast (helm uninstall ast -n ast)
 
 This is recommended to avoid leaving the load balancer created by the traefik service behind.
 
 ## Destroy the module kubernetes-config
 
+```
+cd kubernetes-config
+make destroy
+```
+
 ## Destroy the module infrastructure
-  
+
+```
+cd infrastructure
+make destroy
+```
