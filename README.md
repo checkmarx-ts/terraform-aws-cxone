@@ -19,9 +19,9 @@ key="<S3_KEY>/terraform.tfstate"
 
 For example:
 ```
-bucket="terraform-state-bucket"
+bucket="terraform-state-238860929005"
 region="eu-west-1"
-key="infra/terraform.tfstate"
+key="single-tenant/eu-west-1/repl-tgf/infra/terraform.tfstate"
 ```
 
 
@@ -45,9 +45,9 @@ Please, take a look on the `example.auto.tfvars` file to see the parameters that
 
 # TF Destroy
 
-
-If you already installed the CxOne solution using Kots, before running `terraform destroy` it is recommended to uninstall the following HELM chart:
-- ast (helm uninstall ast -n ast)
+Before run `terraform destroy` is recommended to uninstall the HELM Charts:
+- operator-helm-chart (helm uninstall operator-helm-chart -n NAMESPACE)
+- ast-platform (helm uninstall ast-platform -n NAMESPACE)
 
 This is recommended to avoid leaving the load balancer created by the traefik service behind.
 

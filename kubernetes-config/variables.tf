@@ -38,6 +38,16 @@ variable "aws_region" {
   type        = string
   description = "AWS region to use"
 }
+variable "aws_profile" {
+  description = "The aws profile used to run terraform."
+  type        = string
+  nullable    = false
+
+  validation {
+    condition     = (length(var.aws_profile) > 2)
+    error_message = "Must have at least 3 characters length."
+  }
+}
 
 # METADATA VARIABLES
 variable "environment" {
