@@ -8,7 +8,7 @@ resource "aws_elasticache_subnet_group" "redis" {
 resource "aws_elasticache_replication_group" "redis" {
   count                         = var.redis_nodes.create ? 1 : 0
   replication_group_id          = local.deployment_id
-  replication_group_description = "Redis cluster for AST application"
+  description = "Redis cluster for AST application"
 
   subnet_group_name = aws_elasticache_subnet_group.redis[0].name
 
@@ -25,10 +25,9 @@ resource "aws_elasticache_replication_group" "redis" {
   snapshot_retention_limit = 2
 
   automatic_failover_enabled = true
-  cluster_mode {
-    replicas_per_node_group = var.redis_nodes.replicas_per_shard
-    num_node_groups         = var.redis_nodes.number_of_shards
-  }
+  
+  replicas_per_node_group = var.redis_nodes.replicas_per_shard
+  num_node_groups         = var.redis_nodes.number_of_shards
 
   transit_encryption_enabled = var.redis_auth_token != "" ? true : false #BUG - AST can't work with TLS enabled
   auth_token                 = var.redis_auth_token != "" ? var.redis_auth_token : null

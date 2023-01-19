@@ -4,6 +4,16 @@ variable "aws_region" {
   type        = string
   description = "AWS region to use"
 }
+variable "aws_profile" {
+  description = "The aws profile used to run terraform."
+  type        = string
+  nullable    = false
+
+  validation {
+    condition     = (length(var.aws_profile) > 2)
+    error_message = "Must have at least 3 characters length."
+  }
+}
 
 # METADATA VARIABLES
 variable "deployment_id" {
@@ -40,7 +50,7 @@ variable "owner" {
 variable "eks_cluster_version" {
   description = "EKS Kubernetes version to be used"
   type        = string
-  default     = "1.21"
+  default     = "1.24"
   nullable    = false
 }
 
@@ -684,8 +694,8 @@ variable "kms" {
 
 
 # S3
-variable "enable_s3_bucket_versioning" {
-  type        = bool
-  description = "Enable S3 Bucket versioning"
-  default     = false
+variable "s3_bucket_versioning_status" {
+  type        = string
+  description = "S3 Bucket versioning Status"
+  default     = "Disabled"
 }
