@@ -32,7 +32,7 @@ kms = {
 }
 
 # EKS
-eks_cluster_version = "1.21"
+eks_cluster_version = "1.24"
 coredns = {
   resolve_conflicts = "OVERWRITE"
   version           = ""
