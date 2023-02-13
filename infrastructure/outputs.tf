@@ -23,7 +23,7 @@ output "redis-private-endpoint" {
 }
 
 output "eks_cluster_id" {
-  value       = module.eks.cluster_id
+  value       = module.eks.cluster_name
   description = "EKS Cluster ID"
 }
 

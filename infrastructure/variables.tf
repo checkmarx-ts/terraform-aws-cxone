@@ -54,27 +54,6 @@ variable "eks_cluster_version" {
   nullable    = false
 }
 
-variable "coredns" {
-  type = object({
-    resolve_conflicts = string
-    version           = string
-  })
-}
-
-variable "kubeproxy" {
-  type = object({
-    resolve_conflicts = string
-    version           = string
-  })
-}
-
-variable "vpccni" {
-  type = object({
-    resolve_conflicts = string
-    version           = string
-  })
-}
-
 # S3
 variable "s3_retention_period" {
   description = "S3 Retention Period"
@@ -677,6 +656,19 @@ variable "sig" {
     error_message = "You must create a Security groups or provide existing VPC information."
   }
   description = "Configuration for the Security groups."
+}
+
+# IAM-ROLE
+variable "iam_role" {
+  type = object({
+    cloudops_arn = bool
+    customer_arn = string
+  })
+  description = "CloudOps and Customer iam role"
+  validation {
+    condition     = (var.iam_role.cloudops_arn == true && length(var.iam_role.customer_arn) == 0) || (var.iam_role.cloudops_arn == false && length(var.iam_role.customer_arn) > 0 && can(regex("^arn:aws:iam::[[:digit:]]{12}:role/.+", var.iam_role.customer_arn)))
+    error_message = "Error: If cloudops_iam_role is true then customer_iam_role_arn must be an empty string. If cloudops_iam_role is false then customer_iam_role_arn must be a valid role arn string."
+  }
 }
 
 # KMS
