@@ -14,7 +14,7 @@ module "rds-aurora" {
 
   engine         = "aurora-postgresql"
   engine_mode    = "provisioned"
-  engine_version = "13.4"
+  engine_version = "13.8"
 
   create_security_group = false
   allowed_cidr_blocks   = module.vpc.private_subnets_cidr_blocks
