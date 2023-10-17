@@ -1,6 +1,36 @@
-# AWS Infrastructure
+# Checkmarx One Self Managed AWS Reference Architecture IaC 
 
-The terraform code present in this repo will create the infrastructure necessary to run the AST single-tenant solution.
+This repository contains IaC for deploying the Checkmarx One Self Managed Reference Architecture on [AWS](https://aws.amazon.com) using [Terraform](https://www.terraform.io). 
+
+# Providers
+
+
+```
+provider "aws" {
+
+  region = "us-west-2"
+
+  default_tags {
+    tags = {
+      Terraform    = "true"
+      DeploymentID = var.deployment_id
+      Owner        = var.owner
+      Environment  = var.environment
+    }
+  }
+}
+
+provider "kubernetes" {
+  host                   = module.eks_cluster.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks_cluster.cluster_certificate_authority_data)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args        = ["eks", "get-token", "--cluster-name", module.eks_cluster.cluster_name]
+    command     = "aws"
+  }
+}
+
+```
 
 # S3 Backend configuration
 
