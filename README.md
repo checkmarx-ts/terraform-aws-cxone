@@ -1,6 +1,11 @@
-# Checkmarx One Self Managed AWS Reference Architecture IaC 
+# Checkmarx One Self Managed AWS Terraform Module
 
-This repository contains IaC for deploying the Checkmarx One Self Managed Reference Architecture on [AWS](https://aws.amazon.com) using [Terraform](https://www.terraform.io). 
+This repository contains [Terraform](https://www.terraform.io) modules to deploy [Checkmarx One](https://checkmarx.com/product/application-security-platform/) Self Managed on [AWS](https://aws.amazon.com).
+
+
+This repository layout follows the Terraform [Standard Module Structure](https://developer.hashicorp.com/terraform/language/modules/develop/structure).
+
+
 
 # Providers
 

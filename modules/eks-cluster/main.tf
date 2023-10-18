@@ -16,6 +16,14 @@ module "eks" {
 
   enable_irsa = true
 
+  aws_auth_roles = [
+    {
+      rolearn  = var.cluster_access_iam_role_arn
+      username = "AWSAdministratorAccess:{{SessionName}}"
+      groups   = ["system:masters"]
+    }
+  ]
+
   cluster_addons = {
     coredns = {
       most_recent = true
@@ -51,6 +59,10 @@ module "eks" {
     cluster_name                    = var.deployment_id
     cluster_version                 = var.eks_cluster_version
     subnet_ids                      = var.subnet_ids
+    iam_role_additional_policies = {
+        # AmazonEBSCSIDriverPolicy is required by Kots
+        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+      }
 
     metadata_options = {
       http_endpoint               = "enabled"
@@ -544,15 +556,6 @@ module "eks" {
     }
 
   }
-
-
-  aws_auth_roles = [
-    {
-      rolearn  = var.cluster_access_iam_role_arn
-      username = "AWSAdministratorAccess:{{SessionName}}"
-      groups   = ["system:masters"]
-    }
-  ]
 }
 
 
@@ -582,246 +585,37 @@ resource "aws_iam_role_policy_attachment" "ast_s3_buckets_policy_attachment" {
   policy_arn = aws_iam_policy.ast_s3_buckets_policy.arn
 }
 
-
-
-#------------------------------------------------------------------------------
-# Add additional tags to autoscaling groups for the managed nodes
-#------------------------------------------------------------------------------
-
-# KICS
-resource "aws_autoscaling_group_tag" "kics_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.kics.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.kics_nodes.label_name}"
-    value               = var.kics_nodes.label_value
-    propagate_at_launch = true
+# Set GP3 as the default storage class
+resource "kubernetes_storage_class" "storage_class_gp3" {
+  depends_on = [
+    module.eks.aws_eks_addon
+  ]
+  metadata {
+    name = "gp3"
+    annotations = {
+      "storageclass.kubernetes.io/is-default-class" = "true"
+    }
+  }
+  storage_provisioner    = "ebs.csi.aws.com"
+  volume_binding_mode    = "WaitForFirstConsumer"
+  allow_volume_expansion = "true"
+  parameters = {
+    type   = "gp3"
+    fstype = "xfs"
   }
 }
-
-resource "aws_autoscaling_group_tag" "kics_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.kics.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.kics_nodes.key}"
-    value               = "${var.kics_nodes.value}:${var.kics_nodes.effect}"
-    propagate_at_launch = true
+# AWS STORAGE CLASS GP2
+resource "kubernetes_annotations" "gp2" {
+  depends_on = [
+    module.eks.aws_eks_addon
+  ]
+  api_version = "storage.k8s.io/v1"
+  kind        = "StorageClass"
+  metadata {
+    name = "gp2"
   }
-}
-
-# Metrics
-resource "aws_autoscaling_group_tag" "metrics_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.metrics.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.metrics_nodes.label_name}"
-    value               = var.metrics_nodes.label_value
-    propagate_at_launch = true
+  annotations = {
+    "storageclass.kubernetes.io/is-default-class" = "false"
   }
+  force = true
 }
-
-resource "aws_autoscaling_group_tag" "metrics_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.metrics.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.metrics_nodes.key}"
-    value               = "${var.metrics_nodes.value}:${var.metrics_nodes.effect}"
-    propagate_at_launch = true
-  }
-}
-
-# Minio
-resource "aws_autoscaling_group_tag" "minio_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.minio.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.minio_gateway_nodes.label_name}"
-    value               = var.minio_gateway_nodes.label_value
-    propagate_at_launch = true
-  }
-}
-
-resource "aws_autoscaling_group_tag" "minio_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.minio.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.minio_gateway_nodes.key}"
-    value               = "${var.minio_gateway_nodes.value}:${var.minio_gateway_nodes.effect}"
-    propagate_at_launch = true
-  }
-}
-
-# Reports
-resource "aws_autoscaling_group_tag" "reports_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.reports.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.reports_nodes.label_name}"
-    value               = var.reports_nodes.label_value
-    propagate_at_launch = true
-  }
-}
-
-resource "aws_autoscaling_group_tag" "reports_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.reports.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.reports_nodes.key}"
-    value               = "${var.reports_nodes.value}:${var.reports_nodes.effect}"
-    propagate_at_launch = true
-  }
-}
-
-# Repostore
-resource "aws_autoscaling_group_tag" "repostore_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.reports.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.repostore_nodes.label_name}"
-    value               = var.repostore_nodes.label_value
-    propagate_at_launch = true
-  }
-}
-
-resource "aws_autoscaling_group_tag" "repostore_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.reports.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.repostore_nodes.key}"
-    value               = "${var.repostore_nodes.value}:${var.repostore_nodes.effect}"
-    propagate_at_launch = true
-  }
-}
-
-# Sast Engines
-resource "aws_autoscaling_group_tag" "sast_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sast_engines.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.sast_nodes.label_name}"
-    value               = var.sast_nodes.label_value
-    propagate_at_launch = true
-  }
-}
-
-resource "aws_autoscaling_group_tag" "sast_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sast_engines.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.sast_nodes.key}"
-    value               = "${var.sast_nodes.value}:${var.sast_nodes.effect}"
-    propagate_at_launch = true
-  }
-}
-
-# Sast Engines - Large
-resource "aws_autoscaling_group_tag" "sast_large_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sast_engines_large.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.sast_nodes_large.label_name}"
-    value               = var.sast_nodes_large.label_value
-    propagate_at_launch = true
-  }
-}
-
-resource "aws_autoscaling_group_tag" "sast_large_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sast_engines_large.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.sast_nodes_large.key}"
-    value               = "${var.sast_nodes_large.value}:${var.sast_nodes_large.effect}"
-    propagate_at_launch = true
-  }
-}
-
-# Sast Engines - Large
-resource "aws_autoscaling_group_tag" "sast_xlarge_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sast_engines_xl.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.sast_nodes_extra_large.label_name}"
-    value               = var.sast_nodes_extra_large.label_value
-    propagate_at_launch = true
-  }
-}
-
-resource "aws_autoscaling_group_tag" "sast_xlarge_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sast_engines_xl.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.sast_nodes_extra_large.key}"
-    value               = "${var.sast_nodes_extra_large.value}:${var.sast_nodes_extra_large.effect}"
-    propagate_at_launch = true
-  }
-}
-
-# Sast Engines - Large
-resource "aws_autoscaling_group_tag" "sast_2xlarge_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sast_engines_2xl.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.sast_nodes_xxl.label_name}"
-    value               = var.sast_nodes_xxl.label_value
-    propagate_at_launch = true
-  }
-}
-
-resource "aws_autoscaling_group_tag" "sast_2xlarge_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sast_engines_2xl.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.sast_nodes_xxl.key}"
-    value               = "${var.sast_nodes_xxl.value}:${var.sast_nodes_xxl.effect}"
-    propagate_at_launch = true
-  }
-}
-
-
-# SCA
-resource "aws_autoscaling_group_tag" "sca_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sca.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.sca_nodes.label_name}"
-    value               = var.sca_nodes.label_value
-    propagate_at_launch = true
-  }
-}
-
-resource "aws_autoscaling_group_tag" "sca_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.sca.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.sca_nodes.key}"
-    value               = "${var.sca_nodes.value}:${var.sca_nodes.effect}"
-    propagate_at_launch = true
-  }
-}
-
-# DAST
-resource "aws_autoscaling_group_tag" "dast_label" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.dast.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.dast_nodes.label_name}"
-    value               = var.dast_nodes.label_value
-    propagate_at_launch = true
-  }
-}
-
-resource "aws_autoscaling_group_tag" "dast_taint" {
-  depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups.dast.node_group_autoscaling_group_names[0]
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.dast_nodes.key}"
-    value               = "${var.dast_nodes.value}:${var.dast_nodes.effect}"
-    propagate_at_launch = true
-  }
-}
-
-
-
-
-
-

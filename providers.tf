@@ -21,3 +21,16 @@ provider "kubernetes" {
     command     = "aws"
   }
 }
+
+data "aws_eks_cluster_auth" "cluster" {
+  depends_on = [module.eks_cluster.cluster_certificate_authority_data]
+  name       = var.deployment_id
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.eks_cluster.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks_cluster.cluster_certificate_authority_data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
+  }
+}

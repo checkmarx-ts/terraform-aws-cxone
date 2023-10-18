@@ -59,24 +59,24 @@ resource "random_password" "rds_password" {
   min_numeric = 1
 }
 
-module "rds" {
-  source = "./modules/rds"
+# module "rds" {
+#   source = "./modules/rds"
 
-  deployment_id        = var.deployment_id
-  vpc_id               = module.vpc.vpc_id
-  db_subnet_group_name = module.vpc.database_subnet_group_name
-  security_group_ids   = [module.security_groups.rds]
-  database_name        = "ast"
-  database_password    = random_password.rds_password.result
-  database_username    = "ast"
-  kms_key_arn          = module.kms.eks_kms_key_arn
-}
+#   deployment_id        = var.deployment_id
+#   vpc_id               = module.vpc.vpc_id
+#   db_subnet_group_name = module.vpc.database_subnet_group_name
+#   security_group_ids   = [module.security_groups.rds]
+#   database_name        = "ast"
+#   database_password    = random_password.rds_password.result
+#   database_username    = "ast"
+#   kms_key_arn          = module.kms.eks_kms_key_arn
+# }
 
-module "elasticache" {
-  source = "./modules/elasticache"
+# module "elasticache" {
+#   source = "./modules/elasticache"
 
-  deployment_id      = var.deployment_id
-  kms_key_arn        = module.kms.eks_kms_key_arn
-  security_group_ids = [module.security_groups.elasticache]
-  subnet_ids         = module.vpc.private_subnets
-}
+#   deployment_id      = var.deployment_id
+#   kms_key_arn        = module.kms.eks_kms_key_arn
+#   security_group_ids = [module.security_groups.elasticache]
+#   subnet_ids         = module.vpc.private_subnets
+# }
