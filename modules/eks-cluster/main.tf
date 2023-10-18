@@ -60,9 +60,9 @@ module "eks" {
     cluster_version                 = var.eks_cluster_version
     subnet_ids                      = var.subnet_ids
     iam_role_additional_policies = {
-        # AmazonEBSCSIDriverPolicy is required by Kots
-        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      }
+      # AmazonEBSCSIDriverPolicy is required by Kots
+      AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+    }
 
     metadata_options = {
       http_endpoint               = "enabled"

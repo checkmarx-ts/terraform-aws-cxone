@@ -6,9 +6,9 @@ resource "aws_elasticache_subnet_group" "redis" {
 
 # tfsec:ignore:aws-elasticache-enable-in-transit-encryption
 resource "aws_elasticache_replication_group" "redis" {
-  count                         = var.redis_nodes.create ? 1 : 0
-  replication_group_id          = local.deployment_id
-  description = "Redis cluster for AST application"
+  count                = var.redis_nodes.create ? 1 : 0
+  replication_group_id = local.deployment_id
+  description          = "Redis cluster for AST application"
 
   subnet_group_name = aws_elasticache_subnet_group.redis[0].name
 
@@ -25,7 +25,7 @@ resource "aws_elasticache_replication_group" "redis" {
   snapshot_retention_limit = 2
 
   automatic_failover_enabled = true
-  
+
   replicas_per_node_group = var.redis_nodes.replicas_per_shard
   num_node_groups         = var.redis_nodes.number_of_shards
 

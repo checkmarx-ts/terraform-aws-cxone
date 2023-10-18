@@ -36,3 +36,4 @@ resource "aws_elasticache_replication_group" "redis" {
   apply_immediately = true
 
 }
+

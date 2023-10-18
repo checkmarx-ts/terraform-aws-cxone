@@ -68,7 +68,7 @@ module "ast_sast_engines" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  
+
   min_size     = var.sast_nodes.min_size
   max_size     = var.sast_nodes.max_size
   desired_size = var.sast_nodes.desired_size
@@ -203,7 +203,7 @@ module "ast_sast_large_engines" {
   subnet_ids = local.subnets
 
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  
+
   min_size     = var.sast_nodes_large.min_size
   max_size     = var.sast_nodes_large.max_size
   desired_size = var.sast_nodes_large.desired_size

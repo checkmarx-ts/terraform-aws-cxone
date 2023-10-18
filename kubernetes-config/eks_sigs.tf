@@ -1,23 +1,23 @@
 ## AWS LOAD BALANCER CONTROLLER
 # AWS IAM POLICY FOR AWS LOAD BALANCER CONTROLLER
 resource "aws_iam_policy" "aws_load_balancer_controller" {
-  name          = "${local.deployment_id}-eks-aws-load-balancer-controller-${var.aws_region}"
-  description   = "EKS Cluster AWS Load Balancer Controller Policy for ${local.deployment_id}"
-  policy        = file("iam/aws-load-balancer-controller.json")
+  name        = "${local.deployment_id}-eks-aws-load-balancer-controller-${var.aws_region}"
+  description = "EKS Cluster AWS Load Balancer Controller Policy for ${local.deployment_id}"
+  policy      = file("iam/aws-load-balancer-controller.json")
 }
 # AWS IAM ROLE FOR AWS LOAD BALANCER CONTROLLER
 module "load_balancer_controller_irsa" {
-  source              = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version             = "4.13.1"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "4.13.1"
 
-  role_name           = "load_balancer_controller-${var.deployment_id}"
-  role_description    = "IRSA role for cluster load balancer controller"
+  role_name        = "load_balancer_controller-${var.deployment_id}"
+  role_description = "IRSA role for cluster load balancer controller"
 
   # setting to false because we don't want to rely on exeternal policies
   attach_load_balancer_controller_policy = false
   oidc_providers = {
     main = {
-      provider_arn                = data.terraform_remote_state.infra.outputs.oidc_provider_arn
+      provider_arn               = data.terraform_remote_state.infra.outputs.oidc_provider_arn
       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
     }
   }
@@ -33,10 +33,10 @@ resource "helm_release" "aws-load-balancer-controller" {
     module.load_balancer_controller_irsa,
     aws_iam_role_policy_attachment.aws-load-balancer-controller-policy-attachment
   ]
-  name       = "aws-load-balancer-controller"
-  chart      = "./helm-charts/aws-load-balancer-controller-1.4.6.tgz"
-  version    = "1.4.6"
-  namespace  = "kube-system"
+  name      = "aws-load-balancer-controller"
+  chart     = "./helm-charts/aws-load-balancer-controller-1.4.6.tgz"
+  version   = "1.4.6"
+  namespace = "kube-system"
 
   set {
     name  = "clusterName"
@@ -63,17 +63,17 @@ resource "helm_release" "aws-load-balancer-controller" {
 ## CLUSTER AUTO SCALLER
 # AWS IAM POLICY FOR CLUSTER AUTOSCALER
 resource "aws_iam_policy" "cluster_autoscaler" {
-  name          = "${local.deployment_id}-eks-cluster-autoscaler-${var.aws_region}"
-  description   = "EKS Cluster Auto Scalers Policy for ${local.deployment_id}"
-  policy        = file("iam/cluster-autoscaler.json")
+  name        = "${local.deployment_id}-eks-cluster-autoscaler-${var.aws_region}"
+  description = "EKS Cluster Auto Scalers Policy for ${local.deployment_id}"
+  policy      = file("iam/cluster-autoscaler.json")
 }
 # AWS IAM ROLE FOR CLUTER AUTOSCALER
 module "cluster_autoscaler_irsa" {
-  source              = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version             = "4.13.1"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "4.13.1"
 
-  role_name           = "cluster-autoscaler-${var.deployment_id}"
-  role_description    = "IRSA role for cluster autoscaler"
+  role_name        = "cluster-autoscaler-${var.deployment_id}"
+  role_description = "IRSA role for cluster autoscaler"
 
   # setting to false because we don't want to rely on exeternal policies
   attach_cluster_autoscaler_policy = false
@@ -96,11 +96,11 @@ resource "helm_release" "cluster-autoscaler" {
     module.cluster_autoscaler_irsa,
     aws_iam_role_policy_attachment.aws-cluster-autoscaler-policy-attachment
   ]
-  count      = 1
-  name       = "cluster-autoscaler"
-  chart      = "./helm-charts/cluster-autoscaler-9.21.1.tgz"
-  version    = "9.21.1"
-  namespace  = "kube-system"
+  count     = 1
+  name      = "cluster-autoscaler"
+  chart     = "./helm-charts/cluster-autoscaler-9.21.1.tgz"
+  version   = "9.21.1"
+  namespace = "kube-system"
 
   set {
     name  = "image.tag"
@@ -108,7 +108,7 @@ resource "helm_release" "cluster-autoscaler" {
   }
 
   set {
-    name = "autoDiscovery.clusterName"
+    name  = "autoDiscovery.clusterName"
     value = var.deployment_id
   }
   set {
@@ -117,19 +117,19 @@ resource "helm_release" "cluster-autoscaler" {
   }
 
   set {
-    name = "rbac.create"
+    name  = "rbac.create"
     value = "true"
   }
   set {
-    name = "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    name  = "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
     value = module.cluster_autoscaler_irsa.iam_role_arn
   }
   set {
-    name = "rbac.serviceAccount.create"
+    name  = "rbac.serviceAccount.create"
     value = "true"
   }
   set {
-    name = "rbac.serviceAccount.name"
+    name  = "rbac.serviceAccount.name"
     value = "cluster-autoscaler"
   }
 }
@@ -137,17 +137,17 @@ resource "helm_release" "cluster-autoscaler" {
 ## AWS EBS CSI DRIVER
 # AWS IAM POLICY FOR AWS EBS CSI DRIVER
 resource "aws_iam_policy" "aws-ebs-csi-driver-policy" {
-  name          = "${local.deployment_id}-aws-ebs-csi-driver-${var.aws_region}"
-  description   = "AWS ebs csi driver Policy for ${local.deployment_id}"
-  policy        = file("iam/aws-ebs-csi-driver.json")
+  name        = "${local.deployment_id}-aws-ebs-csi-driver-${var.aws_region}"
+  description = "AWS ebs csi driver Policy for ${local.deployment_id}"
+  policy      = file("iam/aws-ebs-csi-driver.json")
 }
 # AWS EBS CSI DRIVER ROLE  
 module "aws_ebs_csi_driver_role" {
-  source              = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version             = "5.9.2"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.9.2"
 
-  role_name           = "aws_ebs_csi_driver_role-${var.deployment_id}"
-  role_description    = "IRSA role for ebs csi driver role"
+  role_name        = "aws_ebs_csi_driver_role-${var.deployment_id}"
+  role_description = "IRSA role for ebs csi driver role"
 
   # setting to false because we don't want to rely on exeternal policies
   attach_ebs_csi_policy = false
@@ -169,11 +169,11 @@ resource "helm_release" "aws_ebs_csi_driver" {
     module.aws_ebs_csi_driver_role,
     aws_iam_role_policy_attachment.aws-ebs-csi-driver-policy-attachment
   ]
-  count      = 1
-  name       = "aws-ebs-csi-driver"
-  chart      = "./helm-charts/aws-ebs-csi-driver-2.14.1.tgz"
-  version    = "2.14.1"
-  namespace  = "kube-system"
+  count     = 1
+  name      = "aws-ebs-csi-driver"
+  chart     = "./helm-charts/aws-ebs-csi-driver-2.14.1.tgz"
+  version   = "2.14.1"
+  namespace = "kube-system"
 
   set {
     name  = "node.tolerateAllTaints"
@@ -212,17 +212,17 @@ resource "helm_release" "aws_ebs_csi_driver" {
 ## AWS EFS CSI DRIVER
 # AWS IAM POLICY FOR AWS EFS CSI DRIVER
 resource "aws_iam_policy" "aws-efs-csi-driver-policy" {
-  name          = "${local.deployment_id}-aws-efs-csi-driver-${var.aws_region}"
-  description   = "AWS efs csi driver Policy for ${local.deployment_id}"
-  policy        = file("iam/aws-efs-csi-driver.json")
+  name        = "${local.deployment_id}-aws-efs-csi-driver-${var.aws_region}"
+  description = "AWS efs csi driver Policy for ${local.deployment_id}"
+  policy      = file("iam/aws-efs-csi-driver.json")
 }
 # AWS EFS CSI DRIVER ROLE
 module "aws_efs_csi_driver_role" {
-  source              = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version             = "5.9.2"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.9.2"
 
-  role_name           = "aws_efs_csi_driver_role-${var.deployment_id}"
-  role_description    = "IRSA role for efs csi driver role"
+  role_name        = "aws_efs_csi_driver_role-${var.deployment_id}"
+  role_description = "IRSA role for efs csi driver role"
 
   # setting to false because we don't want to rely on exeternal policies
   attach_efs_csi_policy = false
@@ -240,15 +240,15 @@ resource "aws_iam_role_policy_attachment" "aws-efs-csi-driver-policy-attachment"
 }
 # # HELM CHART EFS CSI DRIVER
 resource "helm_release" "aws_efs_csi_driver" {
-   depends_on = [
-     module.aws_ebs_csi_driver_role,
-      aws_iam_role_policy_attachment.aws-efs-csi-driver-policy-attachment
-   ]
-   count      = 1
-   name       = "aws-efs-csi-driver"
-   chart      = "./helm-charts/aws-efs-csi-driver-2.3.3.tgz"
-   version    = "2.3.3"
-   namespace  = "kube-system"
+  depends_on = [
+    module.aws_ebs_csi_driver_role,
+    aws_iam_role_policy_attachment.aws-efs-csi-driver-policy-attachment
+  ]
+  count     = 1
+  name      = "aws-efs-csi-driver"
+  chart     = "./helm-charts/aws-efs-csi-driver-2.3.3.tgz"
+  version   = "2.3.3"
+  namespace = "kube-system"
 
   set {
     name  = "controller.serviceAccount.create"
@@ -332,7 +332,7 @@ resource "kubernetes_annotations" "gp2" {
     helm_release.aws_efs_csi_driver
   ]
   api_version = "storage.k8s.io/v1"
-  kind = "StorageClass"
+  kind        = "StorageClass"
   metadata {
     name = "gp2"
   }
@@ -345,17 +345,17 @@ resource "kubernetes_annotations" "gp2" {
 ## EXTERNAL DNS
 # AWS IAM POLICY FOR EXTERNAL DNS
 resource "aws_iam_policy" "external-dns-policy" {
-  name          = "${local.deployment_id}-external-dns-${var.aws_region}"
-  description   = "external dns Policy for ${local.deployment_id}"
-  policy        = file("iam/external-dns.json")
+  name        = "${local.deployment_id}-external-dns-${var.aws_region}"
+  description = "external dns Policy for ${local.deployment_id}"
+  policy      = file("iam/external-dns.json")
 }
 # AWS IAM Role FOR ExternalDNS
 module "external_dns_irsa" {
-  source              = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version             = "5.9.2"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.9.2"
 
-  role_name           = "external-dns-${var.deployment_id}"
-  role_description    = "IRSA role for cluster external dns controller"
+  role_name        = "external-dns-${var.deployment_id}"
+  role_description = "IRSA role for cluster external dns controller"
 
   # setting to false because we don't want to rely on exeternal policies
   attach_external_dns_policy = false
@@ -377,11 +377,11 @@ resource "helm_release" "external-dns" {
     module.external_dns_irsa,
     aws_iam_role_policy_attachment.external-dns-policy-attachment
   ]
-  count      = 1
-  name       = "external-dns"
-  chart      = "./helm-charts/external-dns-1.11.0.tgz"
-  version    = "1.11.0"
-  namespace  = "kube-system"
+  count     = 1
+  name      = "external-dns"
+  chart     = "./helm-charts/external-dns-1.11.0.tgz"
+  version   = "1.11.0"
+  namespace = "kube-system"
 
   set {
     name  = "serviceAccount.create"

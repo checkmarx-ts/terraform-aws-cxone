@@ -76,7 +76,7 @@ variable "default_node_group" {
     desired_size    = 3
     max_size        = 10
     instance_types  = ["c5.4xlarge"]
-    disk_size_gib   = 50
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -88,7 +88,7 @@ variable "default_node_group" {
     error_message = "You must have at least 1 instance in this node group."
   }
   validation {
-    condition     = var.default_node_group.disk_size_gib >= 20
+    condition     = var.default_node_group.disk_size_gib >= 200
     error_message = "You must provide at least 20 GiB per node."
   }
 
@@ -131,7 +131,7 @@ variable "sast_nodes" {
     desired_size    = 1
     max_size        = 100
     instance_types  = ["m5.2xlarge"]
-    disk_size_gib   = 50
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -144,8 +144,8 @@ variable "sast_nodes" {
     label_value     = "true"
   }
   validation {
-    condition     = var.sast_nodes.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.sast_nodes.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.sast_nodes.disk_iops >= 3000, var.sast_nodes.disk_iops <= 16000])
@@ -187,7 +187,7 @@ variable "sast_nodes_large" {
     desired_size    = 0
     max_size        = 300
     instance_types  = ["m5.4xlarge"]
-    disk_size_gib   = 50
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -200,8 +200,8 @@ variable "sast_nodes_large" {
     label_value     = "true"
   }
   validation {
-    condition     = var.sast_nodes_large.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.sast_nodes_large.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.sast_nodes_large.disk_iops >= 3000, var.sast_nodes_large.disk_iops <= 16000])
@@ -241,7 +241,7 @@ variable "sast_nodes_extra_large" {
     desired_size    = 0
     max_size        = 100
     instance_types  = ["r5.2xlarge"]
-    disk_size_gib   = 50
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -254,8 +254,8 @@ variable "sast_nodes_extra_large" {
     label_value     = "true"
   }
   validation {
-    condition     = var.sast_nodes_extra_large.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.sast_nodes_extra_large.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.sast_nodes_extra_large.disk_iops >= 3000, var.sast_nodes_extra_large.disk_iops <= 16000])
@@ -295,7 +295,7 @@ variable "sast_nodes_xxl" {
     desired_size    = 0
     max_size        = 50
     instance_types  = ["r5.4xlarge"]
-    disk_size_gib   = 50
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -308,8 +308,8 @@ variable "sast_nodes_xxl" {
     label_value     = "true"
   }
   validation {
-    condition     = var.sast_nodes_xxl.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.sast_nodes_xxl.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.sast_nodes_xxl.disk_iops >= 3000, var.sast_nodes_xxl.disk_iops <= 16000])
@@ -349,7 +349,7 @@ variable "kics_nodes" {
     desired_size    = 1
     max_size        = 10
     instance_types  = ["c5.2xlarge"]
-    disk_size_gib   = 50
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -362,8 +362,8 @@ variable "kics_nodes" {
     label_value     = "true"
   }
   validation {
-    condition     = var.kics_nodes.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.kics_nodes.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.kics_nodes.disk_iops >= 3000, var.kics_nodes.disk_iops <= 16000])
@@ -404,7 +404,7 @@ variable "minio_gateway_nodes" {
     desired_size    = 1
     max_size        = 10
     instance_types  = ["c6i.4xlarge"]
-    disk_size_gib   = 50
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -417,8 +417,8 @@ variable "minio_gateway_nodes" {
     label_value     = "true"
   }
   validation {
-    condition     = var.minio_gateway_nodes.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.minio_gateway_nodes.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.minio_gateway_nodes.disk_iops >= 3000, var.minio_gateway_nodes.disk_iops <= 16000])
@@ -459,7 +459,7 @@ variable "repostore_nodes" {
     desired_size    = 3
     max_size        = 10
     instance_types  = ["c5.2xlarge"]
-    disk_size_gib   = 50
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -472,8 +472,8 @@ variable "repostore_nodes" {
     label_value     = "true"
   }
   validation {
-    condition     = var.repostore_nodes.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.repostore_nodes.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.repostore_nodes.disk_iops >= 3000, var.repostore_nodes.disk_iops <= 16000])
@@ -514,7 +514,7 @@ variable "sca_nodes" {
     desired_size    = 3
     max_size        = 3
     instance_types  = ["c5.2xlarge"]
-    disk_size_gib   = 100
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -527,8 +527,8 @@ variable "sca_nodes" {
     label_value     = "true"
   }
   validation {
-    condition     = var.sca_nodes.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.sca_nodes.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.sca_nodes.disk_iops >= 3000, var.sca_nodes.disk_iops <= 16000])
@@ -569,7 +569,7 @@ variable "metrics_nodes" {
     desired_size    = 1
     max_size        = 4
     instance_types  = ["c5.xlarge"]
-    disk_size_gib   = 100
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -582,8 +582,8 @@ variable "metrics_nodes" {
     label_value     = "true"
   }
   validation {
-    condition     = var.metrics_nodes.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.metrics_nodes.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.metrics_nodes.disk_iops >= 3000, var.metrics_nodes.disk_iops <= 16000])
@@ -624,7 +624,7 @@ variable "reports_nodes" {
     desired_size    = 1
     max_size        = 4
     instance_types  = ["m6a.xlarge"]
-    disk_size_gib   = 100
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -637,8 +637,8 @@ variable "reports_nodes" {
     label_value     = "true"
   }
   validation {
-    condition     = var.reports_nodes.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.reports_nodes.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.reports_nodes.disk_iops >= 3000, var.reports_nodes.disk_iops <= 16000])
@@ -679,7 +679,7 @@ variable "dast_nodes" {
     desired_size    = 1
     max_size        = 10
     instance_types  = ["m5.xlarge"]
-    disk_size_gib   = 100
+    disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
     capacity_type   = "ON_DEMAND"
@@ -692,8 +692,8 @@ variable "dast_nodes" {
     label_value     = "true"
   }
   validation {
-    condition     = var.dast_nodes.disk_size_gib >= 8
-    error_message = "You must provide at least 8 GiB per node."
+    condition     = var.dast_nodes.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
   }
   validation {
     condition     = alltrue([var.dast_nodes.disk_iops >= 3000, var.dast_nodes.disk_iops <= 16000])

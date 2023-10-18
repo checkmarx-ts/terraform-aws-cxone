@@ -27,7 +27,7 @@ module "eks" {
     }
   }
 
-  create_kms_key            = false
+  create_kms_key = false
   cluster_encryption_config = {
     "resources"      = ["secrets"]
     provider_key_arn = local.kms_arn

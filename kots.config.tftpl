@@ -1,0 +1,183 @@
+apiVersion: kots.io/v1beta1
+kind: ConfigValues
+metadata:
+  creationTimestamp: null
+spec:
+  values:
+    # GENERAL
+    org_id:
+      default: organization
+      value: ${ast_tenant_name} #REPLACE_ME
+    default_admin_email:
+      value: admin@admin.com #REPLACE_ME
+    default_admin_user:
+      default: admin
+    default_admin_password:
+      value: ADMIN_PASSWORD #REPLACE_ME
+    environment_type:
+      default: development
+    deployment_type:
+      default: cloud
+    PROTOCOL:
+      default: http
+      value: https
+    DOMAIN:
+      default: ast.local
+      value: DOMAIN_NAME #REPLACE_ME
+    DISABLE_RESOURCES_REQUEST_AND_LIMIT:
+      default: "1"
+    ENABLE_TLS:
+      default: "0"
+    ADMIN_DOMAIN:
+      default: admin.local
+    enable_big_scans_configuration:
+      value: "1"
+    cloud_region:
+      value: ${aws_region}
+    # MINIO S3 Buckets
+    engine_logs_s3_bucket_name:
+      default: engine-logs
+      value: ${engine_logs_bucket} 
+    imports_s3_bucket_name:
+      default: imports
+      value: ${imports_bucket}
+    kics_worker_s3_bucket_name:
+      default: kics-worker
+      value: ${kics_worker_bucket}
+    logs_s3_bucket_name:
+      default: logs
+      value: ${logs_bucket}
+    misc_s3_bucket_name:
+      default: misc
+      value: ${misc_bucket}
+    apisec_s3_bucket_name:
+      default: apisec-bucket
+      value: ${apisec_bucket}
+    audit_s3_bucket_name:
+      default: audit
+      value: ${audit_bucket}
+    configuration_s3_bucket_name:
+      default: configuration
+      value: ${configuration_bucket}
+    queries_s3_bucket_name:
+      default: queries
+      value: ${queries_bucket}
+    report_templates_s3_bucket_name:
+      default: report-templates
+      value: ${report_templates_bucket}
+    reports_s3_bucket_name:
+      default: reports
+      value: ${reports_bucket}
+    repostore_s3_bucket_name:
+      default: repostore
+      value: ${repostore_bucket}
+    sast_metadata_s3_bucket_name:
+      default: sast-metadata
+      value: ${sast_metadata_bucket}
+    sast_worker_s3_bucket_name:
+      default: sast-worker
+      value: ${sast_worker_bucket}
+    sca_worker_s3_bucket_name:
+      default: sca-worker
+      value: ${sca_worker_bucket}
+    scans_s3_bucket_name:
+      default: scans
+      value: ${scans_bucket}
+    source_resolver_s3_bucket_name:
+      default: source-resolver-bucket
+      value: ${source_resolver_bucket}
+    uploads_s3_bucket_name:
+      default: uploads
+      value: ${uploads_bucket}
+    redis_shared_s3_bucket_name:
+      default: redis-shared-bucket
+      value: ${redis_shared_bucket}
+    scan_results_storage_s3_bucket_name:
+      default: scan-results-storage
+      value: ${scan_results_storage_bucket}
+    export_s3_bucket_name:
+      default: export
+      value: ${export_bucket}
+    # DATA
+    # POSTGRES
+    postgres_type:
+      default: embedded_postgres
+      value: external_postgres
+    external_postgres_host:
+      default: postgres
+      value: ${rds_endpoint}
+    external_postgres_port:
+      default: "5432"
+    embedded_postgres_password: {}
+    external_postgres_user:
+      value: ${external_postgres_user} #REPLACE_ME
+    external_postgres_password:
+      value: ${external_postgres_password} #REPLACE_ME
+    external_postgres_db:
+      default: ${external_postgres_db}
+    external_postgres_sslmode:
+      default: postgres_sslmode_require
+    postgres_sslmode_value:
+      value: require
+    # REDIS
+    redis_type:
+      default: embedded_redis
+      value: external_redis
+    external_redis_address:
+      default: redis
+      value: ${external_redis_address}
+    external_redis_port:
+      default: "6379"
+    external_redis_password: {}
+    embedded_redis_password: {}
+    external_redis_tls_enabled:
+      default: "0"
+    external_redis_cluster_mode_enabled:
+      value: "1"
+    external_redis_tls_skipverify:
+      default: "1"
+    # SMTP
+    enable_smtp:
+      default: "0"
+    smtp_host: {}
+    smtp_port: {}
+    smtp_tls_enabled:
+      default: "0"
+    smtp_user: {}
+    smtp_password:
+      default: password
+    # SALSEFORCE INTEGRATION
+    enable_salesforce:
+      default: "0"
+      value: ""
+    SALESFORCE_USERNAME:
+      default: Username
+      value: ""
+    SALESFORCE_PASSWORD:
+      default: Password
+      value: ""
+    SALESFORCE_LOGIN_URL:
+      default: Login URL
+      value: ""
+    SALESFORCE_OPEN_TICKET_URL:
+      default: Open Ticket URL
+      value: ""
+    SALESFORCE_ADD_ATTACHMENT_URL:
+      default: Attachment URL
+      value: ""
+    SALESFORCE_RECORD_TYPE_ID:
+      default: Record Type ID
+      value: ""
+    SALESFORCE_RES_REVIEW_RECORD_TYPE_ID:
+      default: Res Review Record Type ID
+      value: ""
+    SALESFORCE_ON_BOARDING_RECORD_TYPE_ID:
+      default: On Boarding Record Type ID
+      value: ""
+    #NETWORKING
+    networking_type_aws:
+      value: networking_type_load_balancer_AWS_NLB
+    nlb_tls_acm_arn:
+      value: ACM_CERTIFICATE_ARN #REPLACE_ME
+
+status: {}
