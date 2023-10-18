@@ -26,6 +26,9 @@ module "eks" {
     vpc-cni = {
       most_recent = true
     }
+    aws-ebs-csi-driver = {
+      most_recent = true
+    }
   }
 
 
@@ -41,7 +44,7 @@ module "eks" {
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
-    vpc_security_group_ids          = var.default_security_group_ids
+    #vpc_security_group_ids          = var.default_security_group_ids
     use_name_prefix                 = false
     iam_role_use_name_prefix        = false
     launch_template_use_name_prefix = false
