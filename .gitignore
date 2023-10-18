@@ -35,4 +35,9 @@ terraform.rc
 
 .terraform.lock.hcl
 
-*.kots.*.yml
+kots.*.yml
+install*.sh
+
+
+license.yml
+lic*.yml

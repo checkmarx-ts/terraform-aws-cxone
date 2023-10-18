@@ -125,3 +125,13 @@ resource "local_file" "kots_config" {
   filename = "${path.module}/kots.${var.deployment_id}.yml"
 }
 
+
+
+resource "local_file" "install_sh" {
+  content = templatefile("./install.sh.tftpl", {
+    kots_config_file            = "kots.${var.deployment_id}.yml"
+  })
+  filename = "${path.module}/install.${var.deployment_id}.sh"
+}
+
+
