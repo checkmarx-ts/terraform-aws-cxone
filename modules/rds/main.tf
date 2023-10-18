@@ -35,8 +35,9 @@ module "rds-aurora" {
   performance_insights_enabled        = true
   iam_database_authentication_enabled = false
 
-  master_username = var.database_username
-  master_password = var.database_password
-  database_name   = var.database_name
+  master_username             = var.database_username
+  master_password             = var.database_password
+  database_name               = var.database_name
+  manage_master_user_password = false
 
 }

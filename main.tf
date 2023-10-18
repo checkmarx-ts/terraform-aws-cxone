@@ -68,7 +68,7 @@ module "rds" {
   db_subnet_group_name = module.vpc.database_subnet_group_name
   security_group_ids   = [module.security_groups.rds]
   database_name        = "ast"
-  database_password    = random_password.rds_password.result
+  database_password    = local.db_password
   database_username    = "ast"
   kms_key_arn          = module.kms.eks_kms_key_arn
 }
@@ -86,9 +86,9 @@ data "aws_region" "current" {}
 
 resource "local_file" "kots_config" {
   content = templatefile("./kots.config.tftpl", {
-    ast_tenant_name             = "elco_lab"
-    aws_region                  = data.aws_region.current.name
-    
+    ast_tenant_name = "elco_lab"
+    aws_region      = data.aws_region.current.name
+
     # S3 buckets
     engine_logs_bucket          = module.s3.engine_logs_bucket_id
     imports_bucket              = module.s3.imports_bucket_id
@@ -111,15 +111,15 @@ resource "local_file" "kots_config" {
     redis_shared_bucket         = module.s3.redis_bucket_id
     scan_results_storage_bucket = module.s3.scan_results_storage_bucket_id
     export_bucket               = module.s3.export_bucket_id
-    
+
     # RDS
-    rds_endpoint                = module.rds.cluster_endpoint
-    external_postgres_user      = module.rds.cluster_master_username
-    external_postgres_password  = random_password.rds_password.result
-    external_postgres_db        = module.rds.cluster_database_name
-    
+    rds_endpoint               = module.rds.cluster_endpoint
+    external_postgres_user     = module.rds.cluster_master_username
+    external_postgres_password = local.db_password
+    external_postgres_db       = module.rds.cluster_database_name
+
     # Redis
-    external_redis_address      = module.elasticache.redis_private_endpoint
+    external_redis_address = module.elasticache.redis_private_endpoint
 
   })
   filename = "${path.module}/kots.${var.deployment_id}.yml"
@@ -129,7 +129,7 @@ resource "local_file" "kots_config" {
 
 resource "local_file" "install_sh" {
   content = templatefile("./install.sh.tftpl", {
-    kots_config_file            = "kots.${var.deployment_id}.yml"
+    kots_config_file = "kots.${var.deployment_id}.yml"
   })
   filename = "${path.module}/install.${var.deployment_id}.sh"
 }
