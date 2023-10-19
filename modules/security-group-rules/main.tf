@@ -86,3 +86,32 @@ resource "aws_security_group_rule" "egress_all_external" {
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = var.external
 }
+
+
+#------------------------------------------------------------------------------
+# RDS SG Rules
+#------------------------------------------------------------------------------
+
+resource "aws_security_group_rule" "ingress_rds_internal" {
+  description       = "RDS vpc ingress"
+  type              = "ingress"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = [var.var.vpc_cidr]
+  security_group_id = var.rds
+}
+
+#------------------------------------------------------------------------------
+# RDS SG Rules
+#------------------------------------------------------------------------------
+
+resource "aws_security_group_rule" "ingress_elasticache_internal" {
+  description       = "RDS vpc ingress"
+  type              = "ingress"
+  from_port         = 6379
+  to_port           = 6379
+  protocol          = "tcp"
+  cidr_blocks       = [var.var.vpc_cidr]
+  security_group_id = var.elasticache
+}

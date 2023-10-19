@@ -14,3 +14,13 @@ variable "vpc_cidr" {
   nullable    = false
 }
 
+variable "rds" {
+  description = "The rds security group id"
+  nullable    = false
+}
+
+variable "elasticache" {
+  description = "The elasticache security group id"
+  nullable    = false
+}
+
