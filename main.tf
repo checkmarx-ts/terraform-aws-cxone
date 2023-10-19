@@ -13,9 +13,11 @@ module "security_groups" {
 module "security_group_rules" {
   source = "./modules/security-group-rules"
 
-  vpc_cidr = module.vpc.vpc_cidr_block
-  internal = module.security_groups.internal
-  external = module.security_groups.external
+  vpc_cidr    = module.vpc.vpc_cidr_block
+  internal    = module.security_groups.internal
+  external    = module.security_groups.external
+  rds         = module.security_groups.rds
+  elasticache = module.security_groups.elasticache
 }
 
 module "kms" {

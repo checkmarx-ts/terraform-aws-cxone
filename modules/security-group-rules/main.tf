@@ -98,7 +98,7 @@ resource "aws_security_group_rule" "ingress_rds_internal" {
   from_port         = 5432
   to_port           = 5432
   protocol          = "tcp"
-  cidr_blocks       = [var.var.vpc_cidr]
+  cidr_blocks       = [var.vpc_cidr]
   security_group_id = var.rds
 }
 
@@ -112,6 +112,6 @@ resource "aws_security_group_rule" "ingress_elasticache_internal" {
   from_port         = 6379
   to_port           = 6379
   protocol          = "tcp"
-  cidr_blocks       = [var.var.vpc_cidr]
+  cidr_blocks       = [var.vpc_cidr]
   security_group_id = var.elasticache
 }
