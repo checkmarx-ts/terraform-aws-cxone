@@ -18,6 +18,12 @@ variable "environment" {
   nullable = false
 }
 
+variable "ast_tenant_name" {
+  description = "The tenant name, that must match exactly the tenant name in your Checkmarx One license."
+  type        = string
+  nullable    = false
+}
+
 variable "owner" {
   description = "The name of the deployment owner. for example: you@example.com"
   type        = string

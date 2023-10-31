@@ -75,6 +75,7 @@ module "rds" {
   kms_key_arn          = module.kms.eks_kms_key_arn
 }
 
+
 module "elasticache" {
   source = "./modules/elasticache"
 
@@ -88,7 +89,7 @@ data "aws_region" "current" {}
 
 resource "local_file" "kots_config" {
   content = templatefile("./kots.config.tftpl", {
-    ast_tenant_name = "elco_lab"
+    ast_tenant_name = var.ast_tenant_name
     aws_region      = data.aws_region.current.name
 
     # S3 buckets
@@ -120,6 +121,7 @@ resource "local_file" "kots_config" {
     external_postgres_password = local.db_password
     external_postgres_db       = module.rds.cluster_database_name
 
+
     # Redis
     external_redis_address = module.elasticache.redis_private_endpoint
 
@@ -135,5 +137,4 @@ resource "local_file" "install_sh" {
   })
   filename = "${path.module}/install.${var.deployment_id}.sh"
 }
-
 

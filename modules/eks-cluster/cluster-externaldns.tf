@@ -1,9 +1,9 @@
 ## EXTERNAL DNS
 # AWS IAM POLICY FOR EXTERNAL DNS
 resource "aws_iam_policy" "external-dns-policy" {
-  name          = "${var.deployment_id}-external-dns-${data.aws_region.current.name}"
-  description   = "external dns Policy for ${var.deployment_id}"
-  policy        = <<EOF
+  name        = "${var.deployment_id}-external-dns-${data.aws_region.current.name}"
+  description = "external dns Policy for ${var.deployment_id}"
+  policy      = <<EOF
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -33,11 +33,11 @@ EOF
 
 # AWS IAM Role FOR ExternalDNS
 module "external_dns_irsa" {
-  source              = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version             = "5.9.2"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.9.2"
 
-  role_name           = "external-dns-${var.deployment_id}"
-  role_description    = "IRSA role for cluster external dns controller"
+  role_name        = "external-dns-${var.deployment_id}"
+  role_description = "IRSA role for cluster external dns controller"
 
   # setting to false because we don't want to rely on exeternal policies
   attach_external_dns_policy = false
@@ -59,11 +59,11 @@ resource "helm_release" "external-dns" {
     module.external_dns_irsa,
     aws_iam_role_policy_attachment.external-dns-policy-attachment
   ]
-  count      = 1
-  name       = "external-dns"
-  chart      = "${path.module}/helm-charts/external-dns-1.11.0.tgz"
-  version    = "1.11.0"
-  namespace  = "kube-system"
+  count     = 1
+  name      = "external-dns"
+  chart     = "${path.module}/helm-charts/external-dns-1.11.0.tgz"
+  version   = "1.11.0"
+  namespace = "kube-system"
 
   set {
     name  = "serviceAccount.create"

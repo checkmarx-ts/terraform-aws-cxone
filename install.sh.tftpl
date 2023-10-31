@@ -1,6 +1,5 @@
 #!/bin/bash
-# todo: update the kots config file w/ aws buckets
-# todo: prompt for organization
+
 read -p "Channel Version: <enter for latest> " version
 command="kubectl kots install ast/beta-1 "
 command+="--skip-preflights "
@@ -10,7 +9,6 @@ if test -n "$version"; then
 else 
   echo "Using latest version"
 fi
-#command+="--shared-password 'password' " 
 command+="--config-values '${kots_config_file}' " 
 command+="--license-file 'license.yml' "
 eval $command

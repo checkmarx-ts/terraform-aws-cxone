@@ -7,13 +7,14 @@ spec:
     # GENERAL
     org_id:
       default: organization
-      value: ${ast_tenant_name} #REPLACE_ME
+      value: ${ast_tenant_name} 
+    # default_admin_email will be what you sign in with the first time.    
     default_admin_email:
-      value: admin@admin.com #REPLACE_ME
+      value: #REPLACE_ME
     default_admin_user:
       default: admin
     default_admin_password:
-      value: ADMIN_PASSWORD #REPLACE_ME
+      value: #REPLACE_ME
     environment_type:
       default: development
     deployment_type:
@@ -23,7 +24,7 @@ spec:
       value: https
     DOMAIN:
       default: ast.local
-      value: DOMAIN_NAME #REPLACE_ME
+      value: #REPLACE_ME
     DISABLE_RESOURCES_REQUEST_AND_LIMIT:
       default: "1"
     ENABLE_TLS:
@@ -176,8 +177,10 @@ spec:
       value: ""
     #NETWORKING
     networking_type_aws:
+      # Options: networking_type_load_balancer_AWS_CLB or networking_type_load_balancer_AWS_NLB
       value: networking_type_load_balancer_AWS_NLB
     nlb_tls_acm_arn:
-      value: ACM_CERTIFICATE_ARN #REPLACE_ME
+      value: #REPLACE ME
+
 
 status: {}

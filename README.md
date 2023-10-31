@@ -5,11 +5,21 @@ This repository contains [Terraform](https://www.terraform.io) modules to deploy
 
 This repository layout follows the Terraform [Standard Module Structure](https://developer.hashicorp.com/terraform/language/modules/develop/structure).
 
+# Getting Started
 
+## Create the Terraform project
+Create a file `example.auto.tfvars` with this content. Inject your own values as needed.
+```
+# METADATA
+deployment_id              = "company-[dev|test|prod]-cxone"
+owner                      = "user.name@example.com"
+ast_tenant_name            = ""
+environment                = "dev"
+vpc_cidr                   = "10.1.0.0/16"
+administrator_iam_role_arn = ""
+```
 
-# Providers
-
-
+Create a file named `main.tf` with this content:
 ```
 provider "aws" {
 
@@ -35,6 +45,176 @@ provider "kubernetes" {
   }
 }
 
+data "aws_eks_cluster_auth" "cluster" {
+  depends_on = [module.eks_cluster.cluster_certificate_authority_data]
+  name       = var.deployment_id
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.eks_cluster.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks_cluster.cluster_certificate_authority_data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
+  }
+}
+
+
+module "vpc" {
+  source        = "./modules/vpc"
+  deployment_id = var.deployment_id
+  vpc_cidr      = var.vpc_cidr
+}
+
+module "security_groups" {
+  source        = "./modules/security-groups"
+  deployment_id = var.deployment_id
+  vpc_id        = module.vpc.vpc_id
+}
+
+module "security_group_rules" {
+  source = "./modules/security-group-rules"
+
+  vpc_cidr    = module.vpc.vpc_cidr_block
+  internal    = module.security_groups.internal
+  external    = module.security_groups.external
+  rds         = module.security_groups.rds
+  elasticache = module.security_groups.elasticache
+}
+
+module "kms" {
+  source = "./modules/kms"
+}
+
+module "iam" {
+  source = "./modules/iam"
+
+  deployment_id              = var.deployment_id
+  administrator_iam_role_arn = var.administrator_iam_role_arn
+}
+
+
+module "s3" {
+  source        = "./modules/s3"
+  deployment_id = var.deployment_id
+}
+
+
+module "eks_cluster" {
+  source = "./modules/eks-cluster"
+
+  deployment_id               = var.deployment_id
+  vpc_id                      = module.vpc.vpc_id
+  subnet_ids                  = module.vpc.private_subnets
+  eks_kms_key_arn             = module.kms.eks_kms_key_arn
+  default_security_group_ids  = [module.security_groups.internal]
+  cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
+  s3_bucket_name_suffix       = module.s3.s3_bucket_name_suffix
+
+}
+
+
+resource "random_password" "rds_password" {
+  length           = 16
+  special          = false
+  override_special = "!*-_[]{}<>"
+  min_special      = 0
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+}
+
+module "rds" {
+  source = "./modules/rds"
+
+  deployment_id        = var.deployment_id
+  vpc_id               = module.vpc.vpc_id
+  db_subnet_group_name = module.vpc.database_subnet_group_name
+  security_group_ids   = [module.security_groups.rds]
+  database_name        = "ast"
+  database_password    = local.db_password
+  database_username    = "ast"
+  kms_key_arn          = module.kms.eks_kms_key_arn
+}
+
+
+module "elasticache" {
+  source = "./modules/elasticache"
+
+  deployment_id      = var.deployment_id
+  kms_key_arn        = module.kms.eks_kms_key_arn
+  security_group_ids = [module.security_groups.elasticache]
+  subnet_ids         = module.vpc.private_subnets
+}
+
+data "aws_region" "current" {}
+
+resource "local_file" "kots_config" {
+  content = templatefile("./kots.config.tftpl", {
+    ast_tenant_name = var.ast_tenant_name
+    aws_region      = data.aws_region.current.name
+
+    # S3 buckets
+    engine_logs_bucket          = module.s3.engine_logs_bucket_id
+    imports_bucket              = module.s3.imports_bucket_id
+    kics_worker_bucket          = module.s3.kics_worker_bucket_id
+    logs_bucket                 = module.s3.logs_bucket_id
+    misc_bucket                 = module.s3.misc_bucket_id
+    apisec_bucket               = module.s3.api_security_bucket_id
+    audit_bucket                = module.s3.audit_bucket_id
+    configuration_bucket        = module.s3.configuration_bucket_id
+    queries_bucket              = module.s3.queries_bucket_id
+    report_templates_bucket     = module.s3.report_templates_bucket_id
+    reports_bucket              = module.s3.reports_bucket_id
+    repostore_bucket            = module.s3.repostore_bucket_id
+    sast_metadata_bucket        = module.s3.sast_metadata_bucket_id
+    sast_worker_bucket          = module.s3.sast_worker_bucket_id
+    sca_worker_bucket           = module.s3.sca_worker_bucket_id
+    scans_bucket                = module.s3.scans_bucket_id
+    source_resolver_bucket      = module.s3.source_resolver_bucket_id
+    uploads_bucket              = module.s3.uploads_bucket_id
+    redis_shared_bucket         = module.s3.redis_bucket_id
+    scan_results_storage_bucket = module.s3.scan_results_storage_bucket_id
+    export_bucket               = module.s3.export_bucket_id
+
+    # RDS
+    rds_endpoint               = module.rds.cluster_endpoint
+    external_postgres_user     = module.rds.cluster_master_username
+    external_postgres_password = local.db_password
+    external_postgres_db       = module.rds.cluster_database_name
+
+
+    # Redis
+    external_redis_address = module.elasticache.redis_private_endpoint
+
+  })
+  filename = "${path.module}/kots.${var.deployment_id}.yml"
+}
+
+
+
+resource "local_file" "install_sh" {
+  content = templatefile("./install.sh.tftpl", {
+    kots_config_file = "kots.${var.deployment_id}.yml"
+  })
+  filename = "${path.module}/install.${var.deployment_id}.sh"
+}
+
+```
+
+## Deploy the Infrastructure
+Run the following commands to initialize and apply the Terraform project to your AWS account:
+```
+terraform init
+terraform apply
+```
+
+## Review the kots*.yml file
+Update the KOTS config file, replacing any place holders not automatically generated by Terraform.
+
+## Install the application
+Run the installation script:
+```
+./install*.sh
 ```
 
 # S3 Backend configuration
@@ -59,59 +239,3 @@ region="eu-west-1"
 key="infra/terraform.tfstate"
 ```
 
-
-## Using Makefile configuration
-When running the command `make init` on the desired directory it will use this file to pass the parameters to the terraform backend configuration.
-
-## Using terraform command line
-`terraform init -backend-config=s3_backend_configuration.conf`
-
-or you can use the full command:
-
-`terraform init -backend-config=bucket=BUCKET_NAME -backend-config=key=S3_KEY -backend-config=region=AWS_REGION`
-
-# Instalation order
-
-- The first terraform module that needs to be installed is `infrastructure`  only after the instalation is complete you should move to the second one.
-
-
-```
-cd infrastructure
-make plan
-make apply
-```
-
-
-- When the infrastructure is ready, apply the module `kubernetes-config`.
-
-```
-cd kubernetes-config
-make plan
-make apply
-```
-
-Please, take a look on the `example.auto.tfvars` file to see the parameters that you need to inform.
-
-
-
-# TF Destroy
-
-
-If you already installed the CxOne solution using Kots, before running `make destroy` it is recommended to uninstall the following HELM chart:
-- ast (helm uninstall ast -n ast)
-
-This is recommended to avoid leaving the load balancer created by the traefik service behind.
-
-## Destroy the module kubernetes-config
-
-```
-cd kubernetes-config
-make destroy
-```
-
-## Destroy the module infrastructure
-
-```
-cd infrastructure
-make destroy
-```
