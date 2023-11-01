@@ -48,3 +48,21 @@ variable "administrator_iam_role_arn" {
   type        = string
   nullable    = false
 }
+
+variable "domain" {
+  description = "Domain for the AWS hosted zone (e.g. example.com)"
+  type        = string
+  nullable    = false
+}
+
+variable "subdomain" {
+  description = "Subdomain for the hosted zone domain (e.g. checkmarx.) The subdomain will be prepended to the domain for DNS records.)"
+  type        = string
+  nullable    = false
+}
+
+variable "cxone_admin_password" {
+  description = "The password used to login to CxOne"
+  type        = string
+  nullable    = false
+}

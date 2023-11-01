@@ -14,7 +14,7 @@ spec:
     default_admin_user:
       default: admin
     default_admin_password:
-      value: #REPLACE_ME
+      value: ${admin_password}
     environment_type:
       default: development
     deployment_type:
@@ -24,7 +24,7 @@ spec:
       value: https
     DOMAIN:
       default: ast.local
-      value: #REPLACE_ME
+      value: ${domain}
     DISABLE_RESOURCES_REQUEST_AND_LIMIT:
       default: "1"
     ENABLE_TLS:
@@ -180,7 +180,6 @@ spec:
       # Options: networking_type_load_balancer_AWS_CLB or networking_type_load_balancer_AWS_NLB
       value: networking_type_load_balancer_AWS_NLB
     nlb_tls_acm_arn:
-      value: #REPLACE ME
-
+      value: ${acm_arn}
 
 status: {}

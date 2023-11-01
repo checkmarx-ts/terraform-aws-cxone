@@ -89,8 +89,13 @@ data "aws_region" "current" {}
 
 resource "local_file" "kots_config" {
   content = templatefile("./kots.config.tftpl", {
-    ast_tenant_name = var.ast_tenant_name
-    aws_region      = data.aws_region.current.name
+    ast_tenant_name        = var.ast_tenant_name
+    aws_region             = data.aws_region.current.name
+    admin_password         = var.cxone_admin_password
+    domain                 = "${var.subdomain}${var.domain}"
+    acm_arn                = module.acm.acm_certificate_arn
+
+        
 
     # S3 buckets
     engine_logs_bucket          = module.s3.engine_logs_bucket_id
@@ -129,8 +134,6 @@ resource "local_file" "kots_config" {
   filename = "${path.module}/kots.${var.deployment_id}.yml"
 }
 
-
-
 resource "local_file" "install_sh" {
   content = templatefile("./install.sh.tftpl", {
     kots_config_file = "kots.${var.deployment_id}.yml"
@@ -138,3 +141,25 @@ resource "local_file" "install_sh" {
   filename = "${path.module}/install.${var.deployment_id}.sh"
 }
 
+data "aws_route53_zone" "hosted_zone" {
+  name = var.domain
+  private_zone = false
+}
+
+module "acm" {
+  source  = "terraform-aws-modules/acm/aws"
+  version = "5.0.0"
+
+  domain_name  = "${var.subdomain}${var.domain}"
+  zone_id      = data.aws_route53_zone.hosted_zone.zone_id
+
+  validation_method = "DNS"
+  create_certificate = true
+  create_route53_records = true
+  validate_certificate = true
+  wait_for_validation = true
+
+  tags = {
+    Name = var.deployment_id
+  }
+}
