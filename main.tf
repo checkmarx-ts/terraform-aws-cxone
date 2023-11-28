@@ -92,6 +92,7 @@ resource "local_file" "kots_config" {
     ast_tenant_name        = var.ast_tenant_name
     aws_region             = data.aws_region.current.name
     admin_password         = var.cxone_admin_password
+    admin_email            = var.cxone_admin_email
     domain                 = "${var.subdomain}${var.domain}"
     acm_arn                = module.acm.acm_certificate_arn
 
@@ -130,6 +131,15 @@ resource "local_file" "kots_config" {
     # Redis
     external_redis_address = module.elasticache.redis_private_endpoint
 
+    #  SMTP
+    smtp_host        = var.SMTP_endpoint
+    smtp_port        = var.SMTP_port
+    smtp_user        = module.ses.access_key_id
+    smtp_password    = module.ses.ses_smtp_password
+    smtp_from_sender = var.SMTP_from_sender
+
+
+
   })
   filename = "${path.module}/kots.${var.deployment_id}.yml"
 }
@@ -162,4 +172,43 @@ module "acm" {
   tags = {
     Name = var.deployment_id
   }
+}
+
+
+module "ses" {
+  source            = "cloudposse/ses/aws"
+  version           = "0.24.0"
+  zone_id           = data.aws_route53_zone.hosted_zone.zone_id
+  domain            = "${var.subdomain}${var.domain}"
+  verify_domain     = true
+  verify_dkim       = true
+  ses_group_enabled = true
+  ses_group_name    = "CxOne-ses-group"
+  ses_user_enabled  = true
+  name              = "CxOne"
+  environment       = "dev"
+  enabled           = true
+  
+  tags = {
+    Name = var.deployment_id
+  }
+}
+
+resource "aws_iam_group_policy" "cxone_ses_group_policy" {
+  name  = "cxone_ses_group_policy"
+  group = module.ses.ses_group_name
+
+  policy = jsonencode ({
+    Version: "2012-10-17"
+    Statement: [
+        {
+            Effect: "Allow",
+            Action: [
+                "ses:SendEmail",
+                "ses:SendRawEmail"
+            ],
+            Resource: "*"
+        }
+    ]
+  })
 }

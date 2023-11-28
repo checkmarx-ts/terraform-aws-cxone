@@ -10,7 +10,7 @@ spec:
       value: ${ast_tenant_name} 
     # default_admin_email will be what you sign in with the first time.    
     default_admin_email:
-      value: #REPLACE_ME
+      value: ${admin_email}
     default_admin_user:
       default: admin
     default_admin_password:
@@ -139,14 +139,19 @@ spec:
       default: "1"
     # SMTP
     enable_smtp:
-      default: "0"
-    smtp_host: {}
-    smtp_port: {}
+     value: "1"
+    smtp_host: 
+      value: ${smtp_host}
+    smtp_port:
+      value: ${smtp_port}
     smtp_tls_enabled:
-      default: "0"
-    smtp_user: {}
+      value: "1"
+    smtp_user:
+      value: ${smtp_user}
     smtp_password:
-      default: password
+      value: ${smtp_password}
+    smtp_from_sender:
+      value: ${smtp_from_sender}
     # SALSEFORCE INTEGRATION
     enable_salesforce:
       default: "0"

@@ -66,3 +66,27 @@ variable "cxone_admin_password" {
   type        = string
   nullable    = false
 }
+
+variable "cxone_admin_email" {
+  description = "Sets the default admin email address for CxOne"
+  type        = string
+  nullable    = false
+}
+
+variable "SMTP_endpoint" {
+  description = "Defines the endpoint of smtp server"
+  type        = string
+  nullable    = false
+}
+
+variable "SMTP_port" {
+  description = "Defines the smtp port number"
+  type        = number
+  nullable    = false
+}
+
+variable "SMTP_from_sender" {
+  description = "Defines the smtp from sender address"
+  type        = string
+  nullable    = false
+}
