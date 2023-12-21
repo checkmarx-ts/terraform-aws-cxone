@@ -183,9 +183,9 @@ module "ses" {
   verify_domain     = true
   verify_dkim       = true
   ses_group_enabled = true
-  ses_group_name    = "CxOne-ses-group"
+  ses_group_name    = "${var.deployment_id}-ses-group"
   ses_user_enabled  = true
-  name              = "CxOne"
+  name              = "CxOne-${var.deployment_id}"
   environment       = "dev"
   enabled           = true
   
@@ -211,4 +211,102 @@ resource "aws_iam_group_policy" "cxone_ses_group_policy" {
         }
     ]
   })
+}
+
+
+##
+### Fluentbit Logging Resources Below
+##
+
+data "aws_eks_cluster" "eks" {
+  name = var.deployment_id
+  depends_on = [module.eks_cluster.cluster_certificate_authority_data]
+}
+
+data "aws_caller_identity" "current" {}
+
+resource "kubernetes_namespace" "logs" {
+  metadata {
+    name = "logs"
+  }
+}
+
+resource "aws_iam_policy" "fluentbit" {
+  name_prefix = "${var.deployment_id}-${var.environment}-fluentbit-policy"
+  description = "IAM policy for fluentbit"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid = "fluentBitLogManagement"
+        Action = [
+          "logs:PutLogEvents",
+          "logs:Describe*",
+          "logs:CreateLogStream",
+          "logs:CreateLogGroup",
+          "logs:PutRetentionPolicy"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "fluentbit-role" {
+  name_prefix        = "fluentbit"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(data.aws_eks_cluster.eks.identity.0.oidc.0.issuer, "https://", "")}"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringLike": {
+          "${replace(data.aws_eks_cluster.eks.identity.0.oidc.0.issuer, "https://", "")}:sub": "system:serviceaccount:logs:fluentbit-sa"
+        }
+      }
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "fluentbit" {
+  policy_arn = aws_iam_policy.fluentbit.arn
+  role       = aws_iam_role.fluentbit-role.name
+}
+
+
+resource "kubernetes_service_account" "fluentbit" {
+  metadata {
+    name      = "fluentbit-sa"
+    namespace = kubernetes_namespace.logs.id
+    annotations = {
+      "eks.amazonaws.com/role-arn" = "${aws_iam_role.fluentbit-role.arn}"
+    }
+  }
+
+  automount_service_account_token = true
+}
+
+##
+### AWS fluentbit helm chart below
+##
+resource "helm_release" "fluent-bit-cloudwatch" {
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-for-fluent-bit" 
+  name       = "cloudwatch"
+  namespace  = kubernetes_namespace.logs.id
+
+  values = [
+    templatefile("./aws-fluentbit-config.yml", {
+      region        = data.aws_region.current.name
+      deployment_id = var.deployment_id
+    })
+  ] 
 }

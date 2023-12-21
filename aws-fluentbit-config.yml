@@ -1,0 +1,5 @@
+cloudWatchLogs:
+  region: ${region}
+  logGroupName: "${deployment_id}-fluentbit-logs"
+  logStreamTemplate: $kubernetes['pod_name'].$kubernetes['container_name']
+ 

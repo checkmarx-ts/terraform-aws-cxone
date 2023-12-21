@@ -19,6 +19,8 @@ spec:
       default: development
     deployment_type:
       default: cloud
+    ms_replica_count:
+      default: "3"
     PROTOCOL:
       default: http
       value: https
@@ -143,7 +145,7 @@ spec:
     smtp_host: 
       value: ${smtp_host}
     smtp_port:
-      value: ${smtp_port}
+      default: "587"
     smtp_tls_enabled:
       value: "1"
     smtp_user:

@@ -61,7 +61,9 @@ module "eks" {
     subnet_ids                      = var.subnet_ids
     iam_role_additional_policies = {
       # AmazonEBSCSIDriverPolicy is required by Kots
-      AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+      # AmazonAPIGatewayPushToCloudWatchLogs is required to send logs to CLoudWatch
+      AmazonEBSCSIDriverPolicy             = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+      AmazonAPIGatewayPushToCloudWatchLogs = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
     }
 
     metadata_options = {
