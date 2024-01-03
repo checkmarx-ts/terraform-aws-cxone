@@ -186,6 +186,8 @@ spec:
     networking_type_aws:
       # Options: networking_type_load_balancer_AWS_CLB or networking_type_load_balancer_AWS_NLB
       value: networking_type_load_balancer_AWS_NLB
+    network_load_balancer_scheme:
+      value: internet-facing #internal
     nlb_tls_acm_arn:
       value: ${acm_arn}
 
