@@ -13,3 +13,8 @@ variable "vpc_id" {
   nullable    = false
   description = "The VPC ID to deploy into."
 }
+
+variable "vpc_cidr" {
+  description = "The VPC CIDR"
+  nullable    = false
+}

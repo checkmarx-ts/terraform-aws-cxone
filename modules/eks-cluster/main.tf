@@ -14,6 +14,12 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.subnet_ids
 
+  create_cluster_security_group = false
+  cluster_security_group_id = var.cluster_security_group_id
+
+  create_node_security_group = false
+  node_security_group_id = var.node_security_group_id
+
   enable_irsa = true
 
   aws_auth_roles = [

@@ -44,9 +44,21 @@ variable "eks_kms_key_arn" {
   nullable    = false
 }
 
+variable "cluster_security_group_id" {
+  description = "Existing security group ID to be attached to the cluster."
+  type        = string
+}
+
+variable "node_security_group_id" {
+  description = "ID of an existing security group to attach to the node groups created."
+  type        = string
+}
+
+
 variable "default_security_group_ids" {
   description = "A list of security group ids to add to all managed node group nodes by default."
   type        = list(string)
+  default = []
 }
 
 variable "cluster_access_iam_role_arn" {

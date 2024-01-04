@@ -8,17 +8,23 @@ module "security_groups" {
   source        = "./modules/security-groups"
   deployment_id = var.deployment_id
   vpc_id        = module.vpc.vpc_id
+  vpc_cidr      = module.vpc.vpc_cidr_block
 }
 
-module "security_group_rules" {
-  source = "./modules/security-group-rules"
-
-  vpc_cidr    = module.vpc.vpc_cidr_block
-  internal    = module.security_groups.internal
-  external    = module.security_groups.external
-  rds         = module.security_groups.rds
-  elasticache = module.security_groups.elasticache
+# The security groups module will configure the required VPC Internal rules only. It will not allow EKS node egress to the internet. 
+# This egress rule is added below in the project so that it can be customized.
+# Access to the internet is required for online installations (image pulling), and some application features (e.g. integration with other tools) require internet connectivity as well.
+resource "aws_security_group_rule" "node_egress_all" {
+  description       = "All protocols"
+  type              = "egress"
+  from_port         = -1
+  to_port           = -1
+  protocol          = "all"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = module.security_groups.eks_node
 }
+
+
 
 module "kms" {
   source = "./modules/kms"
@@ -45,8 +51,9 @@ module "eks_cluster" {
   vpc_id                      = module.vpc.vpc_id
   subnet_ids                  = module.vpc.private_subnets
   eks_kms_key_arn             = module.kms.eks_kms_key_arn
-  default_security_group_ids  = [module.security_groups.internal]
   cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
+  cluster_security_group_id   = module.security_groups.eks_cluster
+  node_security_group_id      = module.security_groups.eks_node
   s3_bucket_name_suffix       = module.s3.s3_bucket_name_suffix
 
 }
@@ -89,14 +96,14 @@ data "aws_region" "current" {}
 
 resource "local_file" "kots_config" {
   content = templatefile("./kots.config.tftpl", {
-    ast_tenant_name        = var.ast_tenant_name
-    aws_region             = data.aws_region.current.name
-    admin_password         = var.cxone_admin_password
-    admin_email            = var.cxone_admin_email
-    domain                 = "${var.subdomain}${var.domain}"
-    acm_arn                = module.acm.acm_certificate_arn
+    ast_tenant_name = var.ast_tenant_name
+    aws_region      = data.aws_region.current.name
+    admin_password  = var.cxone_admin_password
+    admin_email     = var.cxone_admin_email
+    domain          = "${var.subdomain}${var.domain}"
+    acm_arn         = module.acm.acm_certificate_arn
 
-        
+
 
     # S3 buckets
     engine_logs_bucket          = module.s3.engine_logs_bucket_id
@@ -152,7 +159,7 @@ resource "local_file" "install_sh" {
 }
 
 data "aws_route53_zone" "hosted_zone" {
-  name = var.domain
+  name         = var.domain
   private_zone = false
 }
 
@@ -160,14 +167,14 @@ module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "5.0.0"
 
-  domain_name  = "${var.subdomain}${var.domain}"
-  zone_id      = data.aws_route53_zone.hosted_zone.zone_id
+  domain_name = "${var.subdomain}${var.domain}"
+  zone_id     = data.aws_route53_zone.hosted_zone.zone_id
 
-  validation_method = "DNS"
-  create_certificate = true
+  validation_method      = "DNS"
+  create_certificate     = true
   create_route53_records = true
-  validate_certificate = true
-  wait_for_validation = true
+  validate_certificate   = true
+  wait_for_validation    = true
 
   tags = {
     Name = var.deployment_id
@@ -188,7 +195,7 @@ module "ses" {
   name              = "CxOne-${var.deployment_id}"
   environment       = "dev"
   enabled           = true
-  
+
   tags = {
     Name = var.deployment_id
   }
@@ -198,17 +205,17 @@ resource "aws_iam_group_policy" "cxone_ses_group_policy" {
   name  = "cxone_ses_group_policy"
   group = module.ses.ses_group_name
 
-  policy = jsonencode ({
-    Version: "2012-10-17"
-    Statement: [
-        {
-            Effect: "Allow",
-            Action: [
-                "ses:SendEmail",
-                "ses:SendRawEmail"
-            ],
-            Resource: "*"
-        }
+  policy = jsonencode({
+    Version : "2012-10-17"
+    Statement : [
+      {
+        Effect : "Allow",
+        Action : [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ],
+        Resource : "*"
+      }
     ]
   })
 }
@@ -219,7 +226,7 @@ resource "aws_iam_group_policy" "cxone_ses_group_policy" {
 ##
 
 data "aws_eks_cluster" "eks" {
-  name = var.deployment_id
+  name       = var.deployment_id
   depends_on = [module.eks_cluster.cluster_certificate_authority_data]
 }
 
@@ -299,7 +306,7 @@ resource "kubernetes_service_account" "fluentbit" {
 ##
 resource "helm_release" "fluent-bit-cloudwatch" {
   repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-for-fluent-bit" 
+  chart      = "aws-for-fluent-bit"
   name       = "cloudwatch"
   namespace  = kubernetes_namespace.logs.id
 
@@ -308,5 +315,5 @@ resource "helm_release" "fluent-bit-cloudwatch" {
       region        = data.aws_region.current.name
       deployment_id = var.deployment_id
     })
-  ] 
+  ]
 }

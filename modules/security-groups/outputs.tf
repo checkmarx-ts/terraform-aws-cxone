@@ -1,9 +1,9 @@
-output "internal" {
-  value = aws_security_group.internal.id
+output "eks_cluster" {
+  value = aws_security_group.eks_cluster.id
 }
 
-output "external" {
-  value = aws_security_group.external.id
+output "eks_node" {
+  value = aws_security_group.eks_node.id
 }
 
 output "elasticache" {
