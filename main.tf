@@ -25,6 +25,66 @@ resource "aws_security_group_rule" "node_egress_all" {
 }
 
 
+# Allow image pulls from checkmarx.jfrog.io. For use by Checkmarx internal labs or in rare cases when images are pulled directly from Checkmarx's Artifactory.
+# Most images are pulled from the replicated proxy, which has rules below. 
+# Reference https://jfrog.com/help/r/what-are-artifactory-cloud-nated-ips
+resource "aws_security_group_rule" "checkmarx_jfrog_io" {
+  description       = "Allow image pulls from checkmarx.jfrog.io"
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["54.73.4.50/32", "34.246.139.145/32", "34.247.22.236/32"]
+  security_group_id = module.security_groups.eks_node
+}
+
+# Replicated services - required for online installation.
+# Reference https://docs.replicated.com/enterprise/installing-general-requirements
+resource "aws_security_group_rule" "replicated_services" {
+  description       = "Allow image pulls from proxy.replicated.com and replicated api"
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["162.159.137.43/32", "162.159.138.43/32", "162.159.133.41/32", "162.159.134.41/32"]
+  security_group_id = module.security_groups.eks_node
+}
+
+# SCA API - required for SCA Scanning.
+# Reference https://checkmarx.com/resource/documents/en/34965-19103-connectivity-to-checkmarx-sca-cloud.html
+resource "aws_security_group_rule" "sca_us_environment" {
+  description       = "Allow connection to sca-api.checkmarx.net (US Environment)"
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["3.163.101.20/32", "3.163.101.86/32", "3.163.101.52/32", "3.163.101.98/32"]
+  security_group_id = module.security_groups.eks_node
+}
+
+resource "aws_security_group_rule" "sca_us_environment" {
+  description       = "Allow connection to sca-api.checkmarx.net (EU Environment)"
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["3.161.163.9/32", "3.161.163.101/32", "3.161.163.106/32", "3.161.163.94/32"]
+  security_group_id = module.security_groups.eks_node
+}
+
+resource "aws_security_group_rule" "codebashing_api" {
+  description       = "Allow connection to api.codebashing.com"
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["54.246.53.245/32", "108.128.155.15/32", "54.77.213.21/32"]
+  security_group_id = module.security_groups.eks_node
+}
+
+
+
+
 
 module "kms" {
   source = "./modules/kms"
@@ -143,6 +203,7 @@ resource "local_file" "kots_config" {
     redis_shared_bucket         = module.s3.redis_bucket_id
     scan_results_storage_bucket = module.s3.scan_results_storage_bucket_id
     export_bucket               = module.s3.export_bucket_id
+    cxone_bucket                = module.s3.cxone_bucket_id
 
     # RDS
     rds_endpoint               = module.rds.cluster_endpoint

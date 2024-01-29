@@ -15,10 +15,10 @@ module "eks" {
   subnet_ids = var.subnet_ids
 
   create_cluster_security_group = false
-  cluster_security_group_id = var.cluster_security_group_id
+  cluster_security_group_id     = var.cluster_security_group_id
 
   create_node_security_group = false
-  node_security_group_id = var.node_security_group_id
+  node_security_group_id     = var.node_security_group_id
 
   enable_irsa = true
 
@@ -109,6 +109,10 @@ module "eks" {
       tags = {
         Name = "${var.default_node_group.name}-${var.deployment_id}"
       }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
+      }
     }
 
     kics = {
@@ -149,6 +153,10 @@ module "eks" {
 
       tags = {
         Name = "${var.kics_nodes.name}-${var.deployment_id}"
+      }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
       }
     }
 
@@ -191,6 +199,10 @@ module "eks" {
       tags = {
         Name = "${var.metrics_nodes.name}-${var.deployment_id}"
       }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
+      }
     }
 
     minio = {
@@ -231,6 +243,10 @@ module "eks" {
 
       tags = {
         Name = "${var.minio_gateway_nodes.name}-${var.deployment_id}"
+      }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
       }
     }
 
@@ -273,6 +289,10 @@ module "eks" {
       tags = {
         Name = "${var.reports_nodes.name}-${var.deployment_id}"
       }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
+      }
     }
 
     repostore = {
@@ -314,6 +334,10 @@ module "eks" {
       tags = {
         Name = "${var.repostore_nodes.name}-${var.deployment_id}"
       }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
+      }
     }
 
     sast_engines = {
@@ -354,6 +378,9 @@ module "eks" {
 
       tags = {
         Name = "${var.sast_nodes.name}-${var.deployment_id}"
+      }
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
       }
     }
 
@@ -397,6 +424,10 @@ module "eks" {
         Name = "${var.sast_nodes_large.name}-${var.deployment_id}"
       }
 
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
+      }
+
     }
 
     sast_engines_xl = {
@@ -437,6 +468,10 @@ module "eks" {
 
       tags = {
         Name = "${var.sast_nodes_extra_large.name}-${var.deployment_id}"
+      }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
       }
     }
 
@@ -479,6 +514,10 @@ module "eks" {
       tags = {
         Name = "${var.sast_nodes_xxl.name}-${var.deployment_id}"
       }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
+      }
     }
 
     sca = {
@@ -519,6 +558,10 @@ module "eks" {
 
       tags = {
         Name = "${var.sca_nodes.name}-${var.deployment_id}"
+      }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
       }
     }
 
@@ -561,6 +604,10 @@ module "eks" {
       tags = {
         Name = "${var.dast_nodes.name}-${var.deployment_id}"
       }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
+      }
     }
 
   }
@@ -592,6 +639,12 @@ resource "aws_iam_role_policy_attachment" "ast_s3_buckets_policy_attachment" {
   role       = module.eks.eks_managed_node_groups.minio.iam_role_name
   policy_arn = aws_iam_policy.ast_s3_buckets_policy.arn
 }
+
+resource "aws_iam_role_policy_attachment" "ast_defaultnodegroup_s3_buckets_policy_attachment" {
+  role       = module.eks.eks_managed_node_groups.default.iam_role_name
+  policy_arn = aws_iam_policy.ast_s3_buckets_policy.arn
+}
+
 
 # Set GP3 as the default storage class
 resource "kubernetes_storage_class" "storage_class_gp3" {
