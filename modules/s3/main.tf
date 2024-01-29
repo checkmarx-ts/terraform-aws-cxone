@@ -72,6 +72,9 @@ locals {
     export = {
       name = "export-${lower(local.s3_bucket_name_suffix)}"
     }
+    cxone = {
+      name = "cxone-${lower(local.s3_bucket_name_suffix)}"
+    }
   }
 }
 

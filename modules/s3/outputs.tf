@@ -85,3 +85,8 @@ output "scan_results_storage_bucket_id" {
 output "export_bucket_id" {
   value = module.s3_bucket["export"].s3_bucket_id
 }
+
+output "cxone_bucket_id" {
+  value = module.s3_bucket["cxone"].s3_bucket_id
+}
+

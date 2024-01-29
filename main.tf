@@ -143,6 +143,7 @@ resource "local_file" "kots_config" {
     redis_shared_bucket         = module.s3.redis_bucket_id
     scan_results_storage_bucket = module.s3.scan_results_storage_bucket_id
     export_bucket               = module.s3.export_bucket_id
+    cxone_bucket                = module.s3.cxone_bucket_id
 
     # RDS
     rds_endpoint               = module.rds.cluster_endpoint
