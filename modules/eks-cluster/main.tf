@@ -640,6 +640,12 @@ resource "aws_iam_role_policy_attachment" "ast_s3_buckets_policy_attachment" {
   policy_arn = aws_iam_policy.ast_s3_buckets_policy.arn
 }
 
+resource "aws_iam_role_policy_attachment" "ast_defaultnodegroup_s3_buckets_policy_attachment" {
+  role       = module.eks.eks_managed_node_groups.default.iam_role_name
+  policy_arn = aws_iam_policy.ast_s3_buckets_policy.arn
+}
+
+
 # Set GP3 as the default storage class
 resource "kubernetes_storage_class" "storage_class_gp3" {
   depends_on = [
