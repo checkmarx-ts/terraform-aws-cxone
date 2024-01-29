@@ -142,3 +142,15 @@ spec:
       value: internet-facing #internal
     nlb_tls_acm_arn:
       value: ${acm_certificate_arn}
+
+    # SCA Global Inventory
+    enable_sca_global_inventory:
+      value: "1"
+    sca_global_inventory_elasticsearch_host:
+      value: ${elasticsearch_host}
+    sca_global_inventory_elasticsearch_port:
+      value: "443"
+    sca_global_inventory_elasticsearch_username:
+      value: ast
+    sca_global_inventory_elasticsearch_password:
+      value: ${elasticsearch_password}

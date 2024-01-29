@@ -13,3 +13,9 @@ output "elasticache" {
 output "rds" {
   value = aws_security_group.rds.id
 }
+
+output "opensearch" {
+  value = aws_security_group.opensearch.id
+}
+
+

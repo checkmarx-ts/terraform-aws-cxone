@@ -62,7 +62,7 @@ resource "aws_security_group_rule" "sca_us_environment" {
   security_group_id = module.security_groups.eks_node
 }
 
-resource "aws_security_group_rule" "sca_us_environment" {
+resource "aws_security_group_rule" "sca_eu_environment" {
   description       = "Allow connection to sca-api.checkmarx.net (EU Environment)"
   type              = "egress"
   from_port         = 443
@@ -152,6 +152,15 @@ module "elasticache" {
   subnet_ids         = module.vpc.private_subnets
 }
 
+module "opensearch" {
+  source             = "./modules/opensearch"
+  deployment_id      = var.deployment_id
+  subnet_ids         = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
+  security_group_ids = [module.security_groups.opensearch]
+  password           = local.db_password
+
+}
+
 module "acm" {
   source = "./modules/acm"
 
@@ -222,6 +231,9 @@ resource "local_file" "kots_config" {
     smtp_password    = module.ses.ses_smtp_password
     smtp_from_sender = var.SMTP_from_sender
 
+    # Elasticsearch
+    elasticsearch_host     = module.opensearch.endpoint
+    elasticsearch_password = local.db_password
 
 
   })
@@ -234,3 +246,5 @@ resource "local_file" "install_sh" {
   })
   filename = "${path.module}/install.${var.deployment_id}.sh"
 }
+
+
