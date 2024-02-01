@@ -166,14 +166,13 @@ module "elasticache" {
   subnet_ids         = module.vpc.private_subnets
 }
 
-module "opensearch" {
-  source             = "./modules/opensearch"
-  deployment_id      = var.deployment_id
-  subnet_ids         = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
-  security_group_ids = [module.security_groups.opensearch]
-  password           = local.db_password
-
-}
+#module "opensearch" {
+#  source             = "./modules/opensearch"
+#  deployment_id      = var.deployment_id
+#  subnet_ids         = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
+#  security_group_ids = [module.security_groups.opensearch]
+#  password           = local.db_password
+#}
 
 module "acm" {
   source = "./modules/acm"
@@ -246,8 +245,8 @@ resource "local_file" "kots_config" {
     smtp_from_sender = var.SMTP_from_sender
 
     # Elasticsearch
-    elasticsearch_host     = module.opensearch.endpoint
-    elasticsearch_password = local.db_password
+    elasticsearch_host     = "NOT_IMPLEMENTED" #module.opensearch.endpoint
+    elasticsearch_password = "NOT_IMPLEMENTED" #
 
 
   })
