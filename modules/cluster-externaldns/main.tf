@@ -1,5 +1,8 @@
 ## EXTERNAL DNS
 # AWS IAM POLICY FOR EXTERNAL DNS
+
+data "aws_region" "current" {}
+
 resource "aws_iam_policy" "external-dns-policy" {
   name        = "${var.deployment_id}-external-dns-${data.aws_region.current.name}"
   description = "external dns Policy for ${var.deployment_id}"
@@ -43,7 +46,7 @@ module "external_dns_irsa" {
   attach_external_dns_policy = false
   oidc_providers = {
     main = {
-      provider_arn               = module.eks.oidc_provider_arn
+      provider_arn               = var.oidc_provider_arn
       namespace_service_accounts = ["kube-system:external-dns"]
     }
   }

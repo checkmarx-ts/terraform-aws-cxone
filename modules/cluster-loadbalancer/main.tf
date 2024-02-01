@@ -1,5 +1,8 @@
 ## AWS LOAD BALANCER CONTROLLER
 # AWS IAM POLICY FOR AWS LOAD BALANCER CONTROLLER
+
+data "aws_region" "current" {}
+
 resource "aws_iam_policy" "aws_load_balancer_controller" {
   name        = "${var.deployment_id}-eks-aws-load-balancer-controller-${data.aws_region.current.name}"
   description = "EKS Cluster AWS Load Balancer Controller Policy for ${var.deployment_id}"
@@ -259,7 +262,7 @@ module "load_balancer_controller_irsa" {
   attach_load_balancer_controller_policy = false
   oidc_providers = {
     main = {
-      provider_arn               = module.eks.oidc_provider_arn
+      provider_arn               = var.oidc_provider_arn
       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
     }
   }

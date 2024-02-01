@@ -118,6 +118,20 @@ module "eks_cluster" {
 
 }
 
+module "cluster-externaldns" {
+  source = "./modules/cluster-externaldns"
+
+  deployment_id     = var.deployment_id
+  oidc_provider_arn = module.eks_cluster.oidc_provider_arn
+}
+
+module "cluster-loadbalancer" {
+  source = "./modules/cluster-loadbalancer"
+
+  deployment_id     = var.deployment_id
+  oidc_provider_arn = module.eks_cluster.oidc_provider_arn
+}
+
 
 resource "random_password" "rds_password" {
   length           = 16
