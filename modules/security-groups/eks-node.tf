@@ -117,6 +117,16 @@ resource "aws_security_group_rule" "node_egress_all_internal" {
   security_group_id = aws_security_group.eks_node.id
 }
 
+resource "aws_security_group_rule" "node_ingress_all_internal" {
+  description       = "All protocols"
+  type              = "ingress"
+  from_port         = -1
+  to_port           = -1
+  protocol          = "all"
+  cidr_blocks       = [var.vpc_cidr]
+  security_group_id = aws_security_group.eks_node.id
+}
+
 
 
 

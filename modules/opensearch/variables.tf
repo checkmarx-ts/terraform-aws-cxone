@@ -27,7 +27,7 @@ variable "tls_security_policy" {
 }
 
 variable "instance_type" {
-  default = "r6g.large.search"
+  default = "r6g.large.elasticsearch"
   type    = string
 }
 

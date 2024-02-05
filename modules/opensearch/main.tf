@@ -15,25 +15,26 @@ resource "aws_elasticsearch_domain" "es" {
 
   cluster_config {
     instance_type          = var.instance_type
+    instance_count         = var.instance_count
     zone_awareness_enabled = true
     zone_awareness_config {
       availability_zone_count = 3
     }
   }
 
-  auto_tune_options {
-    desired_state = "ENABLED"
-    maintenance_schedule {
-      start_at = "2024-01-01T01:00:00.00Z"
-      duration {
-        value = 4
-        unit  = "HOURS"
+  #   auto_tune_options {
+  #     desired_state = "ENABLED"
+  #     maintenance_schedule {
+  #       start_at = timeadd(plantimestamp(), "24h")
+  #       duration {
+  #         value = 4
+  #         unit  = "HOURS"
 
-      }
-      cron_expression_for_recurrence = "0 0 * * 0" #weekly
-    }
-    rollback_on_disable = "DEFAULT_ROLLBACK"
-  }
+  #       }
+  #       cron_expression_for_recurrence = "0 0 * * *" # daily
+  #     }
+  #     rollback_on_disable = "DEFAULT_ROLLBACK"
+  #   }
 
 
   vpc_options {
@@ -42,7 +43,7 @@ resource "aws_elasticsearch_domain" "es" {
   }
 
   snapshot_options {
-    automated_snapshot_start_hour = 24
+    automated_snapshot_start_hour = 06
   }
 
   ebs_options {
