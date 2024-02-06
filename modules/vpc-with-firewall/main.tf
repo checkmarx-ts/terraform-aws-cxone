@@ -80,11 +80,19 @@ resource "aws_subnet" "database" {
   }
 }
 
+resource "aws_db_subnet_group" "postgres" {
+  name       = var.deployment_id
+  subnet_ids = aws_subnet.database.*.id
+
+}
+
+
+
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "main"
+    Name = "${var.deployment_id}"
   }
 }
 
@@ -100,7 +108,7 @@ resource "aws_nat_gateway" "public" {
   subnet_id     = element(aws_subnet.public.*.id, count.index)
 
   tags = {
-    Name = "gw NAT"
+    Name = "NAT Gateway ${count.index + 1} - ${var.deployment_id}"
   }
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -210,22 +218,6 @@ resource "aws_route" "public_firewall" {
   }
 }
 
-# + aws_networkfirewall_firewall_endpoints = [
-#       + {
-#           + sync_states = [
-#               + {
-#                   + attachment        = [
-#                       + {
-#                           + endpoint_id = "vpce-0d45e5fa64a8bf0e5"
-#                           + subnet_id   = "subnet-064f535c0d9b1e0b3"
-#                         },
-#                     ]
-#                   + availability_zone = "us-west-2a"
-#                 },
-#             ]
-#         },
-#     ]
-# ╷
 
 #################
 # Private routes
@@ -274,7 +266,7 @@ resource "aws_route" "nat_gateway" {
 #################
 
 resource "aws_networkfirewall_rule_group" "cxone" {
-  capacity = 100
+  capacity = 200
   name     = "${var.deployment_id}-cxone-deployment"
   type     = "STATEFUL"
   rules    = file("${path.module}/cxone.rules")
@@ -309,6 +301,13 @@ resource "aws_networkfirewall_firewall" "main" {
   firewall_policy_arn = aws_networkfirewall_firewall_policy.main.arn
   vpc_id              = aws_vpc.main.id
 
+
+  timeouts {
+    create = "40m"
+    update = "50m"
+    delete = "1h"
+  }
+
   dynamic "subnet_mapping" {
     for_each = aws_subnet.firewall.*.id
     content {
@@ -323,7 +322,6 @@ resource "aws_networkfirewall_firewall" "main" {
 resource "aws_cloudwatch_log_group" "aws_nfw_alert" {
   name              = "${var.deployment_id}-aws-nfw-alert"
   retention_in_days = 14
-
 }
 
 resource "aws_cloudwatch_log_group" "aws_nfw_flow" {

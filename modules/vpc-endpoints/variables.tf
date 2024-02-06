@@ -8,12 +8,20 @@ variable "deployment_id" {
   }
 }
 
-variable "administrator_iam_role_arn" {
-  description = "The AWS ARN to the IAM role that will be used by Administrators and granted management access to EKS and other services."
+variable "vpc_id" {
+  type        = string
   nullable    = false
+  description = "The VPC ID to deploy into."
 }
 
-variable "s3_bucket_name_suffix" {
-  description = "The suffix of the S3 buckets that Minio will manage."
+variable "subnets" {
+  type        = list(string)
   nullable    = false
+  description = "The subnets for the VPC Endpoints."
+}
+
+variable "security_group_ids" {
+  type        = list(string)
+  nullable    = false
+  description = "The security group ids for the vpc endpoints."
 }

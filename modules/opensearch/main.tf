@@ -18,7 +18,7 @@ resource "aws_elasticsearch_domain" "es" {
     instance_count         = var.instance_count
     zone_awareness_enabled = true
     zone_awareness_config {
-      availability_zone_count = 3
+      availability_zone_count = min(length(var.subnet_ids), var.instance_count)
     }
   }
 

@@ -65,12 +65,9 @@ module "eks" {
     cluster_name                    = var.deployment_id
     cluster_version                 = var.eks_cluster_version
     subnet_ids                      = var.subnet_ids
-    iam_role_additional_policies = {
-      # AmazonEBSCSIDriverPolicy is required by Kots
-      # AmazonAPIGatewayPushToCloudWatchLogs is required to send logs to CLoudWatch
-      AmazonEBSCSIDriverPolicy             = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      AmazonAPIGatewayPushToCloudWatchLogs = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
-    }
+    create_iam_role                 = false
+    iam_role_arn                    = var.nodegroup_iam_role_arn
+
 
     metadata_options = {
       http_endpoint               = "enabled"
@@ -613,37 +610,6 @@ module "eks" {
   }
 }
 
-
-
-# Policy to Allow Minio Nodegroup to aceess the S3 Buckets
-resource "aws_iam_policy" "ast_s3_buckets_policy" {
-  name = "${var.deployment_id}-eks-ng-minio-gateway-S3"
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Action" : [
-          "s3:*"
-        ],
-        "Effect" : "Allow",
-        "Resource" : [
-          "arn:aws:s3:::*${lower(var.s3_bucket_name_suffix)}",
-          "arn:aws:s3:::*${lower(var.s3_bucket_name_suffix)}/*"
-        ]
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "ast_s3_buckets_policy_attachment" {
-  role       = module.eks.eks_managed_node_groups.minio.iam_role_name
-  policy_arn = aws_iam_policy.ast_s3_buckets_policy.arn
-}
-
-resource "aws_iam_role_policy_attachment" "ast_defaultnodegroup_s3_buckets_policy_attachment" {
-  role       = module.eks.eks_managed_node_groups.default.iam_role_name
-  policy_arn = aws_iam_policy.ast_s3_buckets_policy.arn
-}
 
 
 # Set GP3 as the default storage class

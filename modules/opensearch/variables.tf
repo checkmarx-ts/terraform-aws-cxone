@@ -32,7 +32,7 @@ variable "instance_type" {
 }
 
 variable "instance_count" {
-  default = 3
+  default = 2
   type    = number
 }
 

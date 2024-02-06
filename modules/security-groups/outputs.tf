@@ -18,4 +18,8 @@ output "opensearch" {
   value = aws_security_group.opensearch.id
 }
 
+output "vpc_endpoints" {
+  value = aws_security_group.vpc_endpoints.id
+}
+
 

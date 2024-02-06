@@ -58,7 +58,7 @@ variable "node_security_group_id" {
 variable "default_security_group_ids" {
   description = "A list of security group ids to add to all managed node group nodes by default."
   type        = list(string)
-  default = []
+  default     = []
 }
 
 variable "cluster_access_iam_role_arn" {
@@ -720,7 +720,7 @@ variable "dast_nodes" {
 }
 
 
-variable "s3_bucket_name_suffix" {
-  description = "The suffix of the S3 buckets that Minio will manage."
+variable "nodegroup_iam_role_arn" {
+  description = "The ARN to the IAM role for the EKS nodes."
   nullable    = false
 }

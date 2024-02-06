@@ -21,3 +21,7 @@ output "database_subnets" {
 output "firewall_subnets" {
   value = aws_subnet.firewall.*.id
 }
+
+output "database_subnet_group_name" {
+  value = aws_db_subnet_group.postgres.id
+}

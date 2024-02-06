@@ -1,8 +1,43 @@
+data "aws_region" "current" {}
+
+# Use this version of the VPC module to deploy a VPC without firewall
+# module "vpc" {
+#   source        = "./modules/vpc"
+#   deployment_id = var.deployment_id
+#   vpc_cidr      = var.vpc_cidr
+# }
+
+# This version of the VPC module uses AWS Network Firewall to provide egress filtering of the CxOne deployment.
 module "vpc" {
-  source        = "./modules/vpc"
+  source = "./modules/vpc-with-firewall"
+
   deployment_id = var.deployment_id
   vpc_cidr      = var.vpc_cidr
+  maximum_azs   = 2
 }
+
+
+module "vpc_endpoints" {
+  source = "./modules/vpc-endpoints"
+
+  deployment_id      = var.deployment_id
+  vpc_id             = module.vpc.vpc_id
+  subnets            = module.vpc.private_subnets
+  security_group_ids = [module.security_groups.vpc_endpoints]
+}
+
+
+
+# module "bastion" {
+#   source = "./modules/bastion-host"
+
+#   deployment_id           = var.deployment_id
+#   subnet_id               = module.vpc.private_subnets[0]
+#   key_name                = "fdo"                # The EC2 keypair name to access the server with
+#   remote_management_cidrs = ["45.30.164.210/32"] # Enter your IP address here, if you will use this server.
+# }
+
+
 
 module "security_groups" {
   source        = "./modules/security-groups"
@@ -11,9 +46,11 @@ module "security_groups" {
   vpc_cidr      = module.vpc.vpc_cidr_block
 }
 
+
+
 # The security groups module will configure the required VPC Internal rules only. It will not allow EKS node egress to the internet. 
 # This egress rule is added below in the project so that it can be customized.
-# Access to the internet is required for online installations (image pulling), and some application features (e.g. integration with other tools) require internet connectivity as well.
+# Access to the internet is required for online installations (image pulling), and some application features (e.g. integration with other tools, AWS API access) require internet connectivity
 resource "aws_security_group_rule" "node_egress_all" {
   description       = "All protocols"
   type              = "egress"
@@ -24,68 +61,6 @@ resource "aws_security_group_rule" "node_egress_all" {
   security_group_id = module.security_groups.eks_node
 }
 
-
-# Allow image pulls from checkmarx.jfrog.io. For use by Checkmarx internal labs or in rare cases when images are pulled directly from Checkmarx's Artifactory.
-# Most images are pulled from the replicated proxy, which has rules below. 
-# Reference https://jfrog.com/help/r/what-are-artifactory-cloud-nated-ips
-resource "aws_security_group_rule" "checkmarx_jfrog_io" {
-  description       = "Allow image pulls from checkmarx.jfrog.io"
-  type              = "egress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["54.73.4.50/32", "34.246.139.145/32", "34.247.22.236/32"]
-  security_group_id = module.security_groups.eks_node
-}
-
-# Replicated services - required for online installation.
-# Reference https://docs.replicated.com/enterprise/installing-general-requirements
-resource "aws_security_group_rule" "replicated_services" {
-  description       = "Allow image pulls from proxy.replicated.com and replicated api"
-  type              = "egress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["162.159.137.43/32", "162.159.138.43/32", "162.159.133.41/32", "162.159.134.41/32"]
-  security_group_id = module.security_groups.eks_node
-}
-
-# SCA API - required for SCA Scanning.
-# Reference https://checkmarx.com/resource/documents/en/34965-19103-connectivity-to-checkmarx-sca-cloud.html
-resource "aws_security_group_rule" "sca_us_environment" {
-  description       = "Allow connection to sca-api.checkmarx.net (US Environment)"
-  type              = "egress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["3.163.101.20/32", "3.163.101.86/32", "3.163.101.52/32", "3.163.101.98/32"]
-  security_group_id = module.security_groups.eks_node
-}
-
-resource "aws_security_group_rule" "sca_eu_environment" {
-  description       = "Allow connection to sca-api.checkmarx.net (EU Environment)"
-  type              = "egress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["3.161.163.9/32", "3.161.163.101/32", "3.161.163.106/32", "3.161.163.94/32"]
-  security_group_id = module.security_groups.eks_node
-}
-
-resource "aws_security_group_rule" "codebashing_api" {
-  description       = "Allow connection to api.codebashing.com"
-  type              = "egress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["54.246.53.245/32", "108.128.155.15/32", "54.77.213.21/32"]
-  security_group_id = module.security_groups.eks_node
-}
-
-
-
-
-
 module "kms" {
   source = "./modules/kms"
 }
@@ -95,6 +70,7 @@ module "iam" {
 
   deployment_id              = var.deployment_id
   administrator_iam_role_arn = var.administrator_iam_role_arn
+  s3_bucket_name_suffix      = module.s3.s3_bucket_name_suffix
 }
 
 
@@ -114,8 +90,7 @@ module "eks_cluster" {
   cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
   cluster_security_group_id   = module.security_groups.eks_cluster
   node_security_group_id      = module.security_groups.eks_node
-  s3_bucket_name_suffix       = module.s3.s3_bucket_name_suffix
-
+  nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
 }
 
 module "cluster-externaldns" {
@@ -151,7 +126,7 @@ module "rds" {
   db_subnet_group_name = module.vpc.database_subnet_group_name
   security_group_ids   = [module.security_groups.rds]
   database_name        = "ast"
-  database_password    = local.db_password
+  database_password    = random_password.rds_password
   database_username    = "ast"
   kms_key_arn          = module.kms.eks_kms_key_arn
 }
@@ -166,13 +141,13 @@ module "elasticache" {
   subnet_ids         = module.vpc.private_subnets
 }
 
-#module "opensearch" {
-#  source             = "./modules/opensearch"
-#  deployment_id      = var.deployment_id
-#  subnet_ids         = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
-#  security_group_ids = [module.security_groups.opensearch]
-#  password           = local.db_password
-#}
+module "opensearch" {
+  source             = "./modules/opensearch"
+  deployment_id      = var.deployment_id
+  subnet_ids         = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
+  security_group_ids = [module.security_groups.opensearch]
+  password           = random_password.rds_password
+}
 
 module "acm" {
   source = "./modules/acm"
@@ -190,7 +165,7 @@ module "ses" {
   deployment_id = var.deployment_id
 }
 
-data "aws_region" "current" {}
+
 
 resource "local_file" "kots_config" {
   content = templatefile("./kots.config.tftpl", {
@@ -245,8 +220,8 @@ resource "local_file" "kots_config" {
     smtp_from_sender = var.SMTP_from_sender
 
     # Elasticsearch
-    elasticsearch_host     = "NOT_IMPLEMENTED" #module.opensearch.endpoint
-    elasticsearch_password = "NOT_IMPLEMENTED" #
+    elasticsearch_host     = module.opensearch.endpoint
+    elasticsearch_password = local.db_password
 
 
   })
@@ -259,5 +234,3 @@ resource "local_file" "install_sh" {
   })
   filename = "${path.module}/install.${var.deployment_id}.sh"
 }
-
-
