@@ -3,11 +3,6 @@
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
-resource "aws_iam_service_linked_role" "opensearch" {
-  aws_service_name = "opensearchservice.amazonaws.com"
-}
-
-
 
 resource "aws_elasticsearch_domain" "es" {
   domain_name           = var.deployment_id
@@ -99,5 +94,4 @@ CONFIG
     Domain = var.deployment_id
   }
 
-  depends_on = [aws_iam_service_linked_role.opensearch]
 }
