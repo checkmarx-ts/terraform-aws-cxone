@@ -126,7 +126,7 @@ module "rds" {
   db_subnet_group_name = module.vpc.database_subnet_group_name
   security_group_ids   = [module.security_groups.rds]
   database_name        = "ast"
-  database_password    = random_password.rds_password
+  database_password    = random_password.rds_password.result
   database_username    = "ast"
   kms_key_arn          = module.kms.eks_kms_key_arn
 }
@@ -146,7 +146,7 @@ module "opensearch" {
   deployment_id      = var.deployment_id
   subnet_ids         = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
   security_group_ids = [module.security_groups.opensearch]
-  password           = random_password.rds_password
+  password           = random_password.rds_password.result
 }
 
 module "acm" {
