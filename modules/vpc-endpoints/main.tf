@@ -9,6 +9,10 @@ resource "aws_vpc_endpoint" "ec2" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+
+  tags = {
+    Name = "${var.deployment_id}-ec2"
+  }
 }
 
 resource "aws_vpc_endpoint" "ecr_api" {
@@ -20,6 +24,10 @@ resource "aws_vpc_endpoint" "ecr_api" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+
+  tags = {
+    Name = "${var.deployment_id}-ecr-api"
+  }
 }
 
 # https://docs.aws.amazon.com/eks/latest/userguide/add-ons-images.html
@@ -32,6 +40,9 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+  tags = {
+    Name = "${var.deployment_id}-ecr-dkr"
+  }
 }
 
 resource "aws_vpc_endpoint" "ssm" {
@@ -43,6 +54,9 @@ resource "aws_vpc_endpoint" "ssm" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+  tags = {
+    Name = "${var.deployment_id}-ssm"
+  }
 }
 
 resource "aws_vpc_endpoint" "ssmmessages" {
@@ -54,6 +68,9 @@ resource "aws_vpc_endpoint" "ssmmessages" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+  tags = {
+    Name = "${var.deployment_id}-ssmmessages"
+  }
 }
 
 resource "aws_vpc_endpoint" "ec2messages" {
@@ -65,6 +82,9 @@ resource "aws_vpc_endpoint" "ec2messages" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+  tags = {
+    Name = "${var.deployment_id}-ec2messages"
+  }
 }
 
 resource "aws_vpc_endpoint" "kms" {
@@ -76,6 +96,9 @@ resource "aws_vpc_endpoint" "kms" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+  tags = {
+    Name = "${var.deployment_id}-kms"
+  }
 }
 
 resource "aws_vpc_endpoint" "logs" {
@@ -87,6 +110,9 @@ resource "aws_vpc_endpoint" "logs" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+  tags = {
+    Name = "${var.deployment_id}-logs"
+  }
 }
 
 resource "aws_vpc_endpoint" "sts" {
@@ -98,6 +124,9 @@ resource "aws_vpc_endpoint" "sts" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+  tags = {
+    Name = "${var.deployment_id}-sts"
+  }
 }
 
 resource "aws_vpc_endpoint" "elasticloadbalancing" {
@@ -109,6 +138,9 @@ resource "aws_vpc_endpoint" "elasticloadbalancing" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+  tags = {
+    Name = "${var.deployment_id}-elasticloadbalancing"
+  }
 }
 
 # Used by Cluster Autoscaler
@@ -121,6 +153,9 @@ resource "aws_vpc_endpoint" "autoscaling" {
   security_group_ids = var.security_group_ids
 
   private_dns_enabled = true
+  tags = {
+    Name = "${var.deployment_id}-autoscaling"
+  }
 }
 
 resource "aws_vpc_endpoint" "s3" {
@@ -128,4 +163,7 @@ resource "aws_vpc_endpoint" "s3" {
   vpc_id            = var.vpc_id
   service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
   vpc_endpoint_type = "Gateway"
+  tags = {
+    Name = "${var.deployment_id}-s3"
+  }
 }
