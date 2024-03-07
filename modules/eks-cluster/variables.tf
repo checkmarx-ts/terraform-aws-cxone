@@ -522,8 +522,8 @@ variable "sca_nodes" {
 
   default = {
     name            = "sca"
-    min_size        = 3
-    desired_size    = 3
+    min_size        = 1
+    desired_size    = 1
     max_size        = 3
     instance_types  = ["c5.2xlarge"]
     disk_size_gib   = 200
@@ -724,3 +724,22 @@ variable "nodegroup_iam_role_arn" {
   description = "The ARN to the IAM role for the EKS nodes."
   nullable    = false
 }
+
+variable "launch_template_tags" {
+  type        = map(string)
+  description = "Tags to associate with launch templates for node groups"
+  default     = null
+}
+
+variable "additional_node_security_group_ids" {
+  type        = list(string)
+  description = "Additional security group ids to add to node group instances."
+  default     = []
+}
+
+variable "ec2_key_name" {
+  type        = string
+  description = "The keyname that should be used for the instances."
+  default     = null
+}
+

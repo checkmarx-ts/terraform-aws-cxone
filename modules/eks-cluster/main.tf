@@ -62,11 +62,15 @@ module "eks" {
     use_name_prefix                 = false
     iam_role_use_name_prefix        = false
     launch_template_use_name_prefix = false
+    launch_template_tags            = var.launch_template_tags
     cluster_name                    = var.deployment_id
     cluster_version                 = var.eks_cluster_version
     subnet_ids                      = var.subnet_ids
     create_iam_role                 = false
     iam_role_arn                    = var.nodegroup_iam_role_arn
+
+    vpc_security_group_ids = var.additional_node_security_group_ids
+    key_name               = var.ec2_key_name
 
 
     metadata_options = {
