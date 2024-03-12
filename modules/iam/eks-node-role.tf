@@ -1,25 +1,26 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # IAM Role for the EKS Nodegroup nodes
 # ---------------------------------------------------------------------------------------------------------------------
+data "aws_partition" "current" {}
 
 data "aws_iam_policy" "AmazonEBSCSIDriverPolicy" {
-  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 data "aws_iam_policy" "AmazonAPIGatewayPushToCloudWatchLogs" {
-  arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+  arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
 }
 data "aws_iam_policy" "AmazonEKS_CNI_Policy" {
-  arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 data "aws_iam_policy" "AmazonEKSWorkerNodePolicy" {
-  arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 data "aws_iam_policy" "AmazonSSMManagedInstanceCore" {
-  arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 data "aws_iam_policy" "AmazonEC2ContainerRegistryReadOnly" {
-  arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
 
@@ -69,8 +70,8 @@ resource "aws_iam_policy" "ast_s3_buckets_policy" {
         ],
         "Effect" : "Allow",
         "Resource" : [
-          "arn:aws:s3:::*${lower(var.s3_bucket_name_suffix)}",
-          "arn:aws:s3:::*${lower(var.s3_bucket_name_suffix)}/*"
+          "arn:${data.aws_partition.current.partition}:s3:::*${lower(var.s3_bucket_name_suffix)}",
+          "arn:${data.aws_partition.current.partition}:s3:::*${lower(var.s3_bucket_name_suffix)}/*"
         ]
       }
     ]

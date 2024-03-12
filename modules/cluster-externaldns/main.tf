@@ -2,7 +2,7 @@
 # AWS IAM POLICY FOR EXTERNAL DNS
 
 data "aws_region" "current" {}
-
+data "aws_partition" "current" {}
 resource "aws_iam_policy" "external-dns-policy" {
   name        = "${var.deployment_id}-external-dns-${data.aws_region.current.name}"
   description = "external dns Policy for ${var.deployment_id}"
@@ -16,7 +16,7 @@ resource "aws_iam_policy" "external-dns-policy" {
                 "route53:ChangeResourceRecordSets"
             ],
             "Resource": [
-                "arn:aws:route53:::hostedzone/*"
+                "arn:${data.aws_partition.current.partition}:route53:::hostedzone/*"
             ]
         },
         {

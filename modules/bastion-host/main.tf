@@ -13,6 +13,8 @@ data "aws_ami" "amazon_linux_23" {
   }
 }
 
+data "aws_partition" "current" {}
+
 module "ec2_instance" {
   source = "terraform-aws-modules/ec2-instance/aws"
 
@@ -32,7 +34,7 @@ module "ec2_instance" {
   create_iam_instance_profile = true
   iam_role_description        = "IAM role for EC2 instance"
   iam_role_policies = {
-    AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+    AmazonSSMManagedInstanceCore = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
 
   tags = {
