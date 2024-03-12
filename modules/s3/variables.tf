@@ -21,3 +21,9 @@ variable "s3_bucket_versioning_status" {
   description = "S3 Bucket versioning Status"
   default     = "Disabled"
 }
+
+
+variable "cors_allowed_origins" {
+  type        = list(string)
+  description = "The list of allowed origins for Cross Origin Request Sharing (CORS)"
+}

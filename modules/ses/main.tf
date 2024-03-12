@@ -26,6 +26,8 @@ resource "aws_iam_group_policy" "cxone_ses_group_policy" {
   name  = "cxone_ses_group_policy"
   group = module.ses.ses_group_name
 
+  depends_on = [module.ses]
+
   policy = jsonencode({
     Version : "2012-10-17"
     Statement : [

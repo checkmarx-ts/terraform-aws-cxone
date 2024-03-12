@@ -65,6 +65,8 @@ resource "aws_subnet" "public" {
   cidr_block        = element(local.public_subnets, count.index)
   availability_zone = element(local.aws_azs, count.index)
 
+  map_public_ip_on_launch = true
+
   tags = {
     Name                                         = "Public subnet ${count.index + 1} - ${var.deployment_id}"
     "kubernetes.io/cluster/${var.deployment_id}" = "shared"

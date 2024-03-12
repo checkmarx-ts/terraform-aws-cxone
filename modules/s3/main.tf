@@ -121,6 +121,14 @@ module "s3_bucket" {
     }
   ]
 
+  cors_rule = [
+    {
+      allowed_headers = ["*"]
+      allowed_methods = ["GET", "PUT", "POST", "HEAD"]
+      allowed_origins = var.cors_allowed_origins
+    }
+  ]
+
   control_object_ownership              = true
   block_public_acls                     = true
   block_public_policy                   = true

@@ -9,22 +9,22 @@ variable "deployment_id" {
 }
 
 variable "subnet_id" {
-    description = "The subnet to deploy the bastion host into."
-    type = string
+  description = "The subnet to deploy the bastion host into."
+  type        = string
 }
 
 variable "instance_type" {
-    description = "The instance type of the bastion host."
-    type = string
-    default = "t3.medium"
+  description = "The instance type of the bastion host."
+  type        = string
+  default     = "t3.medium"
 }
 
 variable "key_name" {
-    description = "The ec2 key pair name for the bastion host."
-    type = string
+  description = "The ec2 key pair name for the bastion host."
+  type        = string
 }
 
 variable "remote_management_cidrs" {
-    description = "The cidrs to allow remote management ingress from"
-    type = list(string)
+  description = "The cidrs to allow remote management ingress from"
+  type        = list(string)
 }

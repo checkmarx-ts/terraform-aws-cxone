@@ -1,4 +1,3 @@
-# pass tls $HOME_NET any -> $EXTERNAL_NET any (tls.sni; content:"."; pcre:"/^amazonlinux-2-repos(.*?)\.s3\.dualstack\.(.*?)\.amazonaws.com$/i"; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:6; rev:1;)
 # Amazon Linux 2 managed node group updates - region dependent
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"amazonlinux-2-repos-us-west-2.s3.dualstack.us-west-2.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:22; rev:1;)
 
@@ -31,8 +30,11 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"sdk.split.io"; st
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"auth.split.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:56; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"telemetry.split.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:57; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"streaming.split.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:58; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"events.split.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:581; rev:1;)
+
 
 # Traefik
+alert tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:".traefik.io"; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:601; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"update.traefik.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:60; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"collect.traefik.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:61; rev:1;)
 
@@ -40,6 +42,7 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"collect.traefik.i
 pass http $HOME_NET any -> $EXTERNAL_NET 80 (http.host; content:"www.liquibase.org"; startswith; endswith; msg:"Match liquidbase.com allowed"; priority:1; flow:to_server, established; sid:62; rev:1;)
 
 # SCA Containers ES
+alert tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cx-sca-containers.es.us-east-1.aws.found.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:631; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cx-sca-containers.es.us-east-1.aws.found.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:63; rev:1;)
 
 # Minio Gateway
@@ -64,21 +67,52 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"gcr.io"; startswi
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"subnet.min.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:74; rev:1;)
 
 #checkmarx jfrog
+alert tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"checkmarx.jfrog.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:751; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"checkmarx.jfrog.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:75; rev:1;)
 
 #github integrations
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.github.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:76; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"github.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:80; rev:1;)
+#alert tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.github.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:76; rev:1;)
+alert tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:".github.com"; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:1080; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:".github.com"; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:1081; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"github.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:11081; rev:1;)
+
 
 # aws shield us-east-1
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"shield.us-east-1.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:77; rev:1;)
+alert tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"shield.us-east-1.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:77; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"shield.us-east-1.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:771; rev:1;)
+
+# SCA Connectivity
+#alert tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"iam.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:801; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"iam.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:802; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api-sca.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:803; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eu.iam.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:804; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eu.api-sca.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:805; rev:1;)
+
+
+# Fastly
+#alert tcp $HOME_NET any -> [151.101.0.0/16] 443 (msg:"Fastly"; priority:1; sid:6711; rev:1;)
+#pass tcp $HOME_NET any -> [151.101.0.0/16] 443 (msg:"Fastly"; priority:1; sid:671; rev:1;)
+
+# SMTP TO AWS SES, based on "nslookup nslookup email-smtp.us-west-2.amazonaws.com"
+pass tcp $HOME_NET any -> [44.225.148.59/32,52.13.3.84/32,54.185.234.152/32] 587 (msg:"AWS SES us-west-2"; priority:1; sid:672; rev:1;)
 
 # minio
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"dl.min.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:78; rev:1;)
 pass tcp $HOME_NET any -> [138.68.11.125] 443 (msg:"TCP to dl-1.min.io"; priority:1; sid:79; rev:1;)
+pass tcp $HOME_NET any -> [178.128.69.202] 443 (msg:"TCP to dl-0.min.io"; priority:1; sid:90; rev:1;)
 
 # If you're not using the VPC endpoints, then .amazonaws.com is going to be required.
 # pass tls $HOME_NET any -> $EXTERNAL_NET any (tls.sni; dotprefix; content:".amazonaws.com"; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:32; rev:1;)
+
+# Metrics Server
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"registry.k8s.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:87; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"us-west1-docker.pkg.dev"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:88; rev:1;)
+
+# Chainguard images
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cgr.dev"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:1187; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:".cloudflarestorage.com";  nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:1188; rev:1;)
+
+
 
 
 # HTTP Example

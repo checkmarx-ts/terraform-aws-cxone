@@ -14,14 +14,14 @@ data "aws_ami" "amazon_linux_23" {
 }
 
 module "ec2_instance" {
-  source  = "terraform-aws-modules/ec2-instance/aws"
+  source = "terraform-aws-modules/ec2-instance/aws"
 
-  name = "${var.deployment_id}-bastion"
-  ami = data.aws_ami.amazon_linux_23.id
+  name                   = "${var.deployment_id}-bastion"
+  ami                    = data.aws_ami.amazon_linux_23.id
   instance_type          = var.instance_type
   key_name               = var.key_name
   monitoring             = false
-  vpc_security_group_ids = [ module.security_group.security_group_id]
+  vpc_security_group_ids = [module.security_group.security_group_id]
   subnet_id              = var.subnet_id
 
   user_data = <<-EOT
