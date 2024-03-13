@@ -52,8 +52,6 @@ module "eks" {
       username = "AWSAdministratorAccess:{{SessionName}}"
       groups   = ["system:masters"]
     },
-
-    #Ryan added this auth role for karpenter controller role to access cluster
     {
       rolearn  = module.karpenter.iam_role_arn
       username = "system:node:{{EC2PrivateDNSName}}"
@@ -92,8 +90,8 @@ module "eks" {
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
-    create_launch_template          = false #Ryan set this to false to work with Karpenter
-    use_custom_launch_template      = false #Ryan set this to false to work with Karpenter
+    create_launch_template          = false 
+    use_custom_launch_template      = false 
     vpc_security_group_ids          = var.default_security_group_ids
     use_name_prefix                 = false
     iam_role_use_name_prefix        = false
@@ -114,7 +112,7 @@ module "eks" {
   }
 
   eks_managed_node_groups = {
-    #Ryan modified default nodegroup for karpenter
+    
     default = {
       name                 = "Karpenter"
       min_size             = 2
@@ -282,7 +280,7 @@ resource "kubectl_manifest" "default_nodepool" {
               values: ["linux"]
             - key: karpenter.sh/capacity-type
               operator: In
-              values: ["on-demand"]
+              values: ["spot"]
             - key: karpenter.k8s.aws/instance-category
               operator: In
               values: ["c", "m", "r"]
