@@ -2,6 +2,9 @@ resource "aws_security_group" "eks_cluster" {
   name        = "eks-cluster-${var.deployment_id}-sg"
   description = "EKS Cluster security group for Checkmarx One deployment called ${var.deployment_id}."
   vpc_id      = var.vpc_id
+  tags = {
+    "karpenter.sh/discovery" = "${var.deployment_id}"
+  }
 }
 
 resource "aws_security_group_rule" "node_ingress_cluster_api" {

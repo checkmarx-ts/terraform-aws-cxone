@@ -28,7 +28,8 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name = "Checkmarx One - ${var.deployment_id}"
+    Name                     = "Checkmarx One - ${var.deployment_id}"
+    "karpenter.sh/discovery" = "${var.deployment_id}"
   }
 }
 
@@ -39,7 +40,8 @@ resource "aws_subnet" "firewall" {
   availability_zone = element(local.aws_azs, count.index)
 
   tags = {
-    Name = "Firewall subnet ${count.index + 1} - ${var.deployment_id}"
+    Name                     = "Firewall subnet ${count.index + 1} - ${var.deployment_id}"
+    "karpenter.sh/discovery" = "${var.deployment_id}"
   }
 }
 
@@ -53,6 +55,7 @@ resource "aws_subnet" "private" {
     Name                                         = "Private subnet ${count.index + 1} - ${var.deployment_id}"
     "kubernetes.io/cluster/${var.deployment_id}" = "shared"
     "kubernetes.io/role/internal-elb"            = "1"
+    "karpenter.sh/discovery"                     = "${var.deployment_id}"
   }
 }
 
@@ -66,6 +69,7 @@ resource "aws_subnet" "public" {
     Name                                         = "Public subnet ${count.index + 1} - ${var.deployment_id}"
     "kubernetes.io/cluster/${var.deployment_id}" = "shared"
     "kubernetes.io/role/elb"                     = "1"
+    "karpenter.sh/discovery"                     = "${var.deployment_id}"
   }
 }
 
@@ -76,7 +80,8 @@ resource "aws_subnet" "database" {
   availability_zone = element(local.aws_azs, count.index)
 
   tags = {
-    Name = "Database subnet ${count.index + 1} - ${var.deployment_id}"
+    Name                     = "Database subnet ${count.index + 1} - ${var.deployment_id}"
+    "karpenter.sh/discovery" = "${var.deployment_id}"
   }
 }
 

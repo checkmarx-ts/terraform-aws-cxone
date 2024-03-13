@@ -36,11 +36,13 @@ module "vpc" {
   enable_dns_support   = true
 
   public_subnet_tags = {
+    "karpenter.sh/discovery"                     = "${var.deployment_id}"
     "kubernetes.io/cluster/${var.deployment_id}" = "shared"
     "kubernetes.io/role/elb"                     = "1"
   }
 
   private_subnet_tags = {
+    "karpenter.sh/discovery"                     = "${var.deployment_id}"
     "kubernetes.io/cluster/${var.deployment_id}" = "shared"
     "kubernetes.io/role/internal-elb"            = "1"
   }

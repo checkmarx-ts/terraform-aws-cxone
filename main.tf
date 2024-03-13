@@ -93,6 +93,20 @@ module "eks_cluster" {
   nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
 }
 
+module "karpenter" {
+  source = "./modules/karpenter"
+
+  deployment_id               = var.deployment_id
+  vpc_id                      = module.vpc.vpc_id
+  subnet_ids                  = module.vpc.private_subnets
+  eks_kms_key_arn             = module.kms.eks_kms_key_arn
+  cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
+  cluster_security_group_id   = module.security_groups.eks_cluster
+  node_security_group_id      = module.security_groups.eks_node
+  nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
+  nodegroup_iam_role_name     = module.iam.eks_nodes_iam_role_name
+}
+
 module "cluster-externaldns" {
   source = "./modules/cluster-externaldns"
 
