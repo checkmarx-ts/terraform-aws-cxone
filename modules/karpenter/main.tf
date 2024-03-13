@@ -232,7 +232,7 @@ module "karpenter" {
 
   cluster_name                    = var.deployment_id
   enable_irsa                     = true
-  irsa_oidc_provider_arn          = module.karpenter.oidc_provider_arn
+  irsa_oidc_provider_arn          = module.eks.oidc_provider_arn
   irsa_namespace_service_accounts = ["kube-system:karpenter"]
   create_iam_role                 = true
   iam_role_name                   = "KarpenterController-${var.deployment_id}"
