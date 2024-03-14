@@ -57,7 +57,7 @@ module "eks" {
       username = "system:node:{{EC2PrivateDNSName}}"
       groups = [
         "system:bootstrappers",
-        "system:nodes",
+        "system:nodes"
       ]
     }
   ]
@@ -237,6 +237,7 @@ module "karpenter" {
   iam_role_description            = "I am role for karpenter controller created by karpenter module"
   create_node_iam_role            = false
   node_iam_role_arn               = var.nodegroup_iam_role_arn
+  create_access_entry             = false
   iam_policy_name                 = "KarpenterPolicy-${var.deployment_id}"
   iam_policy_description          = "Karpenter controller IAM policy created by karpenter module"
 
