@@ -6,6 +6,7 @@ data "aws_eks_cluster" "cluster" {
 }
 
 module "cluster-externaldns" {
+  depends_on = [module.eks]
   source = "../cluster-externaldns"
 
   deployment_id     = var.deployment_id
@@ -13,6 +14,7 @@ module "cluster-externaldns" {
 }
 
 module "cluster-loadbalancer" {
+  depends_on = [module.eks]
   source = "../cluster-loadbalancer"
 
   deployment_id     = var.deployment_id
@@ -114,7 +116,7 @@ module "eks" {
   eks_managed_node_groups = {
     
     default = {
-      name                 = "Karpenter"
+      name                 = "${var.deployment_id}-managed-ng"
       min_size             = 2
       max_size             = 2
       desired_size         = 2
@@ -190,6 +192,7 @@ resource "kubernetes_annotations" "gp2" {
 }
 
 resource "helm_release" "karpenter" {
+  depends_on = [module.eks]
   namespace  = "kube-system"
 
   repository = "oci://public.ecr.aws/karpenter"
@@ -218,7 +221,7 @@ resource "helm_release" "karpenter" {
   }
 
   set {
-    name  = "featureGates.SpotToSpotConsolidation"
+    name  = "settings.featureGates.spotToSpotConsolidation"
     value = true
   }
 }
@@ -281,7 +284,7 @@ resource "kubectl_manifest" "default_nodepool" {
               values: ["linux"]
             - key: karpenter.sh/capacity-type
               operator: In
-              values: ["spot"]
+              values: ["on-demand"]
             - key: karpenter.k8s.aws/instance-category
               operator: In
               values: ["c", "m", "r"]
