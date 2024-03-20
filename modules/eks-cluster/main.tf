@@ -566,6 +566,51 @@ module "eks" {
       }
     }
 
+    sca_source_resolver = {
+      name                 = var.sca_source_resolver_nodes.name
+      launch_template_name = "${var.sca_source_resolver_nodes.name}-${var.deployment_id}"
+      iam_role_name        = "${var.sca_source_resolver_nodes.name}-${var.deployment_id}"
+      min_size             = var.sca_source_resolver_nodes.min_size
+      max_size             = var.sca_source_resolver_nodes.max_size
+      desired_size         = var.sca_source_resolver_nodes.desired_size
+      instance_types       = var.sca_source_resolver_nodes.instance_types
+      capacity_type        = var.sca_source_resolver_nodes.capacity_type
+
+      block_device_mappings = {
+        xvda = {
+          device_name = var.sca_source_resolver_nodes.device_name
+          ebs = {
+            volume_size           = var.sca_source_resolver_nodes.disk_size_gib
+            volume_type           = var.sca_source_resolver_nodes.volume_type
+            iops                  = var.sca_source_resolver_nodes.disk_iops
+            throughput            = var.sca_source_resolver_nodes.disk_throughput
+            encrypted             = true
+            delete_on_termination = true
+          }
+        }
+      }
+
+      taints = {
+        dedicated = {
+          key    = var.sca_source_resolver_nodes.key
+          value  = var.sca_source_resolver_nodes.value
+          effect = var.sca_source_resolver_nodes.effect
+        }
+      }
+
+      labels = {
+        "${var.sca_source_resolver_nodes.label_name}" = "${var.sca_source_resolver_nodes.label_value}"
+      }
+
+      tags = {
+        Name = "${var.sca_source_resolver_nodes.name}-${var.deployment_id}"
+      }
+
+      lifecycle = {
+        ignore_changes = ["desired_capacity"]
+      }
+    }
+
     dast = {
       name                 = var.dast_nodes.name
       launch_template_name = "${var.dast_nodes.name}-${var.deployment_id}"
@@ -610,7 +655,6 @@ module "eks" {
         ignore_changes = ["desired_capacity"]
       }
     }
-
   }
 }
 

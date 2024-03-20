@@ -554,6 +554,62 @@ variable "sca_nodes" {
   description = "Configuration for the SCA nodes"
 }
 
+variable "sca_source_resolver_nodes" {
+  type = object({
+    name            = string
+    instance_types  = list(string)
+    min_size        = number
+    desired_size    = number
+    max_size        = number
+    capacity_type   = string
+    disk_size_gib   = number
+    disk_iops       = number
+    disk_throughput = number
+    device_name     = string
+    volume_type     = string
+    key             = string
+    value           = string
+    effect          = string
+    label_name      = string
+    label_value     = string
+  })
+
+  default = {
+    name            = "sca-source-resolver"
+    min_size        = 0
+    desired_size    = 0
+    max_size        = 3
+    instance_types  = ["m5.2xlarge"]
+    disk_size_gib   = 200
+    disk_iops       = 3000 # this should be the default
+    disk_throughput = 125  # this should be the default
+    capacity_type   = "ON_DEMAND"
+    device_name     = "/dev/xvda"
+    volume_type     = "gp3"
+    key             = "sca-source-resolver"
+    value           = "true"
+    effect          = "NO_SCHEDULE"
+    label_name      = "sca-source-resolver"
+    label_value     = "true"
+  }
+  validation {
+    condition     = var.sca_source_resolver_nodes.disk_size_gib >= 200
+    error_message = "You must provide at least 200 GiB per node."
+  }
+  validation {
+    condition     = alltrue([var.sca_source_resolver_nodes.disk_iops >= 3000, var.sca_source_resolver_nodes.disk_iops <= 16000])
+    error_message = "You must provide a value between 3000 and 16000."
+  }
+
+  validation {
+    condition     = alltrue([var.sca_source_resolver_nodes.disk_throughput >= 125, var.sca_source_resolver_nodes.disk_throughput <= 1000])
+    error_message = "You must provide a value between 125 and 1000."
+  }
+  description = "Configuration for the SCA nodes"
+}
+
+
+
 # METRICS
 variable "metrics_nodes" {
   type = object({

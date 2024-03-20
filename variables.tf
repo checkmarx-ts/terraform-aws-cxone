@@ -90,3 +90,21 @@ variable "SMTP_from_sender" {
   type        = string
   nullable    = false
 }
+
+variable "object_storage_url" {
+  description = "The s3 object storage url to use (region dependent) e.g. s3.us-west-2.amazonaws.com"
+  type        = string
+  nullable    = false
+}
+
+variable "object_storage_access_key" {
+  description = "The s3 object storage IAM user's access key."
+  type        = string
+  nullable    = false
+}
+
+variable "object_storage_secret_key" {
+  description = "The s3 object storage IAM user's secret key."
+  type        = string
+  nullable    = false
+}

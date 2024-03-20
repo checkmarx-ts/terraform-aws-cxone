@@ -1,0 +1,4 @@
+pass tcp $HOME_NET any -> any any (msg:"pass all tcp"; sid:1; rev:1;)
+pass udp $HOME_NET any -> any any (msg:"pass all tcp"; sid:2; rev:1;)
+pass tls $HOME_NET any -> any any (msg:"pass all tcp"; sid:3; rev:1;)
+pass http $HOME_NET any -> any any (msg:"pass all tcp"; sid:4; rev:1;)

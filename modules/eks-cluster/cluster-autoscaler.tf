@@ -319,6 +319,27 @@ resource "aws_autoscaling_group_tag" "sca_taint" {
   }
 }
 
+# SCA Source Resolver
+resource "aws_autoscaling_group_tag" "sca_source_resolver_label" {
+  depends_on             = [module.eks]
+  autoscaling_group_name = module.eks.eks_managed_node_groups.sca_source_resolver.node_group_autoscaling_group_names[0]
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/${var.sca_source_resolver_nodes.label_name}"
+    value               = var.sca_source_resolver_nodes.label_value
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_autoscaling_group_tag" "sca_source_resolvertaint" {
+  depends_on             = [module.eks]
+  autoscaling_group_name = module.eks.eks_managed_node_groups.sca_source_resolver.node_group_autoscaling_group_names[0]
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${var.sca_source_resolver_nodes.key}"
+    value               = "${var.sca_source_resolver_nodes.value}:${var.sca_source_resolver_nodes.effect}"
+    propagate_at_launch = true
+  }
+}
+
 # DAST
 resource "aws_autoscaling_group_tag" "dast_label" {
   depends_on             = [module.eks]

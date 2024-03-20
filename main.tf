@@ -24,18 +24,19 @@ module "vpc_endpoints" {
   vpc_id             = module.vpc.vpc_id
   subnets            = module.vpc.private_subnets
   security_group_ids = [module.security_groups.vpc_endpoints]
+  create_s3_endpoint = false
 }
 
 
 
-# module "bastion" {
-#   source = "./modules/bastion-host"
+module "bastion" {
+  source = "./modules/bastion-host"
 
-#   deployment_id           = var.deployment_id
-#   subnet_id               = module.vpc.private_subnets[0]
-#   key_name                = "fdo"                # The EC2 keypair name to access the server with
-#   remote_management_cidrs = ["45.30.164.210/32"] # Enter your IP address here, if you will use this server.
-# }
+  deployment_id           = var.deployment_id
+  subnet_id               = module.vpc.private_subnets[0]
+  key_name                = "fdo"                # The EC2 keypair name to access the server with
+  remote_management_cidrs = ["45.30.164.210/32"] # Enter your IP address here, if you will use this server.
+}
 
 
 
@@ -75,8 +76,9 @@ module "iam" {
 
 
 module "s3" {
-  source        = "./modules/s3"
-  deployment_id = var.deployment_id
+  source               = "./modules/s3"
+  deployment_id        = var.deployment_id
+  cors_allowed_origins = ["https://${var.subdomain}${var.domain}"]
 }
 
 
@@ -85,12 +87,14 @@ module "eks_cluster" {
 
   deployment_id               = var.deployment_id
   vpc_id                      = module.vpc.vpc_id
-  subnet_ids                  = module.vpc.private_subnets
+  subnet_ids                  = module.vpc.public_subnets
   eks_kms_key_arn             = module.kms.eks_kms_key_arn
   cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
   cluster_security_group_id   = module.security_groups.eks_cluster
   node_security_group_id      = module.security_groups.eks_node
   nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
+  ec2_key_name                = "fdo"
+
 }
 
 module "karpenter" {
@@ -123,7 +127,7 @@ module "cluster-loadbalancer" {
 
 
 resource "random_password" "rds_password" {
-  length           = 16
+  length           = 32
   special          = false
   override_special = "!*-_[]{}<>"
   min_special      = 0
@@ -131,6 +135,7 @@ resource "random_password" "rds_password" {
   min_lower        = 1
   min_numeric      = 1
 }
+
 
 module "rds" {
   source = "./modules/rds"
@@ -180,7 +185,6 @@ module "ses" {
 }
 
 
-
 resource "local_file" "kots_config" {
   content = templatefile("./kots.config.tftpl", {
     ast_tenant_name     = var.ast_tenant_name
@@ -189,8 +193,6 @@ resource "local_file" "kots_config" {
     admin_email         = var.cxone_admin_email
     domain              = "${var.subdomain}${var.domain}"
     acm_certificate_arn = module.acm.acm_certificate_arn
-
-
 
     # S3 buckets
     engine_logs_bucket          = module.s3.engine_logs_bucket_id
@@ -219,7 +221,7 @@ resource "local_file" "kots_config" {
     # RDS
     rds_endpoint               = module.rds.cluster_endpoint
     external_postgres_user     = module.rds.cluster_master_username
-    external_postgres_password = local.db_password
+    external_postgres_password = random_password.rds_password.result
     external_postgres_db       = module.rds.cluster_database_name
 
 
@@ -235,9 +237,11 @@ resource "local_file" "kots_config" {
 
     # Elasticsearch
     elasticsearch_host     = module.opensearch.endpoint
-    elasticsearch_password = local.db_password
+    elasticsearch_password = random_password.rds_password.result
 
-
+    object_storage_url        = var.object_storage_url
+    object_storage_access_key = var.object_storage_access_key
+    object_storage_secret_key = var.object_storage_secret_key
   })
   filename = "${path.module}/kots.${var.deployment_id}.yml"
 }

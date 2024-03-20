@@ -19,7 +19,7 @@ spec:
     deployment_type:
       value: cloud
     ms_replica_count:
-      value: "3"
+      value: "1"
     PROTOCOL:
       default: http
       value: https
@@ -154,3 +154,15 @@ spec:
       value: ast
     sca_global_inventory_elasticsearch_password:
       value: ${elasticsearch_password}
+    
+    object_storage_url:  #object storage endpoint
+      value: ${object_storage_url}
+    object_storage_schemeUrl: # object storage endpoint with scheme
+      value: https://${object_storage_url}
+    object_storage_access_key:
+      value: ${object_storage_access_key}
+    object_storage_secret_key:
+      value: ${object_storage_secret_key}
+    object_storage_secure: #object storage secure connection
+      value: "1"
+
