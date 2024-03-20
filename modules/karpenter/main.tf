@@ -7,7 +7,7 @@ data "aws_eks_cluster" "cluster" {
 
 module "cluster-externaldns" {
   depends_on = [module.eks]
-  source = "../cluster-externaldns"
+  source     = "../cluster-externaldns"
 
   deployment_id     = var.deployment_id
   oidc_provider_arn = module.eks.oidc_provider_arn
@@ -15,7 +15,7 @@ module "cluster-externaldns" {
 
 module "cluster-loadbalancer" {
   depends_on = [module.eks]
-  source = "../cluster-loadbalancer"
+  source     = "../cluster-loadbalancer"
 
   deployment_id     = var.deployment_id
   oidc_provider_arn = module.eks.oidc_provider_arn
@@ -92,8 +92,8 @@ module "eks" {
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
-    create_launch_template          = false 
-    use_custom_launch_template      = false 
+    create_launch_template          = false
+    use_custom_launch_template      = false
     vpc_security_group_ids          = var.default_security_group_ids
     use_name_prefix                 = false
     iam_role_use_name_prefix        = false
@@ -114,14 +114,14 @@ module "eks" {
   }
 
   eks_managed_node_groups = {
-    
+
     default = {
-      name                 = "${var.deployment_id}-managed-ng"
-      min_size             = 2
-      max_size             = 2
-      desired_size         = 2
-      instance_types       = ["c5.2xlarge"]
-      capacity_type        = "ON_DEMAND"
+      name           = "${var.deployment_id}-managed-ng"
+      min_size       = 2
+      max_size       = 2
+      desired_size   = 2
+      instance_types = ["c5.2xlarge"]
+      capacity_type  = "ON_DEMAND"
 
       block_device_mappings = {
         xvda = {
@@ -138,17 +138,17 @@ module "eks" {
       }
 
       labels = {
-           "kics-engine"             = "true"
-           "minio-gateway"           = "true"
-           "repostore"               = "true" 
-           "sast-engine"             = "true" 
-           "sast-engine-extra-large" = "true" 
-           "sast-engine-large"       = "true" 
-           "sast-engine-medium"      = "true" 
-           "sast-engine-xxl"         = "true"
+        "kics-engine"             = "true"
+        "minio-gateway"           = "true"
+        "repostore"               = "true"
+        "sast-engine"             = "true"
+        "sast-engine-extra-large" = "true"
+        "sast-engine-large"       = "true"
+        "sast-engine-medium"      = "true"
+        "sast-engine-xxl"         = "true"
       }
       tags = {
-        Name                   = var.deployment_id
+        Name                     = var.deployment_id
         "karpenter.sh/discovery" = var.deployment_id
       }
     }
@@ -244,7 +244,7 @@ module "karpenter" {
   iam_policy_name                 = "KarpenterPolicy-${var.deployment_id}"
   iam_policy_description          = "Karpenter controller IAM policy created by karpenter module"
 
-  
+
 
   iam_role_use_name_prefix = false
   node_iam_role_additional_policies = {
