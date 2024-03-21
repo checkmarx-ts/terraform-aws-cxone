@@ -113,7 +113,7 @@ resource "aws_security_group_rule" "node_egress_all_internal" {
   from_port         = -1
   to_port           = -1
   protocol          = "all"
-  cidr_blocks       = [var.vpc_cidr]
+  cidr_blocks       = local.internal_vpc_cidrs
   security_group_id = aws_security_group.eks_node.id
 }
 
@@ -123,7 +123,7 @@ resource "aws_security_group_rule" "node_ingress_all_internal" {
   from_port         = -1
   to_port           = -1
   protocol          = "all"
-  cidr_blocks       = [var.vpc_cidr]
+  cidr_blocks       = local.internal_vpc_cidrs
   security_group_id = aws_security_group.eks_node.id
 }
 

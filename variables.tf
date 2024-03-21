@@ -43,6 +43,13 @@ variable "vpc_cidr" {
   }
 }
 
+variable "secondary_vpc_cidr" {
+  description = "A secondary CIDR block for pods networking."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
 variable "administrator_iam_role_arn" {
   description = "The IAM role for the administrator group that will allow system administration (e.g. EKS master)"
   type        = string

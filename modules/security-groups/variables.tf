@@ -18,3 +18,10 @@ variable "vpc_cidr" {
   description = "The VPC CIDR"
   nullable    = false
 }
+
+variable "secondary_vpc_cidr" {
+  description = "A secondary CIDR block for pods networking."
+  type        = string
+  default     = null
+  nullable    = true
+}

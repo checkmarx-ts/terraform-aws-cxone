@@ -14,24 +14,33 @@ locals {
     data.aws_availability_zones.available.names[1],
     data.aws_availability_zones.available.names[2],
   ]
-  firewall_subnets = slice(cidrsubnets(var.vpc_cidr, 12, 12, 12, 6, 6, 6, 6, 6, 6, 3, 3, 3), 0, 3)  # /28 (14 hosts - only for firewall endpoints)
-  public_subnets   = slice(cidrsubnets(var.vpc_cidr, 12, 12, 12, 6, 6, 6, 6, 6, 6, 3, 3, 3), 3, 6)  # /22 (1,106 hosts)
-  database_subnets = slice(cidrsubnets(var.vpc_cidr, 12, 12, 12, 6, 6, 6, 6, 6, 6, 3, 3, 3), 6, 9)  # /22 (1,106 hosts)
-  private_subnets  = slice(cidrsubnets(var.vpc_cidr, 12, 12, 12, 6, 6, 6, 6, 6, 6, 3, 3, 3), 9, 12) # /19 (8,128 hosts)
+  firewall_subnets = slice(cidrsubnets(var.primary_vpc_cidr, 12, 12, 12, 6, 6, 6, 6, 6, 6, 3, 3, 3), 0, 3)                                            # /28 (14 hosts - only for firewall endpoints)
+  public_subnets   = slice(cidrsubnets(var.primary_vpc_cidr, 12, 12, 12, 6, 6, 6, 6, 6, 6, 3, 3, 3), 3, 6)                                            # /22 (1,106 hosts)
+  database_subnets = slice(cidrsubnets(var.primary_vpc_cidr, 12, 12, 12, 6, 6, 6, 6, 6, 6, 3, 3, 3), 6, 9)                                            # /22 (1,106 hosts)
+  private_subnets  = slice(cidrsubnets(var.primary_vpc_cidr, 12, 12, 12, 6, 6, 6, 6, 6, 6, 3, 3, 3), 9, 12)                                           # /19 (8,128 hosts)
+  pod_subnets      = var.secondary_vpc_cidr != null ? slice(cidrsubnets(var.secondary_vpc_cidr, 12, 12, 12, 6, 6, 6, 6, 6, 6, 3, 3, 3), 9, 12) : null # /19 (8,128 hosts)
 
   az_count = min(length(local.aws_azs), length(local.firewall_subnets), var.maximum_azs)
 }
 
 resource "aws_vpc" "main" {
-  cidr_block           = var.vpc_cidr
+  cidr_block           = var.primary_vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
 
   tags = {
-    Name                     = "Checkmarx One - ${var.deployment_id}"
+    Name                     = "${var.deployment_id} - Checkmarx One"
     "karpenter.sh/discovery" = "${var.deployment_id}"
   }
 }
+
+
+resource "aws_vpc_ipv4_cidr_block_association" "secondary_cidr" {
+  count      = var.secondary_vpc_cidr != null ? 1 : 0 # only create if secondary_vpc_cidr specified.
+  vpc_id     = aws_vpc.main.id
+  cidr_block = var.secondary_vpc_cidr
+}
+
 
 resource "aws_subnet" "firewall" {
   count             = local.az_count
@@ -40,7 +49,7 @@ resource "aws_subnet" "firewall" {
   availability_zone = element(local.aws_azs, count.index)
 
   tags = {
-    Name                     = "Firewall subnet ${count.index + 1} - ${var.deployment_id}"
+    Name                     = "${var.deployment_id} - Firewall subnet ${count.index + 1}"
     "karpenter.sh/discovery" = "${var.deployment_id}"
   }
 }
@@ -52,11 +61,24 @@ resource "aws_subnet" "private" {
   availability_zone = element(local.aws_azs, count.index)
 
   tags = {
-    Name                                         = "Private subnet ${count.index + 1} - ${var.deployment_id}"
+    Name                                         = "${var.deployment_id} - Private subnet ${count.index + 1}"
     "kubernetes.io/cluster/${var.deployment_id}" = "shared"
     "kubernetes.io/role/internal-elb"            = "1"
     "karpenter.sh/discovery"                     = "${var.deployment_id}"
   }
+}
+
+resource "aws_subnet" "pod" {
+  count             = var.secondary_vpc_cidr != null ? local.az_count : 0 # only create if secondary_vpc_cidr specified. 
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = element(local.pod_subnets, count.index)
+  availability_zone = element(local.aws_azs, count.index)
+
+  tags = {
+    Name                                         = "${var.deployment_id} - Pod subnet ${count.index + 1}"
+    "kubernetes.io/cluster/${var.deployment_id}" = "shared"
+  }
+  depends_on = [aws_vpc_ipv4_cidr_block_association.secondary_cidr]
 }
 
 resource "aws_subnet" "public" {
@@ -68,7 +90,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name                                         = "Public subnet ${count.index + 1} - ${var.deployment_id}"
+    Name                                         = "${var.deployment_id} - Public subnet ${count.index + 1}"
     "kubernetes.io/cluster/${var.deployment_id}" = "shared"
     "kubernetes.io/role/elb"                     = "1"
     "karpenter.sh/discovery"                     = "${var.deployment_id}"
@@ -288,7 +310,7 @@ resource "aws_networkfirewall_firewall_policy" "main" {
       rule_variables {
         key = "HOME_NET"
         ip_set {
-          definition = [var.vpc_cidr]
+          definition = [var.primary_vpc_cidr]
         }
       }
     }

@@ -11,6 +11,6 @@ resource "aws_security_group_rule" "ingress_opensearch_internal" {
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
-  cidr_blocks       = [var.vpc_cidr]
+  cidr_blocks       = local.internal_vpc_cidrs
   security_group_id = aws_security_group.opensearch.id
 }

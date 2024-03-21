@@ -11,6 +11,6 @@ resource "aws_security_group_rule" "ingress_elasticache_internal" {
   from_port         = 6379
   to_port           = 6379
   protocol          = "tcp"
-  cidr_blocks       = [var.vpc_cidr]
+  cidr_blocks       = local.internal_vpc_cidrs
   security_group_id = aws_security_group.elasticache.id
 }

@@ -586,8 +586,8 @@ variable "sca_source_resolver_nodes" {
     capacity_type   = "ON_DEMAND"
     device_name     = "/dev/xvda"
     volume_type     = "gp3"
-    key             = "sca-source-resolver"
-    value           = "true"
+    key             = "service"
+    value           = "sca-source-resolver"
     effect          = "NO_SCHEDULE"
     label_name      = "sca-source-resolver"
     label_value     = "true"
@@ -796,6 +796,15 @@ variable "additional_node_security_group_ids" {
 variable "ec2_key_name" {
   type        = string
   description = "The keyname that should be used for the instances."
+  default     = null
+}
+
+variable "pod_custom_networking_subnets" {
+  type = list(object({
+    availability_zone = string
+    subnet_id         = string
+  }))
+  description = "A list of subnet ids and availability zones for deploying pods into with custom networking."
   default     = null
 }
 

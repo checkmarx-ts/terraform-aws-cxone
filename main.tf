@@ -11,9 +11,10 @@ data "aws_region" "current" {}
 module "vpc" {
   source = "./modules/vpc-with-firewall"
 
-  deployment_id = var.deployment_id
-  vpc_cidr      = var.vpc_cidr
-  maximum_azs   = 2
+  deployment_id      = var.deployment_id
+  primary_vpc_cidr   = var.vpc_cidr
+  maximum_azs        = 2
+  secondary_vpc_cidr = var.secondary_vpc_cidr
 }
 
 
@@ -41,10 +42,11 @@ module "bastion" {
 
 
 module "security_groups" {
-  source        = "./modules/security-groups"
-  deployment_id = var.deployment_id
-  vpc_id        = module.vpc.vpc_id
-  vpc_cidr      = module.vpc.vpc_cidr_block
+  source             = "./modules/security-groups"
+  deployment_id      = var.deployment_id
+  vpc_id             = module.vpc.vpc_id
+  vpc_cidr           = module.vpc.vpc_cidr_block
+  secondary_vpc_cidr = var.secondary_vpc_cidr
 }
 
 
@@ -85,31 +87,32 @@ module "s3" {
 module "eks_cluster" {
   source = "./modules/eks-cluster"
 
-  deployment_id               = var.deployment_id
-  vpc_id                      = module.vpc.vpc_id
-  subnet_ids                  = module.vpc.public_subnets
-  eks_kms_key_arn             = module.kms.eks_kms_key_arn
-  cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
-  cluster_security_group_id   = module.security_groups.eks_cluster
-  node_security_group_id      = module.security_groups.eks_node
-  nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
-  ec2_key_name                = "fdo"
+  deployment_id                 = var.deployment_id
+  vpc_id                        = module.vpc.vpc_id
+  subnet_ids                    = module.vpc.public_subnets
+  eks_kms_key_arn               = module.kms.eks_kms_key_arn
+  cluster_access_iam_role_arn   = module.iam.cluster_access_iam_role_arn
+  cluster_security_group_id     = module.security_groups.eks_cluster
+  node_security_group_id        = module.security_groups.eks_node
+  nodegroup_iam_role_arn        = module.iam.eks_nodes_iam_role_arn
+  ec2_key_name                  = "fdo"
+  pod_custom_networking_subnets = module.vpc.pod_subnet_info
 
 }
 
-module "karpenter" {
-  source = "./modules/karpenter"
+# module "karpenter" {
+#   source = "./modules/karpenter"
 
-  deployment_id               = var.deployment_id
-  vpc_id                      = module.vpc.vpc_id
-  subnet_ids                  = module.vpc.private_subnets
-  eks_kms_key_arn             = module.kms.eks_kms_key_arn
-  cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
-  cluster_security_group_id   = module.security_groups.eks_cluster
-  node_security_group_id      = module.security_groups.eks_node
-  nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
-  nodegroup_iam_role_name     = module.iam.eks_nodes_iam_role_name
-}
+#   deployment_id               = var.deployment_id
+#   vpc_id                      = module.vpc.vpc_id
+#   subnet_ids                  = module.vpc.private_subnets
+#   eks_kms_key_arn             = module.kms.eks_kms_key_arn
+#   cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
+#   cluster_security_group_id   = module.security_groups.eks_cluster
+#   node_security_group_id      = module.security_groups.eks_node
+#   nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
+#   nodegroup_iam_role_name     = module.iam.eks_nodes_iam_role_name
+# }
 
 module "cluster-externaldns" {
   source = "./modules/cluster-externaldns"
@@ -129,8 +132,8 @@ module "cluster-loadbalancer" {
 resource "random_password" "rds_password" {
   length           = 32
   special          = false
-  override_special = "!*-_[]{}<>"
-  min_special      = 0
+  override_special = "!*-_"
+  min_special      = 1
   min_upper        = 1
   min_lower        = 1
   min_numeric      = 1
@@ -160,12 +163,25 @@ module "elasticache" {
   subnet_ids         = module.vpc.private_subnets
 }
 
+
+resource "random_password" "opensearch_password" {
+  # The master user password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.
+  length           = 32
+  special          = false
+  override_special = "!*-_[]{}<>"
+  min_special      = 1
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+}
+
+
 module "opensearch" {
   source             = "./modules/opensearch"
   deployment_id      = var.deployment_id
   subnet_ids         = [module.vpc.private_subnets[0], module.vpc.private_subnets[1]]
   security_group_ids = [module.security_groups.opensearch]
-  password           = random_password.rds_password.result
+  password           = random_password.opensearch_password.result
 }
 
 module "acm" {
@@ -237,7 +253,7 @@ resource "local_file" "kots_config" {
 
     # Elasticsearch
     elasticsearch_host     = module.opensearch.endpoint
-    elasticsearch_password = random_password.rds_password.result
+    elasticsearch_password = random_password.opensearch_password.result
 
     object_storage_url        = var.object_storage_url
     object_storage_access_key = var.object_storage_access_key
@@ -251,4 +267,9 @@ resource "local_file" "install_sh" {
     kots_config_file = "kots.${var.deployment_id}.yml"
   })
   filename = "${path.module}/install.${var.deployment_id}.sh"
+}
+
+
+output "vpc" {
+  value = module.vpc.*
 }

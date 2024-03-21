@@ -8,9 +8,16 @@ variable "deployment_id" {
   }
 }
 
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC. Must be a /16 network"
+variable "primary_vpc_cidr" {
+  description = "Primary CIDR block for the VPC. Must be a /16 network"
   type        = string
+}
+
+variable "secondary_vpc_cidr" {
+  description = "A secondary CIDR block for pods networking."
+  type        = string
+  default     = null
+  nullable    = true
 }
 
 variable "maximum_azs" {

@@ -3,7 +3,7 @@ output "vpc_id" {
 }
 
 output "vpc_cidr_block" {
-  value = var.vpc_cidr
+  value = var.primary_vpc_cidr
 }
 
 output "private_subnets" {
@@ -24,4 +24,18 @@ output "firewall_subnets" {
 
 output "database_subnet_group_name" {
   value = aws_db_subnet_group.postgres.id
+}
+
+output "pod_subnets" {
+  value = aws_subnet.pod.*.id
+}
+
+output "pod_subnet_info" {
+  value = [
+    for i in range(length(aws_subnet.pod.*)) :
+    {
+      "subnet_id"         = aws_subnet.pod[i].id
+      "availability_zone" = aws_subnet.pod[i].availability_zone
+    }
+  ]
 }

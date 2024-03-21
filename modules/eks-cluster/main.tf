@@ -38,7 +38,14 @@ module "eks" {
       most_recent = true
     }
     vpc-cni = {
-      most_recent = true
+      most_recent    = true
+      before_compute = var.pod_custom_networking_subnets != null ? true : false
+      configuration_values = jsonencode({
+        env = {
+          AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = var.pod_custom_networking_subnets != null ? "true" : "false"
+          ENI_CONFIG_LABEL_DEF               = var.pod_custom_networking_subnets != null ? "topology.kubernetes.io/zone" : ""
+      } })
+
     }
     aws-ebs-csi-driver = {
       most_recent = true
@@ -693,4 +700,36 @@ resource "kubernetes_annotations" "gp2" {
     "storageclass.kubernetes.io/is-default-class" = "false"
   }
   force = true
+}
+
+
+# resource "kubectl_manifest" "eni_config" {
+#   for_each = { for x in coalesce(var.pod_custom_networking_subnets, []) : x.availability_zone => x.subnet_id }
+
+#   yaml_body = yamlencode({
+#     apiVersion = "crd.k8s.amazonaws.com/v1alpha1"
+#     kind       = "ENIConfig"
+#     metadata = {
+#       name = each.key
+#     }
+#     spec = {
+#       subnet = each.value
+#     }
+#   })
+# }
+# This creates ENI configs like this:
+
+
+terraform {
+  required_version = ">= 1.5.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+    # kubectl = {
+    #   source  = "gavinbunney/kubectl"
+    #   version = ">= 1.14.0"
+    # }
+  }
 }
