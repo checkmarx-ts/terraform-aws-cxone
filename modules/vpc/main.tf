@@ -6,23 +6,22 @@ data "aws_region" "current" {}
 
 
 locals {
-  aws_azs = [
-    data.aws_availability_zones.available.names[0],
-    data.aws_availability_zones.available.names[1],
-    data.aws_availability_zones.available.names[2],
-  ]
+  number_of_azs    = 2
+  aws_azs          = slice(data.aws_availabilty_zones.available.names, 0, local.number_of_azs)
+  private_subnets  = slice(cidrsubnets(var.vpc_cidr, 2, 2, 2, 5, 5, 5, 6, 6, 6), 0, 3) # VPC=/16: /18 16,256; 
+  public_subnets   = slice(cidrsubnets(var.vpc_cidr, 2, 2, 2, 5, 5, 5, 6, 6, 6), 6, 9) # VPC=/16: /21  2,032; 
+  database_subnets = slice(cidrsubnets(var.vpc_cidr, 2, 2, 2, 5, 5, 5, 6, 6, 6), 3, 6) # VPC=/16: /22  1,016; 
 }
 
 module "vpc" {
 
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.1.2"
+  version = "5.7.0"
 
   name = var.deployment_id
   cidr = var.vpc_cidr
 
   azs = local.aws_azs
-
 
   private_subnets  = local.private_subnets
   public_subnets   = local.public_subnets
@@ -51,12 +50,6 @@ module "vpc" {
   create_flow_log_cloudwatch_iam_role  = true
   create_flow_log_cloudwatch_log_group = true
 
-}
-
-locals {
-  private_subnets  = slice(cidrsubnets(var.vpc_cidr, 2, 2, 2, 5, 5, 5, 6, 6, 6), 0, 3) # VPC=/16: /18 16,256; 
-  public_subnets   = slice(cidrsubnets(var.vpc_cidr, 2, 2, 2, 5, 5, 5, 6, 6, 6), 6, 9) # VPC=/16: /21  2,032; 
-  database_subnets = slice(cidrsubnets(var.vpc_cidr, 2, 2, 2, 5, 5, 5, 6, 6, 6), 3, 6) # VPC=/16: /22  1,016; 
 }
 
 

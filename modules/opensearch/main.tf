@@ -17,21 +17,6 @@ resource "aws_elasticsearch_domain" "es" {
     }
   }
 
-  #   auto_tune_options {
-  #     desired_state = "ENABLED"
-  #     maintenance_schedule {
-  #       start_at = timeadd(plantimestamp(), "24h")
-  #       duration {
-  #         value = 4
-  #         unit  = "HOURS"
-
-  #       }
-  #       cron_expression_for_recurrence = "0 0 * * *" # daily
-  #     }
-  #     rollback_on_disable = "DEFAULT_ROLLBACK"
-  #   }
-
-
   vpc_options {
     subnet_ids         = var.subnet_ids
     security_group_ids = var.security_group_ids
@@ -93,5 +78,4 @@ CONFIG
   tags = {
     Domain = var.deployment_id
   }
-
 }

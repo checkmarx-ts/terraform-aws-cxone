@@ -38,49 +38,49 @@ spec:
       value: ${aws_region}
     # MINIO S3 Buckets
     engine_logs_s3_bucket_name:
-      value: ${engine_logs_bucket} 
+      value: engine-logs-${bucket_name_suffix}
     imports_s3_bucket_name:
-      value: ${imports_bucket}
+      value: imports-${bucket_name_suffix}
     kics_worker_s3_bucket_name:
-      value: ${kics_worker_bucket}
+      value: kics-worker-${bucket_name_suffix}
     logs_s3_bucket_name:
-      value: ${logs_bucket}
+      value: logs-${bucket_name_suffix}
     misc_s3_bucket_name:
-      value: ${misc_bucket}
+      value: misc-${bucket_name_suffix}
     apisec_s3_bucket_name:
-      value: ${apisec_bucket}
+      value: apisec-${bucket_name_suffix}
     audit_s3_bucket_name:
-      value: ${audit_bucket}
+      value: audit-${bucket_name_suffix}
     configuration_s3_bucket_name:
-      value: ${configuration_bucket}
+      value: configuration-${bucket_name_suffix}
     queries_s3_bucket_name:
-      value: ${queries_bucket}
+      value: queries-${bucket_name_suffix}
     report_templates_s3_bucket_name:
-      value: ${report_templates_bucket}
+      value: report-templates-${bucket_name_suffix}
     reports_s3_bucket_name:
-      value: ${reports_bucket}
+      value: reports-${bucket_name_suffix}
     repostore_s3_bucket_name:
-      value: ${repostore_bucket}
+      value: repostore-${bucket_name_suffix}
     sast_metadata_s3_bucket_name:
-      value: ${sast_metadata_bucket}
+      value: sast-metadata-${bucket_name_suffix}
     sast_worker_s3_bucket_name:
-      value: ${sast_worker_bucket}
+      value: sast-worker-${bucket_name_suffix}
     sca_worker_s3_bucket_name:
-      value: ${sca_worker_bucket}
+      value: sca-worker-${bucket_name_suffix}
     scans_s3_bucket_name:
-      value: ${scans_bucket}
+      value: scans-${bucket_name_suffix}
     source_resolver_s3_bucket_name:
-      value: ${source_resolver_bucket}
+      value: source-resolver-${bucket_name_suffix}
     uploads_s3_bucket_name:
-      value: ${uploads_bucket}
+      value: uploads-${bucket_name_suffix}
     redis_shared_s3_bucket_name:
-      value: ${redis_shared_bucket}
+      value: redis-${bucket_name_suffix}
     scan_results_storage_s3_bucket_name:
-      value: ${scan_results_storage_bucket}
+      value: scan-results-storage-${bucket_name_suffix}
     export_s3_bucket_name:
-      value: ${export_bucket}
+      value: export-${bucket_name_suffix}
     cxone_s3_bucket_name:
-      value: ${cxone_bucket}      
+      value: cxone-${bucket_name_suffix}  
     
     # DATA
     # POSTGRES
@@ -165,4 +165,3 @@ spec:
       value: ${object_storage_secret_key}
     object_storage_secure: #object storage secure connection
       value: "1"
-

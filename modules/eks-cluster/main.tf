@@ -75,11 +75,8 @@ module "eks" {
     subnet_ids                      = var.subnet_ids
     create_iam_role                 = false
     iam_role_arn                    = var.nodegroup_iam_role_arn
-
-    vpc_security_group_ids = var.additional_node_security_group_ids
-    key_name               = var.ec2_key_name
-
-
+    vpc_security_group_ids          = var.additional_node_security_group_ids
+    key_name                        = var.ec2_key_name
     metadata_options = {
       http_endpoint               = "enabled"
       http_tokens                 = "required"

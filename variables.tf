@@ -56,6 +56,12 @@ variable "administrator_iam_role_arn" {
   nullable    = false
 }
 
+variable "domain_name" {
+  description = "The full domain name for the system (e.g. checkmarxone.your-organization.com)."
+  type        = string
+  nullable    = false
+}
+
 variable "domain" {
   description = "Domain for the AWS hosted zone (e.g. example.com)"
   type        = string
@@ -115,3 +121,17 @@ variable "object_storage_secret_key" {
   type        = string
   nullable    = false
 }
+
+
+variable "s3_retention_period" {
+  description = "S3 Retention Period"
+  type        = string
+  default     = "90"
+}
+
+variable "s3_bucket_versioning_status" {
+  type        = string
+  description = "S3 Bucket versioning Status"
+  default     = "Disabled"
+}
+

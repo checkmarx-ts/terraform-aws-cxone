@@ -1,3 +1,5 @@
+data "aws_partition" "current" {}
+
 resource "aws_elasticache_subnet_group" "redis" {
   name       = var.deployment_id
   subnet_ids = var.subnet_ids
@@ -29,7 +31,9 @@ resource "aws_elasticache_replication_group" "redis" {
   transit_encryption_enabled = var.redis_auth_token != "" ? true : false #BUG - AST can't work with TLS enabled
   auth_token                 = var.redis_auth_token != "" ? var.redis_auth_token : null
 
-  kms_key_id                 = var.kms_key_arn
+  # Per https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/at-rest-encryption.html
+  # "The default (service managed) encryption is the only option available in the GovCloud (US) Regions."
+  kms_key_id                 = data.aws_partition.current.partition == "aws-us-gov" ? null : var.kms_key_arn
   at_rest_encryption_enabled = true
 
 

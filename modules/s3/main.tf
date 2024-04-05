@@ -8,83 +8,103 @@ locals {
   s3_bucket_name_suffix = "${var.deployment_id}-${random_string.random_suffix.result}"
 
   buckets = {
-
-    uploads = {
-      name = "uploads-${lower(local.s3_bucket_name_suffix)}"
-    },
-    queries = {
-      name = "queries-${lower(local.s3_bucket_name_suffix)}"
-    },
-    misc = {
-      name = "misc-${lower(local.s3_bucket_name_suffix)}"
-    },
-    repostore = {
-      name = "repostore-${lower(local.s3_bucket_name_suffix)}"
-    },
-    sast_metadata = {
-      name = "sast-metadata-${lower(local.s3_bucket_name_suffix)}"
-    },
-    scans = {
-      name = "scans-${lower(local.s3_bucket_name_suffix)}"
-    },
-    sast_worker = {
-      name = "sast-worker-${lower(local.s3_bucket_name_suffix)}"
-    }
-    kics_worker = {
-      name = "kics-worker-${lower(local.s3_bucket_name_suffix)}"
-    }
-    sca_worker = {
-      name = "sca-worker-${lower(local.s3_bucket_name_suffix)}"
-    }
-    logs = {
-      name = "logs-${lower(local.s3_bucket_name_suffix)}"
-    }
-    engine_logs = {
-      name = "engine-logs-${lower(local.s3_bucket_name_suffix)}"
-    }
-    reports = {
-      name = "reports-${lower(local.s3_bucket_name_suffix)}"
-    }
-    report_templates = {
-      name = "report-templates-${lower(local.s3_bucket_name_suffix)}"
-    }
-    configuration = {
-      name = "configuration-${lower(local.s3_bucket_name_suffix)}"
-    }
-    imports = {
-      name = "imports-${lower(local.s3_bucket_name_suffix)}"
+    api_security = {
+      name        = "apisec"
+      enable_cors = false
     }
     audit = {
-      name = "audit-${lower(local.s3_bucket_name_suffix)}"
+      name        = "audit"
+      enable_cors = false
     }
-    source_resolver = {
-      name = "source-resolver-${lower(local.s3_bucket_name_suffix)}"
-    }
-    api_security = {
-      name = "apisec-${lower(local.s3_bucket_name_suffix)}"
-    }
-    redis = {
-      name = "redis-shared-bucket-${lower(local.s3_bucket_name_suffix)}"
-    }
-    scan_results_storage = {
-      name = "scan-results-storage-${lower(local.s3_bucket_name_suffix)}"
-    }
-    export = {
-      name = "export-${lower(local.s3_bucket_name_suffix)}"
+    configuration = {
+      name        = "configuration"
+      enable_cors = false
     }
     cxone = {
-      name = "cxone-${lower(local.s3_bucket_name_suffix)}"
+      name        = "cxone"
+      enable_cors = false
+    }
+    engine_logs = {
+      name        = "engine-logs"
+      enable_cors = false
+    }
+    export = {
+      name        = "export"
+      enable_cors = false
+    }
+    imports = {
+      name        = "imports"
+      enable_cors = false
+    }
+    kics_worker = {
+      name        = "kics-worker"
+      enable_cors = false
+    }
+    logs = {
+      name        = "logs"
+      enable_cors = true
+    }
+    misc = {
+      name        = "misc"
+      enable_cors = false
+    }
+    queries = {
+      name        = "queries"
+      enable_cors = false
+    }
+    redis = {
+      name        = "redis-shared-bucket"
+      enable_cors = false
+    }
+    reports = {
+      name        = "reports"
+      enable_cors = true
+    }
+    report_templates = {
+      name        = "report-templates"
+      enable_cors = false
+    }
+    repostore = {
+      name        = "repostore"
+      enable_cors = true
+    }
+    sast_metadata = {
+      name        = "sast-metadata"
+      enable_cors = false
+    }
+    sast_worker = {
+      name        = "sast-worker"
+      enable_cors = false
+    }
+    scan_results_storage = {
+      name        = "scan-results-storage"
+      enable_cors = true
+    }
+    scans = {
+      name        = "scans"
+      enable_cors = false
+    }
+    sca_worker = {
+      name        = "sca-worker"
+      enable_cors = false
+    }
+    source_resolver = {
+      name        = "source-resolver"
+      enable_cors = false
+    }
+    uploads = {
+      name        = "uploads"
+      enable_cors = true
     }
   }
 }
-
 
 
 module "s3_bucket" {
   for_each = local.buckets
   source   = "terraform-aws-modules/s3-bucket/aws"
 
-  bucket           = each.value.name
+  bucket           = "${each.value.name}-${lower(local.s3_bucket_name_suffix)}"
   force_destroy    = true
   object_ownership = "BucketOwnerPreferred"
   acl              = "private"
@@ -97,7 +117,6 @@ module "s3_bucket" {
         sse_algorithm = "AES256"
       }
     }
-
   }
   lifecycle_rule = [
     {
@@ -121,11 +140,11 @@ module "s3_bucket" {
     }
   ]
 
-  cors_rule = [
+  cors_rule = each.value.enable_cors != true ? [] : [
     {
       allowed_headers = ["*"]
       allowed_methods = ["GET", "PUT", "POST", "HEAD"]
-      allowed_origins = var.cors_allowed_origins
+      allowed_origins = var.s3_cors_allowed_origins
     }
   ]
 
@@ -135,9 +154,4 @@ module "s3_bucket" {
   ignore_public_acls                    = true
   restrict_public_buckets               = true
   attach_deny_insecure_transport_policy = true
-
-  tags = {
-    Name        = "${var.deployment_id} misc bucket"
-    Environment = "${var.deployment_id}"
-  }
 }

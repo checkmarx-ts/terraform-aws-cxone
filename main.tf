@@ -1,13 +1,14 @@
 data "aws_region" "current" {}
+data "aws_partition" "current" {}
 
-# Use this version of the VPC module to deploy a VPC without firewall
+#Use this version of the VPC module to deploy a VPC without firewall
 # module "vpc" {
 #   source        = "./modules/vpc"
 #   deployment_id = var.deployment_id
 #   vpc_cidr      = var.vpc_cidr
 # }
 
-# This version of the VPC module uses AWS Network Firewall to provide egress filtering of the CxOne deployment.
+#This version of the VPC module uses AWS Network Firewall to provide egress filtering of the CxOne deployment.
 module "vpc" {
   source = "./modules/vpc-with-firewall"
 
@@ -78,41 +79,41 @@ module "iam" {
 
 
 module "s3" {
-  source               = "./modules/s3"
-  deployment_id        = var.deployment_id
-  cors_allowed_origins = ["https://${var.subdomain}${var.domain}"]
+  source                  = "./modules/s3"
+  deployment_id           = var.deployment_id
+  s3_cors_allowed_origins = ["https://${var.subdomain}${var.domain}"]
 }
 
 
 module "eks_cluster" {
   source = "./modules/eks-cluster"
 
-  deployment_id                 = var.deployment_id
-  vpc_id                        = module.vpc.vpc_id
-  subnet_ids                    = module.vpc.public_subnets
-  eks_kms_key_arn               = module.kms.eks_kms_key_arn
-  cluster_access_iam_role_arn   = module.iam.cluster_access_iam_role_arn
-  cluster_security_group_id     = module.security_groups.eks_cluster
-  node_security_group_id        = module.security_groups.eks_node
-  nodegroup_iam_role_arn        = module.iam.eks_nodes_iam_role_arn
-  ec2_key_name                  = "fdo"
-  pod_custom_networking_subnets = module.vpc.pod_subnet_info
+  deployment_id               = var.deployment_id
+  vpc_id                      = module.vpc.vpc_id
+  subnet_ids                  = module.vpc.public_subnets
+  eks_kms_key_arn             = module.kms.eks_kms_key_arn
+  cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
+  cluster_security_group_id   = module.security_groups.eks_cluster
+  node_security_group_id      = module.security_groups.eks_node
+  nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
+  ec2_key_name                = "fdo"
+  #pod_custom_networking_subnets = module.vpc.pod_subnet_info
 
 }
 
-# module "karpenter" {
-#   source = "./modules/karpenter"
+# # module "karpenter" {
+# #   source = "./modules/karpenter"
 
-#   deployment_id               = var.deployment_id
-#   vpc_id                      = module.vpc.vpc_id
-#   subnet_ids                  = module.vpc.private_subnets
-#   eks_kms_key_arn             = module.kms.eks_kms_key_arn
-#   cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
-#   cluster_security_group_id   = module.security_groups.eks_cluster
-#   node_security_group_id      = module.security_groups.eks_node
-#   nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
-#   nodegroup_iam_role_name     = module.iam.eks_nodes_iam_role_name
-# }
+# #   deployment_id               = var.deployment_id
+# #   vpc_id                      = module.vpc.vpc_id
+# #   subnet_ids                  = module.vpc.private_subnets
+# #   eks_kms_key_arn             = module.kms.eks_kms_key_arn
+# #   cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
+# #   cluster_security_group_id   = module.security_groups.eks_cluster
+# #   node_security_group_id      = module.security_groups.eks_node
+# #   nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
+# #   nodegroup_iam_role_name     = module.iam.eks_nodes_iam_role_name
+# # }
 
 module "cluster-externaldns" {
   source = "./modules/cluster-externaldns"
@@ -184,21 +185,21 @@ module "opensearch" {
   password           = random_password.opensearch_password.result
 }
 
-module "acm" {
-  source = "./modules/acm"
+# module "acm" {
+#   source = "./modules/acm"
 
-  domain        = var.domain
-  subdomain     = var.subdomain
-  deployment_id = var.deployment_id
-}
+#   domain        = var.domain
+#   subdomain     = var.subdomain
+#   deployment_id = var.deployment_id
+# }
 
-module "ses" {
-  source = "./modules/ses"
+# module "ses" {
+#   source = "./modules/ses"
 
-  domain        = var.domain
-  subdomain     = var.subdomain
-  deployment_id = var.deployment_id
-}
+#   domain        = var.domain
+#   subdomain     = var.subdomain
+#   deployment_id = var.deployment_id
+# }
 
 
 resource "local_file" "kots_config" {
@@ -208,31 +209,10 @@ resource "local_file" "kots_config" {
     admin_password      = var.cxone_admin_password
     admin_email         = var.cxone_admin_email
     domain              = "${var.subdomain}${var.domain}"
-    acm_certificate_arn = module.acm.acm_certificate_arn
+    acm_certificate_arn = "" # module.acm.acm_certificate_arn
 
     # S3 buckets
-    engine_logs_bucket          = module.s3.engine_logs_bucket_id
-    imports_bucket              = module.s3.imports_bucket_id
-    kics_worker_bucket          = module.s3.kics_worker_bucket_id
-    logs_bucket                 = module.s3.logs_bucket_id
-    misc_bucket                 = module.s3.misc_bucket_id
-    apisec_bucket               = module.s3.api_security_bucket_id
-    audit_bucket                = module.s3.audit_bucket_id
-    configuration_bucket        = module.s3.configuration_bucket_id
-    queries_bucket              = module.s3.queries_bucket_id
-    report_templates_bucket     = module.s3.report_templates_bucket_id
-    reports_bucket              = module.s3.reports_bucket_id
-    repostore_bucket            = module.s3.repostore_bucket_id
-    sast_metadata_bucket        = module.s3.sast_metadata_bucket_id
-    sast_worker_bucket          = module.s3.sast_worker_bucket_id
-    sca_worker_bucket           = module.s3.sca_worker_bucket_id
-    scans_bucket                = module.s3.scans_bucket_id
-    source_resolver_bucket      = module.s3.source_resolver_bucket_id
-    uploads_bucket              = module.s3.uploads_bucket_id
-    redis_shared_bucket         = module.s3.redis_bucket_id
-    scan_results_storage_bucket = module.s3.scan_results_storage_bucket_id
-    export_bucket               = module.s3.export_bucket_id
-    cxone_bucket                = module.s3.cxone_bucket_id
+    bucket_name_suffix = module.s3.s3_bucket_name_suffix
 
     # RDS
     rds_endpoint               = module.rds.cluster_endpoint
@@ -247,8 +227,8 @@ resource "local_file" "kots_config" {
     #  SMTP
     smtp_host        = var.SMTP_endpoint
     smtp_port        = var.SMTP_port
-    smtp_user        = module.ses.access_key_id
-    smtp_password    = module.ses.ses_smtp_password
+    smtp_user        = "" #module.ses.access_key_id
+    smtp_password    = "" #module.ses.ses_smtp_password
     smtp_from_sender = var.SMTP_from_sender
 
     # Elasticsearch
@@ -270,6 +250,6 @@ resource "local_file" "install_sh" {
 }
 
 
-output "vpc" {
-  value = module.vpc.*
-}
+# output "vpc" {
+#   value = module.vpc.*
+# }

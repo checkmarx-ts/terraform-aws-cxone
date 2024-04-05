@@ -139,8 +139,8 @@ variable "sast_nodes" {
 
   default = {
     name            = "sast-engine"
-    min_size        = 1
-    desired_size    = 1
+    min_size        = 0
+    desired_size    = 0
     max_size        = 100
     instance_types  = ["m5.2xlarge"]
     disk_size_gib   = 200
@@ -412,8 +412,8 @@ variable "minio_gateway_nodes" {
 
   default = {
     name            = "minio-gateway"
-    min_size        = 1
-    desired_size    = 1
+    min_size        = 0
+    desired_size    = 0
     max_size        = 10
     instance_types  = ["c6i.4xlarge"]
     disk_size_gib   = 200
@@ -467,8 +467,8 @@ variable "repostore_nodes" {
 
   default = {
     name            = "repostore"
-    min_size        = 3
-    desired_size    = 3
+    min_size        = 1
+    desired_size    = 1
     max_size        = 10
     instance_types  = ["c5.2xlarge"]
     disk_size_gib   = 200
@@ -522,8 +522,8 @@ variable "sca_nodes" {
 
   default = {
     name            = "sca"
-    min_size        = 1
-    desired_size    = 1
+    min_size        = 0
+    desired_size    = 0
     max_size        = 3
     instance_types  = ["c5.2xlarge"]
     disk_size_gib   = 200
@@ -589,8 +589,8 @@ variable "sca_source_resolver_nodes" {
     key             = "service"
     value           = "sca-source-resolver"
     effect          = "NO_SCHEDULE"
-    label_name      = "sca-source-resolver"
-    label_value     = "true"
+    label_name      = "service"
+    label_value     = "sca-source-resolver"
   }
   validation {
     condition     = var.sca_source_resolver_nodes.disk_size_gib >= 200
@@ -688,10 +688,10 @@ variable "reports_nodes" {
 
   default = {
     name            = "reports"
-    min_size        = 1
+    min_size        = 0
     desired_size    = 1
     max_size        = 4
-    instance_types  = ["m6a.xlarge"]
+    instance_types  = ["m5.xlarge"]
     disk_size_gib   = 200
     disk_iops       = 3000 # this should be the default
     disk_throughput = 125  # this should be the default
