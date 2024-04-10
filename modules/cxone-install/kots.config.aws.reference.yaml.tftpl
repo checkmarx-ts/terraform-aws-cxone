@@ -1,0 +1,363 @@
+apiVersion: kots.io/v1beta1
+kind: ConfigValues
+metadata:
+  creationTimestamp: null
+spec:
+  values:
+    #--------------------------------------------------------------------------
+    # GENERAL
+    #--------------------------------------------------------------------------
+    
+    # The default admin user is the Checkmarx One application admin user, aka root user.
+    # This user's credentials are injected into the system via Kots configuration, and then
+    # can be changed. The user will be forced to configure MFA upon first login.
+    default_admin_email:
+      value: ${admin_email}
+    # By convention, the first user is named admin
+    default_admin_user:
+      value: ${admin_username}
+    # default_admin_password must be > 14 characters in length.
+    default_admin_password:
+      value: ${admin_password}
+
+    # Enable DAST component. 
+    # bool - Valid values are "0" (false) and "1" true 
+    # Recommendation: "1" if licensed for DAST, otherwise "0"
+    enable_dast_component:
+      value: "1"
+
+    # Enable the local flow for SCA Global inventory
+    enable_sca_local_flow_for_global_inventory:
+      value: "0"
+
+    # Enables using a dedicated node group just for SCA components. 
+    # If enabled, the node group must exists with the correct labels and taint.
+    # bool - Valid values are "0" (false) and "1" true
+    # Recommended value: "0"
+    use_dedicated_sca_nodegroup:
+      value: "0"
+
+    # Configures the SCA production environment for the Checkmarx Cloud
+    # Valid values are https://api-sca-.checkmarx.net and "https://eu.api-sca.checkmarx.net"
+    # Recommended value: match the region in your kots license file for cloudIamUrl
+    sca_prod_environment:
+      value: https://api-sca.checkmarx.net
+
+    # environment_type is always production
+    environment_type:
+      value: development
+
+    # deployment_type is always cloud
+    deployment_type:
+      value: cloud
+
+    # The minimum microservice replicas. Used to control number of pods per service.
+    # Recommendation: production environments, at least 3. Non-prod can be as low as 1.
+    ms_replica_count:
+      value: "${ms_replica_count}"
+    
+    # cloud_provider is always AWS, when deploying to AWS.
+    cloud_provider:
+      value: AWS
+
+    # The protocol the system will use in its url. Valid values are http and https (recommended)
+    # When https, you must provide an SSL certificate in networking settings.
+    PROTOCOL:
+      value: https
+    
+    # The domain name for the system. Used to configure traefik for listening for incoming requests.
+    # Example: checkmarx.example.com
+    DOMAIN:
+      value: ${fqdn}
+
+    # Enable TLS for secure communication. Valid values are "0" and "1"  
+    ENABLE_TLS:
+      default: "1"
+
+    #--------------------------------------------------------------------------
+    # SCA Global Inventory & Elasticsearch
+    #--------------------------------------------------------------------------
+
+    # Enables SCA Global Inventory
+    # bool - Valid values are "0" (false) and "1" true. 
+    # When true, must provide elasticsearch configuration.
+    enable_sca_global_inventory:
+      value: "0"
+
+    # Typically ES is provided via AWS OpenSearch service (must be Elasticsearch engine v 7.10)
+    sca_global_inventory_elasticsearch_host:
+      value: ${elasticsearch_host}
+    sca_global_inventory_elasticsearch_port:
+      value: "443"
+    sca_global_inventory_elasticsearch_username:
+      value: ast
+    sca_global_inventory_elasticsearch_password:
+      value: ${elasticsearch_password}
+
+    #--------------------------------------------------------------------------
+    # S3 Bucket Names
+    #--------------------------------------------------------------------------
+
+    # These are the names of the various buckets used by Checkmarx One components.
+    # The bucket names are passed to Checkmarx One rather than hard coding them.
+
+
+    apisec_s3_bucket_name:
+      value: ${deployment_id}-apisec-${bucket_name_suffix}
+    audit_s3_bucket_name:
+      value: ${deployment_id}-audit-${bucket_name_suffix}
+    configuration_s3_bucket_name:
+      value: ${deployment_id}-configuration-${bucket_name_suffix} 
+    cxone_s3_bucket_name:
+      value: ${deployment_id}-cxone-${bucket_name_suffix}  
+    engine_logs_s3_bucket_name:
+      value: ${deployment_id}-engine-logs-${bucket_name_suffix}
+    export_s3_bucket_name:
+      value: ${deployment_id}-export-${bucket_name_suffix}
+    imports_s3_bucket_name:
+      value: ${deployment_id}-imports-${bucket_name_suffix}
+    kics_worker_s3_bucket_name:
+      value: ${deployment_id}-kics-worker-${bucket_name_suffix}
+    logs_s3_bucket_name:
+      value: ${deployment_id}-logs-${bucket_name_suffix}
+    misc_s3_bucket_name:
+      value: ${deployment_id}-misc-${bucket_name_suffix} 
+    queries_s3_bucket_name:
+      value: ${deployment_id}-queries-${bucket_name_suffix}
+    redis_shared_s3_bucket_name:
+      value: ${deployment_id}-redis-${bucket_name_suffix}
+    reports_s3_bucket_name:
+      value: ${deployment_id}-reports-${bucket_name_suffix}
+    report_templates_s3_bucket_name:
+      value: ${deployment_id}-report-templates-${bucket_name_suffix}  
+    repostore_s3_bucket_name:
+      value: ${deployment_id}-repostore-${bucket_name_suffix}
+    sast_metadata_s3_bucket_name:
+      value: ${deployment_id}-sast-metadata-${bucket_name_suffix}
+    sast_worker_s3_bucket_name:
+      value: ${deployment_id}-sast-worker-${bucket_name_suffix}        
+    scan_results_storage_s3_bucket_name:
+      value: ${deployment_id}-scan-results-storage-${bucket_name_suffix}
+    scans_s3_bucket_name:
+      value: ${deployment_id}-scans-${bucket_name_suffix} 
+    sca_worker_s3_bucket_name:
+      value: ${deployment_id}-sca-worker-${bucket_name_suffix}   
+    source_resolver_s3_bucket_name:
+      value: ${deployment_id}-source-resolver-${bucket_name_suffix}
+    uploads_s3_bucket_name:
+      value: ${deployment_id}-uploads-${bucket_name_suffix}
+    
+    #--------------------------------------------------------------------------
+    # S3 Settings
+    #--------------------------------------------------------------------------
+
+    # The aws region e.g. us-east-1 or us-west-2, etc.
+    cloud_region:
+      value: ${aws_region}
+    
+    # The s3 endpoint. Typically will match your region.
+    # Example value: s3.us-west-2.amazonaws.com
+    object_storage_url:
+      value: ${object_storage_url}
+
+    # The s3 endpoint, with scheme (protocol, aka http/https)
+    # Example value: https://s3.us-west-2.amazonaws.com
+    object_storage_schemeUrl:
+      value: https://${object_storage_url}
+
+    # An AWS IAM user, with access key, and secret key, must be created out of band
+    # so that the credentials can be configured here. The user must have access to 
+    # the s3 buckets for Checkmarx One.
+    object_storage_access_key:
+      value: ${object_storage_access_key}
+    object_storage_secret_key:
+      value: ${object_storage_secret_key}
+
+    # Configures secure connections to s3. Can be "1" (true/enabled) or "0" (false/disabled)
+    # Recommended: "1"
+    object_storage_secure:
+      value: "1"
+
+    # The SCA Host Type Settting valid values are 'ExeLocalServer' and 'S3' - controls 
+    # wether SCA uses AWS SDK or Minio Client.
+    sca_host_type_setting:
+      value: "S3"
+
+    #--------------------------------------------------------------------------
+    # Database Settings
+    #--------------------------------------------------------------------------
+    
+    # Always set to external_postgres. Other values used for development only.
+    postgres_type:
+      value: external_postgres
+
+    # The host name to connect to postgres on
+    external_postgres_host:
+      value: ${postgres_host}
+
+    # The postgres port. Typically "5432"
+    external_postgres_port:
+      value: "5432"
+
+    # The postgres username. By convention, ast. 
+    external_postgres_user:
+      value: ${postgres_user}
+
+    # The password for the external_postgres_user.
+    external_postgres_password:
+      value: ${postgres_password}
+    
+    # The name of the CxOne database. By convention, ast.
+    external_postgres_db:
+      value: ast
+
+    # Used to enforce SSL connections to postgres. Values are
+    # postgres_sslmode_require or postgres_sslmode_allow
+    external_postgres_sslmode:
+      value: postgres_sslmode_require
+
+    #--------------------------------------------------------------------------
+    # Metrics Analytics Settings
+    #--------------------------------------------------------------------------
+
+    # Enables analytics features, which requires an additional database.
+    enable_analytics:
+      value: "0"
+
+    # The analaytics database connection information. required when enable_analytics is "1"
+    analytics_postgres_host:
+      value: <enter metrics database host>
+    analytics_postgres_port:
+      value: "5432"    
+    analytics_postgres_db_name:
+      value: analytics
+    analytics_postgres_user:
+      value: <enter user name>    
+    analytics_postgres_password:
+      value: <enter password>
+    # Can be either analytics_postgres_sslmode_require or analytics_postgres_sslmode_allow
+    analytics_postgres_sslmode_value:
+      value: analytics_postgres_sslmode_require
+
+    #--------------------------------------------------------------------------
+    # Redis Settings
+    #--------------------------------------------------------------------------
+
+    # Always set to external_redis. Other values used for development only.
+    redis_type:
+      value: external_redis
+
+    # The host name to connect to redis on.  
+    external_redis_address:
+      value: ${redis_address}
+    
+    # The port to connect to redis on. Typically 6379.
+    external_redis_port:
+      value: "6379"
+    
+    external_redis_password: {}
+
+    external_redis_tls_enabled:
+      value: "0"
+
+    external_redis_cluster_mode_enabled:
+      value: "1"
+
+    external_redis_tls_skipverify:
+      value: "0"
+
+    #--------------------------------------------------------------------------
+    # SMTP Settings
+    #--------------------------------------------------------------------------
+    
+    # The settings here configure how Checkmarx One will connect to your SMTP
+    # server for sending outbound emails.
+
+    # Enables SMTP configuration. Other SMTP values are required when enabled.
+    # Valid values are "0" (false/disabled) and "1" (true/enabled)
+    enable_smtp:
+      value: "1"
+    
+    # The SMTP server host name that Checkmarx One will use for sending emails
+    smtp_host:
+      value: ${smtp_host}
+    
+    # The from address in outgoing emails
+    smtp_from_sender:
+      value: ${smtp_from_sender}
+
+    # The port to which Checkmarx One will connect on the SMTP server.
+    # Typically 587 when using tls.
+    smtp_port:
+      value: "${smtp_port}"
+
+    # Enables TLS connections to the SMTP server. When enabled, SMTP server must
+    # be configured with a TLS certificate from a well known Certificate Authority.
+    # Valid values are "0" (false/disabled) and "1" (true/enabled)
+    smtp_tls_enabled:
+      value: "1"
+
+    # The username and password that Checkmarx One will use to authenticate to 
+    # the SMTP server with, when smtp_auth_enabled = "1". Use "0" for no 
+    # authentication (which your SMTP server must allow).
+    smtp_auth_enabled:
+      value: "1"
+    smtp_user:
+      value: ${smtp_user}
+    smtp_password:
+      value: ${smtp_password}
+
+    
+    #--------------------------------------------------------------------------
+    # Prometheus Settings
+    #--------------------------------------------------------------------------
+    enable_prometheus_service_monitor_metrics:
+      value: "0"
+    prometheus_service_monitor_labels_release:
+      value: ""
+
+    #--------------------------------------------------------------------------
+    # Networking Settings
+    #--------------------------------------------------------------------------
+    
+    # Networking settings are primarily settings that will drive configuration of the
+    # AWS Load Balancer Controller. Consult the LBC documentation for additional information
+    # on these settings https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.7/.
+  
+    # In Checkmarx One, these configuration values are injected into the Traefik service which will
+    # be connected to the load balancer according to how you specify your networking settings here.
+
+    # Configures the type of load balancer to use. Valid values are:
+    #   networking_type_load_balancer_AWS_NLB: AWS Network Load Balancer (recommended)
+    #   networking_type_load_balancer_AWS_CLB: AWS Classic Load Balancer (not recommended)
+    # Reference: https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html
+    networking_type_aws:
+      value: networking_type_load_balancer_AWS_NLB
+
+    # Configures the load balancer scheme. Valid values are:
+    #   internet-facing: a load balancer with public IP addresses and public dns. Recommended when deploying CxOne for interenet access.
+    #   internal: a load balancer that only has private ip addresses. Recommend when deploying CxOne privately.
+    # Reference https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html#load-balancer-scheme
+    network_load_balancer_scheme:
+      value: internet-facing
+
+    # SSL Policy Name to be applied to the AWS Network Load Balancer. Reference https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies.
+    network_load_balancer_ssl_negotiation_policy:
+      value: "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"
+
+    # Source CIDR ranges to be allowed access to the AWS Network Load Balancer. Reference https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.4/guide/service/annotations/#lb-source-ranges.
+    network_load_balancer_source_ranges:
+      value: "0.0.0.0/0"
+
+    # Enable explicit NLB subnet assignments. Valid values are "0" (false) and "1" (true).
+    # Recommendation: only use when you want to explicitly control subnet placement for the NLB. Use auto discovery via tags instead.
+    network_load_balancer_subnets_enabled:
+      value: "0"
+    # When network_load_balancer_subnets_enabled is "1", uncomment this configuration item and set your subnets with list of subnet ids here
+    #network_load_balancer_subnets:
+    #  value: subnet-xxxx, subnet-123123
+    
+    # Specify the ARN to the SSL certificate in AWS ACM that will be used to configure load balancer listeners for TLS 
+    # Valid values are ARNs e.g. arn:aws:acm:us-east-1:01234567890:certificate/d3f015a6-5b08-4c1e-8458-250220bf31e2
+    nlb_tls_acm_arn:
+      value: ${nlb_tls_acm_arn}
