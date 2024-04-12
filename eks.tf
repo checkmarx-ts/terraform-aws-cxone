@@ -287,9 +287,9 @@ module "karpenter" {
   iam_role_description            = "IAM role for karpenter controller created by karpenter module"
   create_node_iam_role            = false
   #node_iam_role_arn               = module.eks.eks_managed_node_groups.nodegroup_iam_role_arn
-  create_access_entry             = false
-  iam_policy_name                 = "KarpenterPolicy-${var.deployment_id}"
-  iam_policy_description          = "Karpenter controller IAM policy created by karpenter module"
+  create_access_entry      = false
+  iam_policy_name          = "KarpenterPolicy-${var.deployment_id}"
+  iam_policy_description   = "Karpenter controller IAM policy created by karpenter module"
   iam_role_use_name_prefix = false
   node_iam_role_additional_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
@@ -302,19 +302,19 @@ module "karpenter" {
 
 
 output "cluster_autoscaler_iam_role_arn" {
-  value = var.eks_create && var.eks_create_load_balancer_controller_irsa ? module.cluster_autoscaler_irsa[0].iam_role_arn : ""
+  value = var.eks_create && var.eks_create_cluster_autoscaler_irsa ? module.cluster_autoscaler_irsa[0].iam_role_arn : ""
 }
 
 output "external_dns_iam_role_arn" {
-  value = var.eks_create && var.eks_create_load_balancer_controller_irsa ? module.external_dns_irsa[0].iam_role_arn : "" 
+  value = var.eks_create && var.eks_create_external_dns_irsa ? module.external_dns_irsa[0].iam_role_arn : ""
 }
 
 output "load_balancer_controller_iam_role_arn" {
-  value = var.eks_create && var.eks_create_load_balancer_controller_irsa ? module.load_balancer_controller_irsa[0].iam_role_arn : ""  
+  value = var.eks_create && var.eks_create_load_balancer_controller_irsa ? module.load_balancer_controller_irsa[0].iam_role_arn : ""
 }
 
 output "karpenter_iam_role_arn" {
-  value = var.eks_create && var.eks_create_karpenter ? module.karpenter.iam_role_arn : ""  
+  value = var.eks_create && var.eks_create_karpenter ? module.karpenter.iam_role_arn : ""
 }
 
 output "eks" {
