@@ -40,3 +40,8 @@ output "pod_subnet_info" {
     availability_zone = s.availability_zone
   }]
 }
+
+output "azs" {
+  description = "The Availability Zones deployed into"
+  value       = local.azs
+}

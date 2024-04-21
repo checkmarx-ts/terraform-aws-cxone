@@ -2,7 +2,7 @@
 
 This folder contains a [Terraform](https://www.terraform.io) module for deploying an [AWS Virtual Private Cloud (VPC)](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html). 
 
-The VPC is designed for use in development environments and is not intended to be used in production. The module is optimized to reduce costs for non-prod VPCs at the expense of high availability, while also providing use of [AWS Network Firewall](https://aws.amazon.com/network-firewall/) and [NAT Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html. 
+The VPC is designed for use in development environments and is not intended to be used in production. The module is optimized to reduce costs for non-prod VPCs at the expense of high availability, while also providing use of [AWS Network Firewall](https://aws.amazon.com/network-firewall/) and [NAT Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html). 
 
 The VPC creates "Pod Subnets" in a secondary VPC CIDR attachment as a solution for ipv4 conservation as suggested in the AWS Blog Post [*Addressing IPv4 address exhaustion in Amazon EKS clusters using private NAT gateways*.](https://aws.amazon.com/blogs/containers/addressing-ipv4-address-exhaustion-in-amazon-eks-clusters-using-private-nat-gateways/)
 
