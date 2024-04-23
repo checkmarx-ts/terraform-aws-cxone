@@ -24,7 +24,7 @@ resource "aws_networkfirewall_rule_group" "cxone" {
   type     = "STATEFUL"
   rule_group {
     rules_source {
-      rules_string = var.suricata_rules != null ? var.suricata_rules : data.template_file.default_suricata_rules[0].rendered
+      rules_string = var.suricata_rules != null ? var.suricata_rules : local.default_suricata_rules
     }
     stateful_rule_options {
       rule_order = "STRICT_ORDER"

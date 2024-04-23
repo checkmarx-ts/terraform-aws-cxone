@@ -16,14 +16,9 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"sum.golang.org"; 
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"pkg-containers.githubusercontent.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420076; rev:1;)
 
 EOF
-}
 
-data "template_file" "default_suricata_rules" {
-  count    = var.enable_firewall ? 1 : 0
-  template = <<EOF
+  default_suricata_rules = <<EOF
 
-reject tls any any -> any any (msg:"TLS 1.0 or 1.1"; ssl_version:tls1.0,tls1.1; sid:2023070518;)
-drop ip $HOME_NET any -> $EXTERNAL_NET [1389,53,4444,445,135,139,389,3389] (msg:"Deny List High Risk Destination Ports"; sid:278670;)
 
 # Amazon Services - these must be allowed, or can be replaced by private VPC Endpoints (which have a charge https://aws.amazon.com/privatelink/pricing/)
 # Note that these are AWS Region Dependent
@@ -157,9 +152,22 @@ ${local.sca_scanning_rules}
 
 ${var.additional_suricata_rules}
 
-# Drop other traffic
-#drop tls $HOME_NET any -> $EXTERNAL_NET any (msg:"not matching any TLS allowlisted FQDNs"; flow:to_server, established; sid:3; rev:1;)
-#reject tcp $HOME_NET any -> $EXTERNAL_NET any (msg:"blocked uknown tcp"; flow:to_server, established; sid:4; rev:1;)
-
 EOF
 }
+
+
+
+# data "template_file" "default_suricata_rules" {
+#   count    = var.enable_firewall ? 1 : 0
+#   template = <<EOF
+
+# reject tls any any -> any any (msg:"TLS 1.0 or 1.1"; ssl_version:tls1.0,tls1.1; sid:2023070518;)
+# drop ip $HOME_NET any -> $EXTERNAL_NET [1389,53,4444,445,135,139,389,3389] (msg:"Deny List High Risk Destination Ports"; sid:278670;)
+
+
+# # Drop other traffic
+# #drop tls $HOME_NET any -> $EXTERNAL_NET any (msg:"not matching any TLS allowlisted FQDNs"; flow:to_server, established; sid:3; rev:1;)
+# #reject tcp $HOME_NET any -> $EXTERNAL_NET any (msg:"blocked uknown tcp"; flow:to_server, established; sid:4; rev:1;)
+
+# EOF
+# }
