@@ -58,6 +58,18 @@ variable "eks_create" {
 #   type        = list(string)
 # }
 
+variable "eks_enable_externalsnat" {
+  type        = bool
+  description = "Enables [External SNAT](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html) for the EKS VPC CNI. When true, the EKS pods must have a route to a NAT Gateway for outbound communication."
+  default     = false
+}
+
+variable "eks_enable_fargate" {
+  type        = bool
+  description = "Enables Fargate profiles for the karpenter and kube-system namespaces."
+  default     = false
+}
+
 variable "eks_create_cluster_autoscaler_irsa" {
   type        = bool
   description = "Enables creation of cluster autoscaler IAM role."

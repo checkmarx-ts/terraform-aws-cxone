@@ -1,0 +1,20 @@
+
+# Remove gp2 as the default storage class
+kubectl patch storageclass gp2 -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+
+# Add gp3 as the default storage class
+cat <<EOF | kubectl apply -f -
+  allowVolumeExpansion: true
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    annotations:
+      storageclass.kubernetes.io/is-default-class: "true"
+    name: gp3
+  parameters:
+    fstype: xfs
+    type: gp3
+  provisioner: ebs.csi.aws.com
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+EOF

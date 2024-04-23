@@ -2,29 +2,6 @@
 #   Base Infrastructure Configuration - These variables are used by the example itself
 #******************************************************************************
 
-variable "vpc_cidr" {
-  type        = string
-  description = "The primary VPC CIDR block to create the VPC with."
-}
-
-variable "secondary_vpc_cidr" {
-  type        = string
-  description = "The secondary VPC CIDR block to associate with the VPC."
-  default     = null
-}
-
-variable "interface_vpc_endpoints" {
-  type        = list(string)
-  description = "A list of services that vpc endpoints are created for."
-  default     = ["ec2", "ec2messages", "ssm", "ssmmessages", "ecr.api", "ecr.dkr", "kms", "logs", "sts", "elasticloadbalancing", "autoscaling"]
-}
-
-variable "create_s3_endpoint" {
-  type        = bool
-  description = "Enables creation of the s3 gateway VPC interface endpoint."
-  default     = true
-}
-
 variable "route_53_hosted_zone_id" {
   type        = string
   description = "The hosted zone id for route 53 in which to create dns and certificates."
@@ -36,6 +13,17 @@ variable "fqdn" {
   description = "The fully qualified domain name that will be used for the Checkmarx One deployment"
 }
 
+variable "acm_certificate_arn" {
+  type        = string
+  description = "The ARN to the SSL certificate in AWS ACM to use for securing the load balancer"
+  default     = null
+}
+
+variable "ms_replica_count" {
+  type        = number
+  description = "The microservices replica count (e.g. a minimum)"
+  default     = 3
+}
 
 #******************************************************************************
 #   S3 Configuration
@@ -59,10 +47,10 @@ variable "object_storage_secret_key" {
 #******************************************************************************
 #   SMTP Configuration
 #******************************************************************************
-# variable "smtp_host" {
-#   description = "The hostname of the SMTP server."
-#   type        = string
-# }
+variable "smtp_host" {
+  description = "The hostname of the SMTP server."
+  type        = string
+}
 
 variable "smtp_port" {
   description = "The port of the SMTP server."
@@ -70,20 +58,20 @@ variable "smtp_port" {
   default     = 587
 }
 
-# variable "smtp_user" {
-#   description = "The smtp user name."
-#   type        = string
-# }
+variable "smtp_user" {
+  description = "The smtp user name."
+  type        = string
+}
 
-# variable "smtp_password" {
-#   description = "The smtp password."
-#   type        = string
-# }
+variable "smtp_password" {
+  description = "The smtp password."
+  type        = string
+}
 
-# variable "smtp_from_sender" {
-#   description = "The address to use in the from field when sending emails."
-#   type        = string
-# }
+variable "smtp_from_sender" {
+  description = "The address to use in the from field when sending emails."
+  type        = string
+}
 
 #******************************************************************************
 #   Kots & Installation Configuration

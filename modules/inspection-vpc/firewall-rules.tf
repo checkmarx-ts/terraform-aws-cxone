@@ -141,6 +141,9 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eu.api-sca.checkm
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"uploads.sca.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420060; rev:1;)
 # Scan results buckets are used for SCA scan result syncing, and vary by the connected SCA region (e.g. NA, or EU)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"microservice-scanresults-prod-storage-1an26shc41yi3.s3.amazonaws.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240420061; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.stagecodebashing.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240422001; rev:1;)
+
+
 
 # These URLs are randomly generated, and used to discover the correct s3 API signature version to use when communicating with S3 buckets.
 # They take two forms, where the long alphanumeric string is randomly generated. The buckets do not exist, but allow minio client
@@ -155,8 +158,8 @@ ${local.sca_scanning_rules}
 ${var.additional_suricata_rules}
 
 # Drop other traffic
-drop tls $HOME_NET any -> $EXTERNAL_NET any (msg:"not matching any TLS allowlisted FQDNs"; flow:to_server, established; sid:3; rev:1;)
-reject tcp $HOME_NET any -> $EXTERNAL_NET any (msg:"blocked uknown tcp"; flow:to_server, established; sid:4; rev:1;)
+#drop tls $HOME_NET any -> $EXTERNAL_NET any (msg:"not matching any TLS allowlisted FQDNs"; flow:to_server, established; sid:3; rev:1;)
+#reject tcp $HOME_NET any -> $EXTERNAL_NET any (msg:"blocked uknown tcp"; flow:to_server, established; sid:4; rev:1;)
 
 EOF
 }

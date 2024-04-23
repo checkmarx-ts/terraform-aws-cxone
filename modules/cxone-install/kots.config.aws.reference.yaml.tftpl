@@ -18,7 +18,7 @@ spec:
       value: ${admin_username}
     # default_admin_password must be > 14 characters in length.
     default_admin_password:
-      value: ${admin_password}
+      value: "${admin_password}"
 
     # Enable DAST component. 
     # bool - Valid values are "0" (false) and "1" true 
@@ -92,7 +92,7 @@ spec:
     sca_global_inventory_elasticsearch_username:
       value: ast
     sca_global_inventory_elasticsearch_password:
-      value: ${elasticsearch_password}
+      value: "${elasticsearch_password}"
 
     #--------------------------------------------------------------------------
     # S3 Bucket Names
@@ -169,9 +169,9 @@ spec:
     # so that the credentials can be configured here. The user must have access to 
     # the s3 buckets for Checkmarx One.
     object_storage_access_key:
-      value: ${object_storage_access_key}
+      value: "${object_storage_access_key}"
     object_storage_secret_key:
-      value: ${object_storage_secret_key}
+      value: "${object_storage_secret_key}"
 
     # Configures secure connections to s3. Can be "1" (true/enabled) or "0" (false/disabled)
     # Recommended: "1"
@@ -205,7 +205,7 @@ spec:
 
     # The password for the external_postgres_user.
     external_postgres_password:
-      value: ${postgres_password}
+      value: "${postgres_password}"
     
     # The name of the CxOne database. By convention, ast.
     external_postgres_db:
@@ -234,7 +234,7 @@ spec:
     analytics_postgres_user:
       value: <enter user name>    
     analytics_postgres_password:
-      value: <enter password>
+      value: "<enter password>"
     # Can be either analytics_postgres_sslmode_require or analytics_postgres_sslmode_allow
     analytics_postgres_sslmode_value:
       value: analytics_postgres_sslmode_require
@@ -305,7 +305,7 @@ spec:
     smtp_user:
       value: ${smtp_user}
     smtp_password:
-      value: ${smtp_password}
+      value: "${smtp_password}"
 
     
     #--------------------------------------------------------------------------

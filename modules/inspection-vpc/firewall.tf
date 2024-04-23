@@ -64,15 +64,18 @@ resource "aws_networkfirewall_firewall_policy" "main" {
   }
 }
 
+
+# Reference the policy document length of 5120 characters described at https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AWS-logs-and-resource-policy.html#AWS-logs-infrastructure-CWL
+# and explains the solution of using /aws/vendedlogs prefix in log group names.
 resource "aws_cloudwatch_log_group" "aws_nfw_alert" {
   count             = var.enable_firewall ? 1 : 0
-  name              = "${var.deployment_id}-aws-nfw-alert"
+  name              = "/aws/vendedlogs/${var.deployment_id}-aws-nfw-alert"
   retention_in_days = 14
 }
 
 resource "aws_cloudwatch_log_group" "aws_nfw_flow" {
   count             = var.enable_firewall ? 1 : 0
-  name              = "${var.deployment_id}-aws-nfw-flow"
+  name              = "/aws/vendedlogs/${var.deployment_id}-aws-nfw-flow"
   retention_in_days = 14
 }
 

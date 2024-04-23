@@ -1,4 +1,63 @@
 locals {
+  fargate_profiles = {
+    karpenter = {
+      selectors = [
+        { namespace = "karpenter" }
+      ]
+    }
+    kube-system = {
+      selectors = [
+        { namespace = "kube-system" }
+      ]
+    }
+  }
+  core_dns_fargate_configuration_values = jsonencode({
+    computeType = "Fargate"
+    # Ensure that we fully utilize the minimum amount of resources that are supplied by
+    # Fargate https://docs.aws.amazon.com/eks/latest/userguide/fargate-pod-configuration.html
+    # Fargate adds 256 MB to each pod's memory reservation for the required Kubernetes
+    # components (kubelet, kube-proxy, and containerd). Fargate rounds up to the following
+    # compute configuration that most closely matches the sum of vCPU and memory requests in
+    # order to ensure pods always have the resources that they need to run.
+    resources = {
+      limits = {
+        cpu = "0.25"
+        # We are targeting the smallest Task size of 512Mb, so we subtract 256Mb from the
+        # request/limit to ensure we can fit within that task
+        memory = "256M"
+      }
+      requests = {
+        cpu = "0.25"
+        # We are targeting the smallest Task size of 512Mb, so we subtract 256Mb from the
+        # request/limit to ensure we can fit within that task
+        memory = "256M"
+      }
+    }
+  })
+
+  # The EBS CSI Add On Controller pods can run on Fargate, but we must add a toleration to eks.amazonaws.com/compute-type=fargate
+  # in addition to the existing tolerations. Documentation for EBS CSI Driver configuration schema can be obtained from AWS CLI
+  # example: aws eks describe-addon-configuration --addon-name aws-ebs-csi-driver --addon-version v1.28.0-eksbuild.1 --query configurationSchema --output text
+  ebs_csi_fargate_configuration_values = jsonencode({
+    controller = {
+      batching = false
+      tolerations = [
+        {
+          key      = "CriticalAddonsOnly"
+          operator = "Exists"
+        },
+        {
+          effect            = "NoExecute"
+          operator          = "Exists"
+          tolerationSeconds = 300
+        },
+        {
+          key      = "eks.amazonaws.com/compute-type"
+          operator = "Equal"
+          value    = "fargate"
+          effect   = "NoSchedule"
+  }] } })
+
   eks_nodegroups = { for node_group in var.eks_node_groups : node_group.name => {
     name                 = "${var.deployment_id}-${node_group.name}"
     launch_template_name = "${var.deployment_id}-${node_group.name}"
@@ -104,6 +163,7 @@ module "eks" {
   create_node_security_group = true
   #node_security_group_id     = module.eks_nodes_security_group.security_group_id
 
+
   node_security_group_additional_rules = {
     ingress_self_http80 = {
       description = "Node to node ingress http/80"
@@ -144,27 +204,35 @@ module "eks" {
   enable_cluster_creator_admin_permissions = var.enable_cluster_creator_admin_permissions
   access_entries                           = local.admin_access_entries
 
+  tags = {
+    # NOTE - if creating multiple security groups with this module, only tag the
+    # security group that Karpenter should utilize with the following tag
+    # (i.e. - at most, only one security group should have this tag in your account)
+    "karpenter.sh/discovery" = var.deployment_id
+  }
 
   cluster_addons = {
     coredns = {
-      addon_version = var.coredns_version
+      addon_version        = var.coredns_version
+      configuration_values = var.eks_enable_fargate ? local.core_dns_fargate_configuration_values : null
     }
     kube-proxy = {
       addon_version = var.kube_proxy_version
     }
     vpc-cni = {
-      addon_version = var.vpc_cni_version
-      # Todo: add configuration for secondary cidr here to vpc plugin
-      #   before_compute = var.pod_custom_networking_subnets != null ? true : false
-      #   configuration_values = jsonencode({
-      #     env = {
-      #       AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = var.pod_custom_networking_subnets != null ? "true" : "false"
-      #       ENI_CONFIG_LABEL_DEF               = var.pod_custom_networking_subnets != null ? "topology.kubernetes.io/zone" : ""
-      #   } })
-
+      addon_version  = var.vpc_cni_version
+      before_compute = var.eks_pod_subnets != null ? true : false
+      configuration_values = jsonencode({
+        env = {
+          #AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = var.eks_pod_subnets != null ? "true" : "false"
+          #ENI_CONFIG_LABEL_DEF               = var.eks_pod_subnets != null ? "topology.kubernetes.io/zone" : ""
+          AWS_VPC_K8S_CNI_EXTERNALSNAT = var.eks_enable_externalsnat ? "true" : "false"
+        }
+      })
     }
     aws-ebs-csi-driver = {
-      addon_version = var.aws_ebs_csi_driver_version
+      addon_version        = var.aws_ebs_csi_driver_version
+      configuration_values = var.eks_enable_fargate ? local.ebs_csi_fargate_configuration_values : null
     }
   }
   create_kms_key = false
@@ -193,6 +261,11 @@ module "eks" {
   }
 
   eks_managed_node_groups = local.eks_nodegroups
+
+  fargate_profile_defaults = {
+    subnet_ids = var.eks_pod_subnets != null ? var.eks_pod_subnets : null
+  }
+  fargate_profiles = var.eks_enable_fargate ? local.fargate_profiles : {}
 }
 
 resource "aws_autoscaling_group_tag" "cluster_autoscaler_label" {
@@ -272,6 +345,10 @@ module "load_balancer_controller_irsa" {
   }
 }
 
+data "aws_iam_role" "karpenter" {
+  name       = "${var.deployment_id}-eks-nodes"
+  depends_on = [module.eks]
+}
 
 module "karpenter" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
@@ -286,11 +363,11 @@ module "karpenter" {
   iam_role_name                   = "KarpenterController-${var.deployment_id}"
   iam_role_description            = "IAM role for karpenter controller created by karpenter module"
   create_node_iam_role            = false
-  #node_iam_role_arn               = module.eks.eks_managed_node_groups.nodegroup_iam_role_arn
-  create_access_entry      = false
-  iam_policy_name          = "KarpenterPolicy-${var.deployment_id}"
-  iam_policy_description   = "Karpenter controller IAM policy created by karpenter module"
-  iam_role_use_name_prefix = false
+  node_iam_role_arn               = data.aws_iam_role.karpenter.arn
+  create_access_entry             = false
+  iam_policy_name                 = "KarpenterPolicy-${var.deployment_id}"
+  iam_policy_description          = "Karpenter controller IAM policy created by karpenter module"
+  iam_role_use_name_prefix        = false
   node_iam_role_additional_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
     AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
@@ -317,6 +394,14 @@ output "karpenter_iam_role_arn" {
   value = var.eks_create && var.eks_create_karpenter ? module.karpenter.iam_role_arn : ""
 }
 
+output "cluster_endpoint" {
+  value = module.eks.cluster_endpoint
+}
+
+output "nodegroup_iam_role_name" {
+  value = data.aws_iam_role.karpenter.name
+}
+
 output "eks" {
-  value = module.eks.*
+  value = module.eks
 }

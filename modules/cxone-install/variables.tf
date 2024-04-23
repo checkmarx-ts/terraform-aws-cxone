@@ -33,6 +33,11 @@ variable "deployment_id" {
   }
 }
 
+variable "vpc_id" {
+  description = "The VPC Id Checkmarx One is deployed into."
+  type        = string
+}
+
 variable "bucket_suffix" {
   description = "The id of the deployment. Will be used to name resources like EKS cluster, etc."
   type        = string
@@ -82,6 +87,32 @@ variable "external_dns_iam_role_arn" {
 variable "load_balancer_controller_iam_role_arn" {
   type     = string
   nullable = true
+}
+
+variable "karpenter_iam_role_arn" {
+  type     = string
+  nullable = true
+}
+
+variable "cluster_endpoint" {
+  type     = string
+  nullable = true
+}
+
+variable "nodegroup_iam_role_name" {
+  type     = string
+  nullable = true
+}
+
+variable "availability_zones" {
+  type     = list(string)
+  nullable = false
+}
+
+variable "pod_eniconfig" {
+  description = "The ENIConfigs for EKS custom networking configuration."
+  type        = string
+  nullable    = true
 }
 
 #******************************************************************************

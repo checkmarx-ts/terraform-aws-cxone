@@ -50,7 +50,7 @@ resource "local_file" "kots_config" {
 
 
 resource "local_file" "makefile" {
-  content = templatefile("${path.module}/makefile.tftpl", {
+  content = templatefile("${path.module}/Makefile.tftpl", {
     tf_deployment_id                      = var.deployment_id
     tf_deploy_region                      = var.region
     tf_eks_cluster_name                   = var.deployment_id
@@ -68,9 +68,36 @@ resource "local_file" "makefile" {
     app_version                           = var.cxone_version
     cluster_autoscaler_iam_role_arn       = var.cluster_autoscaler_iam_role_arn
     load_balancer_controller_iam_role_arn = var.load_balancer_controller_iam_role_arn
-
-
+    external_dns_iam_role_arn             = var.external_dns_iam_role_arn
+    karpenter_iam_role_arn                = var.karpenter_iam_role_arn
+    cluster_endpoint                      = var.cluster_endpoint
+    vpc_id                                = var.vpc_id
   })
-  filename = "makefile"
+  filename = "Makefile"
 }
 
+resource "local_file" "karpenter" {
+  content = templatefile("${path.module}/karpenter.reference.yaml.tftpl", {
+    deployment_id           = var.deployment_id
+    nodegroup_iam_role_name = var.nodegroup_iam_role_name
+    availability_zones      = jsonencode(var.availability_zones)
+
+  })
+  filename = "karpenter.${var.deployment_id}.yaml"
+}
+
+resource "local_file" "storage_class" {
+  content = templatefile("${path.module}/apply-storageclass-config.sh.tftpl", {
+    deployment_id           = var.deployment_id
+    nodegroup_iam_role_name = var.nodegroup_iam_role_name
+    availability_zones      = jsonencode(var.availability_zones)
+    karpenter_iam_role_arn  = var.karpenter_iam_role_arn
+
+  })
+  filename = "apply-storageclass-config.${var.deployment_id}.sh"
+}
+
+resource "local_file" "ENIConfig" {
+  content  = var.pod_eniconfig
+  filename = "custom-networking-config.${var.deployment_id}.yaml"
+}

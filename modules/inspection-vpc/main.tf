@@ -105,6 +105,7 @@ resource "aws_subnet" "pod" {
   tags = {
     Name                                         = "${var.deployment_id} - pod subnet ${each.key}"
     "kubernetes.io/cluster/${var.deployment_id}" = "shared"
+    "kubernetes.io/role/cni"                     = "1"
   }
   depends_on = [aws_vpc_ipv4_cidr_block_association.secondary_cidr_block]
 }
@@ -161,6 +162,7 @@ resource "aws_route_table" "public" {
       vpc_endpoint_id = [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0]
     }
   }
+  depends_on = [aws_networkfirewall_firewall.main]
 }
 
 resource "aws_route_table_association" "public" {
@@ -196,6 +198,17 @@ resource "aws_route_table" "private" {
     vpc_endpoint_id = var.enable_firewall ? [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0] : null
     nat_gateway_id  = var.enable_firewall ? null : aws_nat_gateway.public.id
   }
+
+  dynamic "route" {
+    # Route the traffic to public subnet, such as traffic from the load balancer, back through the firewall when firewall is enabled to preserve symetric routing.
+    for_each = var.enable_firewall ? ["apply"] : []
+    content {
+      cidr_block      = local.public_subnet_cidr
+      vpc_endpoint_id = [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0]
+    }
+  }
+
+  depends_on = [aws_networkfirewall_firewall.main]
 }
 
 resource "aws_route_table_association" "private" {

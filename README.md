@@ -4,6 +4,9 @@ This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/
 
 
 # Module documentation
+## Requirements
+
+No requirements.
 
 ## Providers
 
@@ -43,6 +46,7 @@ This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/
 | [aws_iam_policy.s3_bucket_access](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [random_string.random_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_iam_role.karpenter](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_role) | data source |
 | [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_vpc.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
@@ -101,8 +105,11 @@ This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/
 | <a name="input_eks_create_external_dns_irsa"></a> [eks\_create\_external\_dns\_irsa](#input\_eks\_create\_external\_dns\_irsa) | Enables creation of external dns IAM role. | `bool` | `true` | no |
 | <a name="input_eks_create_karpenter"></a> [eks\_create\_karpenter](#input\_eks\_create\_karpenter) | Enables creation of Karpenter resources. | `bool` | `false` | no |
 | <a name="input_eks_create_load_balancer_controller_irsa"></a> [eks\_create\_load\_balancer\_controller\_irsa](#input\_eks\_create\_load\_balancer\_controller\_irsa) | Enables creation of load balancer controller IAM role. | `bool` | `true` | no |
+| <a name="input_eks_enable_externalsnat"></a> [eks\_enable\_externalsnat](#input\_eks\_enable\_externalsnat) | Enables [External SNAT](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html) for the EKS VPC CNI. When true, the EKS pods must have a route to a NAT Gateway for outbound communication. | `bool` | `false` | no |
+| <a name="input_eks_enable_fargate"></a> [eks\_enable\_fargate](#input\_eks\_enable\_fargate) | Enables Fargate profiles for the karpenter and kube-system namespaces. | `bool` | `false` | no |
 | <a name="input_eks_node_additional_security_group_ids"></a> [eks\_node\_additional\_security\_group\_ids](#input\_eks\_node\_additional\_security\_group\_ids) | Additional security group ids to attach to EKS nodes. | `list(string)` | `[]` | no |
 | <a name="input_eks_node_groups"></a> [eks\_node\_groups](#input\_eks\_node\_groups) | n/a | <pre>list(object({<br>    name            = string<br>    min_size        = string<br>    desired_size    = string<br>    max_size        = string<br>    volume_type     = optional(string, "gp3")<br>    disk_size       = optional(number, 200)<br>    disk_iops       = optional(number, 3000)<br>    disk_throughput = optional(number, 125)<br>    device_name     = optional(string, "/dev/xvda")<br>    instance_types  = list(string)<br>    capacity_type   = optional(string, "ON_DEMAND")<br>    labels          = optional(map(string), {})<br>    taints          = optional(map(object({ key = string, value = string, effect = string })), {})<br>  }))</pre> | <pre>[<br>  {<br>    "desired_size": 3,<br>    "instance_types": [<br>      "c5.4xlarge"<br>    ],<br>    "max_size": 9,<br>    "min_size": 3,<br>    "name": "ast-app"<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "m5.2xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "m5.4xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine-large": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine-large",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine-large",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "r5.2xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine-extra-large": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine-extra-large",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine-extra-large",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "r5.4xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine-xxl": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine-xxl",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine-xxl",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 1,<br>    "instance_types": [<br>      "c5.2xlarge"<br>    ],<br>    "labels": {<br>      "kics-engine": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 1,<br>    "name": "kics-engine",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "kics-engine",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 1,<br>    "instance_types": [<br>      "c5.2xlarge"<br>    ],<br>    "labels": {<br>      "repostore": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 1,<br>    "name": "repostore",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "repostore",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 1,<br>    "instance_types": [<br>      "m5.2xlarge"<br>    ],<br>    "labels": {<br>      "service": "sca-source-resolver"<br>    },<br>    "max_size": 100,<br>    "min_size": 1,<br>    "name": "sca-source-resolver",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "service",<br>        "value": "sca-source-resolver"<br>      }<br>    }<br>  }<br>]</pre> | no |
+| <a name="input_eks_pod_subnets"></a> [eks\_pod\_subnets](#input\_eks\_pod\_subnets) | The subnets to use for EKS pods. When specified, custom networking configuration is applied to the EKS cluster. | `list(string)` | n/a | yes |
 | <a name="input_eks_private_endpoint_enabled"></a> [eks\_private\_endpoint\_enabled](#input\_eks\_private\_endpoint\_enabled) | Enables the EKS VPC private endpoint. | `bool` | `true` | no |
 | <a name="input_eks_public_endpoint_enabled"></a> [eks\_public\_endpoint\_enabled](#input\_eks\_public\_endpoint\_enabled) | Enables the EKS public endpoint. | `bool` | `false` | no |
 | <a name="input_eks_subnets"></a> [eks\_subnets](#input\_eks\_subnets) | The subnets to deploy EKS into. | `list(string)` | n/a | yes |
@@ -130,6 +137,7 @@ This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/
 |------|-------------|
 | <a name="output_bucket_suffix"></a> [bucket\_suffix](#output\_bucket\_suffix) | n/a |
 | <a name="output_cluster_autoscaler_iam_role_arn"></a> [cluster\_autoscaler\_iam\_role\_arn](#output\_cluster\_autoscaler\_iam\_role\_arn) | n/a |
+| <a name="output_cluster_endpoint"></a> [cluster\_endpoint](#output\_cluster\_endpoint) | n/a |
 | <a name="output_db_database_name"></a> [db\_database\_name](#output\_db\_database\_name) | n/a |
 | <a name="output_db_endpoint"></a> [db\_endpoint](#output\_db\_endpoint) | n/a |
 | <a name="output_db_master_password"></a> [db\_master\_password](#output\_db\_master\_password) | n/a |
@@ -145,8 +153,8 @@ This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/
 | <a name="output_external_dns_iam_role_arn"></a> [external\_dns\_iam\_role\_arn](#output\_external\_dns\_iam\_role\_arn) | n/a |
 | <a name="output_karpenter_iam_role_arn"></a> [karpenter\_iam\_role\_arn](#output\_karpenter\_iam\_role\_arn) | n/a |
 | <a name="output_load_balancer_controller_iam_role_arn"></a> [load\_balancer\_controller\_iam\_role\_arn](#output\_load\_balancer\_controller\_iam\_role\_arn) | n/a |
+| <a name="output_nodegroup_iam_role_name"></a> [nodegroup\_iam\_role\_name](#output\_nodegroup\_iam\_role\_name) | n/a |
 | <a name="output_s3_bucket_name_suffix"></a> [s3\_bucket\_name\_suffix](#output\_s3\_bucket\_name\_suffix) | n/a |
-
 
 # Regional Considerations
 
@@ -154,4 +162,4 @@ This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/
 
 * RDS Proxy is not available in AWS Gov Cloud regions, so `create_rds_proxy` must be set `false`. Monitor database for connection usage and scale accordingly.
 * RDS's `ManageMasterUserPassword` capability is not supported. Specify a password via `db_master_user_password`
-* Elasticache's `cache.r7g` instance class is not available. Consider using `cache.r6g`.
+* Elasticache's `cache.r7g` and `cache.tg4` instance class is not available. Consider using `cache.r6g` and `cache.t3`

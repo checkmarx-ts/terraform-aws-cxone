@@ -5,6 +5,34 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+locals {
+  # Add the fqdn to the firewall rules
+  additional_suricata_rules = <<EOF
+# CxOne must talk to itself when performing token exchange to validate the FQDN (cxiam makes the connection).
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"${var.fqdn}"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240401001; rev:1;)
+
+${var.additional_suricata_rules}
+
+EOF
+}
+
+module "vpc" {
+  source                     = "../../modules/inspection-vpc"
+  deployment_id              = var.deployment_id
+  primary_cidr_block         = var.primary_cidr_block
+  secondary_cidr_block       = var.secondary_cidr_block
+  interface_vpc_endpoints    = var.interface_vpc_endpoints
+  create_interface_endpoints = var.create_interface_endpoints
+  create_s3_endpoint         = var.create_s3_endpoint
+  enable_firewall            = var.enable_firewall
+  stateful_default_action    = var.stateful_default_action
+  suricata_rules             = var.suricata_rules
+  include_sca_rules          = var.include_sca_rules
+  additional_suricata_rules  = local.additional_suricata_rules
+  create_managed_rule_groups = var.create_managed_rule_groups
+  managed_rule_groups        = var.managed_rule_groups
+}
+
 
 resource "aws_kms_key" "main" {
   description             = "KMS Key for the Checkmarx One deployment named ${var.deployment_id}"
@@ -19,7 +47,7 @@ resource "aws_kms_key" "main" {
 resource "random_password" "elasticsearch" {
   length           = 32
   special          = false
-  override_special = "!*-_[]{}<>"
+  override_special = "!-_"
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -29,7 +57,7 @@ resource "random_password" "elasticsearch" {
 resource "random_password" "db" {
   length           = 32
   special          = false
-  override_special = "!*-_[]{}<>"
+  override_special = "!-_"
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -39,7 +67,7 @@ resource "random_password" "db" {
 resource "random_password" "kots_admin" {
   length           = 14
   special          = false
-  override_special = "!*-_[]{}<>"
+  override_special = "!-_"
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -49,19 +77,17 @@ resource "random_password" "kots_admin" {
 resource "random_password" "cxone_admin" {
   length           = 14
   special          = false
-  override_special = "!*-_[]{}<>"
+  override_special = "!-_"
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
   min_numeric      = 1
 }
 
-
-
-
 module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "5.0.1"
+  count   = var.acm_certificate_arn != null ? 0 : 1
 
   domain_name = var.fqdn
   zone_id     = var.route_53_hosted_zone_id
@@ -71,46 +97,6 @@ module "acm" {
   create_route53_records = true
   validate_certificate   = true
   wait_for_validation    = true
-}
-
-module "ses" {
-  source            = "cloudposse/ses/aws"
-  version           = "0.24.0"
-  zone_id           = var.route_53_hosted_zone_id
-  domain            = var.fqdn
-  verify_domain     = true
-  verify_dkim       = true
-  ses_group_enabled = true
-  ses_group_name    = "${var.deployment_id}-ses-group"
-  ses_user_enabled  = true
-  name              = "CxOne-${var.deployment_id}"
-  environment       = "dev"
-  enabled           = true
-
-  tags = {
-    Name = var.deployment_id
-  }
-}
-
-resource "aws_iam_group_policy" "cxone_ses_group_policy" {
-  name  = "${var.deployment_id}-ses-group-policy"
-  group = module.ses.ses_group_name
-
-  depends_on = [module.ses]
-
-  policy = jsonencode({
-    Version : "2012-10-17"
-    Statement : [
-      {
-        Effect : "Allow",
-        Action : [
-          "ses:SendEmail",
-          "ses:SendRawEmail"
-        ],
-        Resource : "*"
-      }
-    ]
-  })
 }
 
 
@@ -127,6 +113,9 @@ module "checkmarx-one" {
   # EKS Configuration
   eks_create                               = var.eks_create
   eks_subnets                              = module.vpc.private_subnets
+  eks_pod_subnets                          = module.vpc.pod_subnets
+  eks_enable_externalsnat                  = var.eks_enable_externalsnat
+  eks_enable_fargate                       = var.eks_enable_fargate
   eks_create_cluster_autoscaler_irsa       = var.eks_create_cluster_autoscaler_irsa
   eks_create_external_dns_irsa             = var.eks_create_external_dns_irsa
   eks_create_load_balancer_controller_irsa = var.eks_create_load_balancer_controller_irsa
@@ -141,9 +130,10 @@ module "checkmarx-one" {
   eks_cluster_endpoint_public_access_cidrs = var.eks_cluster_endpoint_public_access_cidrs
   enable_cluster_creator_admin_permissions = var.enable_cluster_creator_admin_permissions
   launch_template_tags                     = var.launch_template_tags
+  eks_node_groups                          = var.eks_node_groups
 
   # RDS Configuration
-  db_subnets                     = module.vpc.private_subnets
+  db_subnets                     = module.vpc.database_subnets
   db_engine_version              = var.db_engine_version
   db_allow_major_version_upgrade = var.db_allow_major_version_upgrade
   db_auto_minor_version_upgrade  = var.db_auto_minor_version_upgrade
@@ -175,7 +165,7 @@ module "checkmarx-one" {
 
   # Elasticache Configuration
   ec_create                         = var.ec_create
-  ec_subnets                        = module.vpc.private_subnets
+  ec_subnets                        = module.vpc.database_subnets
   ec_enable_serverless              = var.ec_enable_serverless
   ec_serverless_max_storage         = var.ec_serverless_max_storage
   ec_serverless_max_ecpu_per_second = var.ec_serverless_max_ecpu_per_second
@@ -190,7 +180,7 @@ module "checkmarx-one" {
 
   # Elasticsearch Configuration
   es_create              = var.es_create
-  es_subnets             = module.vpc.private_subnets
+  es_subnets             = module.vpc.database_subnets
   es_instance_count      = var.es_instance_count
   es_instance_type       = var.es_instance_type
   es_volume_size         = var.es_volume_size
@@ -212,8 +202,9 @@ module "checkmarx-one-install" {
   admin_email                           = var.kots_admin_email
   admin_password                        = random_password.cxone_admin.result
   fqdn                                  = var.fqdn
-  acm_certificate_arn                   = module.acm.acm_certificate_arn
+  acm_certificate_arn                   = var.acm_certificate_arn != null ? var.acm_certificate_arn : module.acm[0].acm_certificate_arn
   bucket_suffix                         = module.checkmarx-one.s3_bucket_name_suffix
+  ms_replica_count                      = var.ms_replica_count
   object_storage_endpoint               = "s3.${data.aws_region.current.name}.amazonaws.com"
   object_storage_access_key             = var.object_storage_access_key
   object_storage_secret_key             = var.object_storage_secret_key
@@ -222,14 +213,25 @@ module "checkmarx-one-install" {
   postgres_user                         = module.checkmarx-one.db_master_username
   postgres_password                     = module.checkmarx-one.db_master_password
   redis_address                         = module.checkmarx-one.ec_endpoint
-  smtp_host                             = "email-smtp.${data.aws_region.current.name}.amazonaws.com"
+  smtp_host                             = var.smtp_host
   smtp_port                             = var.smtp_port
-  smtp_password                         = module.ses.ses_smtp_password
-  smtp_user                             = module.ses.user_name
-  smtp_from_sender                      = "noreply@${var.fqdn}"
+  smtp_password                         = var.smtp_password
+  smtp_user                             = var.smtp_user
+  smtp_from_sender                      = var.smtp_from_sender
   elasticsearch_host                    = module.checkmarx-one.es_endpoint
   elasticsearch_password                = random_password.elasticsearch.result
   cluster_autoscaler_iam_role_arn       = module.checkmarx-one.cluster_autoscaler_iam_role_arn
   load_balancer_controller_iam_role_arn = module.checkmarx-one.load_balancer_controller_iam_role_arn
   external_dns_iam_role_arn             = module.checkmarx-one.external_dns_iam_role_arn
+  karpenter_iam_role_arn                = module.checkmarx-one.karpenter_iam_role_arn
+  cluster_endpoint                      = module.checkmarx-one.cluster_endpoint
+  nodegroup_iam_role_name               = module.checkmarx-one.nodegroup_iam_role_name
+  availability_zones                    = module.vpc.azs
+  pod_eniconfig                         = module.vpc.ENIConfig
+  vpc_id                                = module.vpc.vpc_id
+}
+
+
+output "cxone1" {
+  value = module.checkmarx-one.eks
 }
