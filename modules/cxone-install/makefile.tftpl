@@ -129,4 +129,4 @@ clean-kots:
 
 .PHONY: totp
 totp:
-	echo "${TOTP}" | totp-cli instant
+	echo "$${TOTP}" | totp-cli instant
