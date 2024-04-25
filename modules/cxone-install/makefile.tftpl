@@ -16,7 +16,7 @@ update-kubeconfig:
 
 .PHONY: kots-install
 kots-install:
-	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password $${KOTS_PASSWORD} --config-values $${KOTS_CONFIG_FILE} --app-version-label $${CXONE_VERSION}
+	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password '$${KOTS_PASSWORD}' --config-values $${KOTS_CONFIG_FILE} --app-version-label $${CXONE_VERSION}
 
 #.PHONY: kots-set-config
 #kots-set-config:
@@ -126,6 +126,13 @@ clean-kots:
 	kubectl delete deployment kotsadm -n $${NAMESPACE}
 	kubectl delete statefulset kotsadm-minio -n $${NAMESPACE}
 	kubectl delete statefulset kotsadm-rqlite -n $${NAMESPACE}
+
+.PHONY: destroy-load-balancer-controller
+destroy-load-balancer-controller:
+	ELB_NAME=$(kubectl describe service ast-platform-traefik -n ast | grep "LoadBalancer Ingress" | awk '{print $3}' | cut -c 1-16); \
+	aws elbv2 describe-load-balancers --query "LoadBalancers[?starts_with(LoadBalancerName,'$ELB_NAME')].LoadBalancerArn" --output text | tr "\t" "\n" | xargs -I{} aws elbv2 delete-load-balancer --load-balancer-arn {}; \
+	aws ec2 describe-security-groups --filters Name=tag:elbv2.k8s.aws/cluster,Values=$${DEPLOYMENT_ID} --query "SecurityGroups[*].GroupId" --output text | tr "\t" "\n" | xargs -I{} aws ec2 delete-security-group --group-id {};
+
 
 .PHONY: totp
 totp:
