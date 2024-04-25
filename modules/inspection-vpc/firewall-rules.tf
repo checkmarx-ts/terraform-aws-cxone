@@ -37,6 +37,7 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"route53.amazonaws
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cloudformation.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190010; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"elasticloadbalancing.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190011; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"autoscaling.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190012; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"sqs.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24240001; rev:1;)
 
 
 # Installation media for kube-system services pods like coredns, aws-node, ebs-csi-controller, ebs-csi-node, kube-proxy
