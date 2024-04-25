@@ -252,6 +252,8 @@ module "eks" {
     create_iam_role                 = false
     iam_role_arn                    = module.eks_node_iam_role.iam_role_arn
     key_name                        = var.ec2_key_name
+    post_bootstrap_user_data        = var.eks_post_bootstrap_user_data
+    pre_bootstrap_user_data         = var.eks_pre_bootstrap_user_data
     metadata_options = {
       http_endpoint               = "enabled"
       http_tokens                 = "required"

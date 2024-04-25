@@ -123,6 +123,18 @@ variable "eks_node_additional_security_group_ids" {
   default     = []
 }
 
+variable "eks_post_bootstrap_user_data" {
+  type        = string
+  description = "User data to insert after bootstrapping script."
+  default     = ""
+}
+
+variable "eks_pre_bootstrap_user_data" {
+  type        = string
+  description = "User data to insert before bootstrapping script."
+  default     = ""
+}
+
 variable "coredns_version" {
   type        = string
   description = "The version of the EKS Core DNS Addon."

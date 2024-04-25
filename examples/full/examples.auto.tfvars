@@ -117,6 +117,8 @@ eks_public_endpoint_enabled              = true
 eks_cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"] # Use to lock down access to the public endpoint, when the public endpoint is enabled
 enable_cluster_creator_admin_permissions = true          # the principal used to execute this terraform will be granted access to EKS
 eks_node_additional_security_group_ids   = []            # pass arbitrary additional security groups to EKS nodes
+eks_post_bootstrap_user_data             = null
+eks_pre_bootstrap_user_data              = null
 # Uncomment the eks_administrator_principals to specify additional principal ARNs that should have admin
 # access to EKS.
 # eks_administrator_principals = [

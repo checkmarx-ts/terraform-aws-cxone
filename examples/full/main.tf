@@ -120,6 +120,18 @@ module "checkmarx-one" {
   eks_create_external_dns_irsa             = var.eks_create_external_dns_irsa
   eks_create_load_balancer_controller_irsa = var.eks_create_load_balancer_controller_irsa
   eks_create_karpenter                     = var.eks_create_karpenter
+  eks_pre_bootstrap_user_data              = var.eks_pre_bootstrap_user_data
+  eks_post_bootstrap_user_data             = var.eks_post_bootstrap_user_data
+  eks_cluster_security_group_additional_rules = {
+    egress_nodes_ephemeral_ports_tcp = {
+      description = "Ingress from VPC (management hosts)"
+      protocol    = "tcp"
+      from_port   = 443
+      to_port     = 443
+      type        = "ingress"
+      cidr_blocks = module.vpc.vpc_cidr_blocks
+    }
+  }
   eks_version                              = var.eks_version
   coredns_version                          = var.coredns_version
   kube_proxy_version                       = var.kube_proxy_version
