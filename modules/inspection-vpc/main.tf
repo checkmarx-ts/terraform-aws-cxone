@@ -137,14 +137,16 @@ resource "aws_nat_gateway" "public" {
 #   Route Tables
 #******************************************************************************
 
-# Public Subnet Routing
-resource "aws_route_table" "public" {
+resource "aws_route_table" "igw" {
   vpc_id = aws_vpc.main.id
-  tags   = { "Name" = "${var.deployment_id}-public" }
+  tags   = { "Name" = "${var.deployment_id}-igw" }
 
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
+  dynamic "route" {
+    for_each = var.enable_firewall ? ["apply"] : []
+    content {
+      cidr_block      = local.public_subnet_cidr
+      vpc_endpoint_id = [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0]
+    }
   }
 
   dynamic "route" {
@@ -162,6 +164,34 @@ resource "aws_route_table" "public" {
       vpc_endpoint_id = [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0]
     }
   }
+
+  dynamic "route" {
+    for_each = { for idx, az in local.azs : az => idx if var.enable_firewall }
+    content {
+      cidr_block      = local.database_subnet_cidrs[route.value]
+      vpc_endpoint_id = [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0]
+    }
+  }
+
+}
+
+resource "aws_route_table_association" "igw" {
+  gateway_id     = aws_internet_gateway.igw.id
+  route_table_id = aws_route_table.igw.id
+}
+
+
+# Public Subnet Routing
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+  tags   = { "Name" = "${var.deployment_id}-public" }
+
+  route {
+    cidr_block      = "0.0.0.0/0"
+    gateway_id      = var.enable_firewall ? null : aws_internet_gateway.igw.id
+    vpc_endpoint_id = var.enable_firewall ? [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0] : null
+  }
+
   depends_on = [aws_networkfirewall_firewall.main]
 }
 
@@ -178,8 +208,8 @@ resource "aws_route_table" "firewall" {
   tags   = { "Name" = "${var.deployment_id}-firewall" }
 
   route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.public.id
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
   }
 }
 
@@ -194,18 +224,8 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
   tags   = { "Name" = "${var.deployment_id}-private" }
   route {
-    cidr_block      = "0.0.0.0/0"
-    vpc_endpoint_id = var.enable_firewall ? [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0] : null
-    nat_gateway_id  = var.enable_firewall ? null : aws_nat_gateway.public.id
-  }
-
-  dynamic "route" {
-    # Route the traffic to public subnet, such as traffic from the load balancer, back through the firewall when firewall is enabled to preserve symetric routing.
-    for_each = var.enable_firewall ? ["apply"] : []
-    content {
-      cidr_block      = local.public_subnet_cidr
-      vpc_endpoint_id = [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0]
-    }
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.public.id
   }
 
   depends_on = [aws_networkfirewall_firewall.main]
