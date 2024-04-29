@@ -18,8 +18,6 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"pkg-containers.gi
 EOF
 
   default_suricata_rules = <<EOF
-
-
 # Amazon Services - these must be allowed, or can be replaced by private VPC Endpoints (which have a charge https://aws.amazon.com/privatelink/pricing/)
 # Note that these are AWS Region Dependent
 # Reference https://docs.aws.amazon.com/eks/latest/userguide/private-clusters.html, https://eksctl.io/usage/eks-private-cluster/
@@ -37,6 +35,11 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"route53.amazonaws
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cloudformation.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190010; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"elasticloadbalancing.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190011; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"autoscaling.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190012; rev:1;)
+
+
+# Karpenter
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"iam.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24250001; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.pricing.us-east-1.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24250002; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"sqs.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24240001; rev:1;)
 
 
@@ -84,30 +87,37 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"amazonlinux-2-rep
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"al2023-repos-${data.aws_region.current.name}-de612dc2.s3.dualstack.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420033; rev:1;)
 
 
-# AWS Load Balancer Controller - public.ecr.aws (metadata) redirects to cloudfront (download)
+# AWS Load Balancer Controller & Karpenter - public.ecr.aws (metadata) redirects to cloudfront (download)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"public.ecr.aws"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420034; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"d5l0dvt14r5h8.cloudfront.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420035; rev:1;)
+
 
 # Cluster Autoscaler - k8s.gcr.io (metadata) redirects to storage.googleapis.com (download)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"k8s.gcr.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420036; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"storage.googleapis.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420037; rev:1;)
 
+
 # Kotsadm tools (minio, rqlite) come from docker.io and docker.com
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"registry-1.docker.io"; nocase; startswith; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420038; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"auth.docker.io"; nocase; startswith; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420039; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"production.cloudflare.docker.com"; nocase; startswith; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420040; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"subnet.min.io"; nocase; startswith; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24250010; rev:1;)
+
 
 # Replicated APIs - used for license checking
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"replicated.app"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420041; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"proxy.replicated.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420042; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"proxy-auth.replicated.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420043; rev:1;)
 
+
 # Used by cxone images, and kube-rbac-proxy in CxOne operator
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"gcr.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240419044; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"checkmarx.jfrog.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420044; rev:1;)
 
+
 # Liquibase schema files required for database migration execution
 pass http $HOME_NET any -> $EXTERNAL_NET 80 (http.host; content:"www.liquibase.org"; startswith; endswith; msg:"Match liquidbase.com allowed"; flow:to_server, established; sid:240420062; rev:1;)
+
 
 # Feature Flags via Split.io
 # Reference https://help.split.io/hc/en-us/articles/360006954331-How-do-I-allow-Split-to-work-in-my-environment
@@ -120,14 +130,17 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cdn.split.io"; st
 # Fastly (a CDN), which is used for sdk.split.io https://api.fastly.com/public-ip-list. These are used sometimes w/o host name, so SNI cannot be used to filter.
 pass tls $HOME_NET any -> [23.235.32.0/20,43.249.72.0/22,103.244.50.0/24,103.245.222.0/23,103.245.224.0/24,104.156.80.0/20,140.248.64.0/18,140.248.128.0/17,146.75.0.0/17,151.101.0.0/16,157.52.64.0/18,167.82.0.0/17,167.82.128.0/20,167.82.160.0/20,167.82.224.0/20,172.111.64.0/18,185.31.16.0/22,199.27.72.0/21,199.232.0.0/16] 443 (msg:"Fastly CDN"; flow:to_server, established; sid:240420051; rev:1;)
 
+
 # Allow access to s3 buckets for Checkmarx One. Buckets are typically created with a prefix of the deployment id which allows for regex matching
 # Example bucket name and suffix: scan-results-bos-ap-southeast-1-lab-19205
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^${var.deployment_id}.*?\.s3\.dualstack\.${data.aws_region.current.name}\.amazonaws\.com$/i" msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420052; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^${var.deployment_id}.*?\.s3\.${data.aws_region.current.name}\.amazonaws\.com$/i" msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420053; rev:1;)
 
+
 # Checkmarx One Scans will upload source to scan-results bucket with url path patterns like "https://s3.${data.aws_region.current.name}.amazonaws.com/scan-results-0aa15147e5f3/source-code/....." 
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"s3.dualstack.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420054; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"s3.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420055; rev:1;)
+
 
 # These are the checkmarx services for SCA scanning, cloud IAM (for Authentication to SCA), and codebashing
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"iam.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420056; rev:1;)
@@ -138,7 +151,8 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"uploads.sca.check
 # Scan results buckets are used for SCA scan result syncing, and vary by the connected SCA region (e.g. NA, or EU)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"microservice-scanresults-prod-storage-1an26shc41yi3.s3.amazonaws.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240420061; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.stagecodebashing.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240422001; rev:1;)
-
+# upcoming features                                             
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cx-sca-containers.es.us-east-1.aws.found.io"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:204290001; rev:1;)
 
 
 # These URLs are randomly generated, and used to discover the correct s3 API signature version to use when communicating with S3 buckets.
@@ -155,20 +169,3 @@ ${var.additional_suricata_rules}
 
 EOF
 }
-
-
-
-# data "template_file" "default_suricata_rules" {
-#   count    = var.enable_firewall ? 1 : 0
-#   template = <<EOF
-
-# reject tls any any -> any any (msg:"TLS 1.0 or 1.1"; ssl_version:tls1.0,tls1.1; sid:2023070518;)
-# drop ip $HOME_NET any -> $EXTERNAL_NET [1389,53,4444,445,135,139,389,3389] (msg:"Deny List High Risk Destination Ports"; sid:278670;)
-
-
-# # Drop other traffic
-# #drop tls $HOME_NET any -> $EXTERNAL_NET any (msg:"not matching any TLS allowlisted FQDNs"; flow:to_server, established; sid:3; rev:1;)
-# #reject tcp $HOME_NET any -> $EXTERNAL_NET any (msg:"blocked uknown tcp"; flow:to_server, established; sid:4; rev:1;)
-
-# EOF
-# }

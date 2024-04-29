@@ -76,7 +76,7 @@ resource "local_file" "makefile" {
   filename = "Makefile"
 }
 
-resource "local_file" "karpenter" {
+resource "local_file" "karpenter_configuration" {
   content = templatefile("${path.module}/karpenter.reference.yaml.tftpl", {
     deployment_id           = var.deployment_id
     nodegroup_iam_role_name = var.nodegroup_iam_role_name

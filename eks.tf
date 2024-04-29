@@ -224,9 +224,9 @@ module "eks" {
       before_compute = var.eks_pod_subnets != null ? true : false
       configuration_values = jsonencode({
         env = {
-          #AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = var.eks_pod_subnets != null ? "true" : "false"
-          #ENI_CONFIG_LABEL_DEF               = var.eks_pod_subnets != null ? "topology.kubernetes.io/zone" : ""
-          AWS_VPC_K8S_CNI_EXTERNALSNAT = var.eks_enable_externalsnat ? "true" : "false"
+          AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = var.eks_pod_subnets != null ? "true" : "false"
+          ENI_CONFIG_LABEL_DEF               = var.eks_pod_subnets != null ? "topology.kubernetes.io/zone" : ""
+          AWS_VPC_K8S_CNI_EXTERNALSNAT       = var.eks_enable_externalsnat ? "true" : "false"
         }
       })
     }

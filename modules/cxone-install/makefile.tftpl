@@ -18,9 +18,9 @@ update-kubeconfig:
 kots-install:
 	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password '$${KOTS_PASSWORD}' --config-values $${KOTS_CONFIG_FILE} --app-version-label $${CXONE_VERSION}
 
-#.PHONY: kots-set-config
-#kots-set-config:
-#	kubectl kots set config ast -n $${NAMESPACE} --config-file $${KOTS_CONFIG_FILE} --deploy
+.PHONY: kots-set-config
+kots-set-config:
+	kubectl kots set config ast -n $${NAMESPACE} --config-file $${KOTS_CONFIG_FILE} --deploy
 
 .PHONY: kots-get-config
 kots-get-config:
