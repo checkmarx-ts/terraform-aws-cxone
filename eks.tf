@@ -262,7 +262,8 @@ module "eks" {
     }
   }
 
-  eks_managed_node_groups = local.eks_nodegroups
+  cluster_security_group_additional_rules = var.eks_cluster_security_group_additional_rules
+  eks_managed_node_groups                 = local.eks_nodegroups
 
   fargate_profile_defaults = {
     subnet_ids = var.eks_pod_subnets != null ? var.eks_pod_subnets : null
