@@ -221,11 +221,11 @@ module "eks" {
     }
     vpc-cni = {
       addon_version  = var.vpc_cni_version
-      before_compute = var.eks_pod_subnets != null ? true : false
+      before_compute = var.eks_enable_custom_networking
       configuration_values = jsonencode({
         env = {
-          AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = var.eks_pod_subnets != null ? "true" : "false"
-          ENI_CONFIG_LABEL_DEF               = var.eks_pod_subnets != null ? "topology.kubernetes.io/zone" : ""
+          AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = tostring(var.eks_enable_custom_networking)
+          ENI_CONFIG_LABEL_DEF               = var.eks_enable_custom_networking ? "topology.kubernetes.io/zone" : ""
           AWS_VPC_K8S_CNI_EXTERNALSNAT       = var.eks_enable_externalsnat ? "true" : "false"
         }
       })
@@ -266,7 +266,7 @@ module "eks" {
   eks_managed_node_groups                 = local.eks_nodegroups
 
   fargate_profile_defaults = {
-    subnet_ids = var.eks_pod_subnets != null ? var.eks_pod_subnets : null
+    subnet_ids = var.eks_enable_custom_networking ? var.eks_pod_subnets : null
   }
   fargate_profiles = var.eks_enable_fargate ? local.fargate_profiles : {}
 }

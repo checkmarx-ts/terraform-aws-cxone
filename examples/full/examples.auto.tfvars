@@ -110,6 +110,7 @@ vpc_cni_version                          = "v1.18.0-eksbuild.1"
 aws_ebs_csi_driver_version               = "v1.28.0-eksbuild.1"
 eks_enable_fargate                       = false # not yet working, do not enable
 eks_enable_externalsnat                  = false # leave false, unless working with external nat gateway
+eks_enable_custom_networking             = false
 eks_private_endpoint_enabled             = true
 # When eks_public_endpoint_enabled = false, installation and management commands after Terraform must be run
 # from a system with connectivity to the private EKS endpoint, such as a bastion host.

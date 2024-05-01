@@ -64,6 +64,12 @@ variable "eks_enable_externalsnat" {
   default     = false
 }
 
+variable "eks_enable_custom_networking" {
+  type        = bool
+  description = "Enables custom networking for the EKS VPC CNI. When true, custom networking is enabled with `ENI_CONFIG_LABEL_DEF` = `topology.kubernetes.io/zone` and ENIConfig resources must be created."
+  default     = false
+}
+
 variable "eks_enable_fargate" {
   type        = bool
   description = "Enables Fargate profiles for the karpenter and kube-system namespaces."
