@@ -108,7 +108,7 @@ module "checkmarx-one" {
   ec2_key_name       = var.ec2_key_name
   vpc_id             = module.vpc.vpc_id
   kms_key_arn        = aws_kms_key.main.arn
-  s3_allowed_origins = [var.fqdn]
+  s3_allowed_origins = [var.fqdn, "https://${var.fqdn}"]
 
   # EKS Configuration
   eks_create                               = var.eks_create
