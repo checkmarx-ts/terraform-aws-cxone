@@ -8,6 +8,10 @@ KOTS_PASSWORD = ${tf_kots_password}
 NAMESPACE = ${tf_namespace}
 LICENSE_FILE = ${tf_license_file}
 KOTS_CONFIG_FILE = ${tf_kots_config_file}
+AIRGAP_BUNDLE = ???
+KOTS_REGISTRY = ???
+REGISTRY_USERNAME = ???
+REGISTRY_PASSWORD = ???
 TOTP = 123
 
 .PHONY: update-kubeconfig
@@ -17,6 +21,11 @@ update-kubeconfig:
 .PHONY: kots-install
 kots-install:
 	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password '$${KOTS_PASSWORD}' --config-values $${KOTS_CONFIG_FILE} --app-version-label $${CXONE_VERSION}
+
+.PHONY: kots-install-from-airgap
+kots-install-from-airgap:
+	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password '$${KOTS_PASSWORD}' --config-values $${KOTS_CONFIG_FILE} \
+	--airgap --airgap-bundle $${AIRGAP_BUNDLE} --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}'
 
 .PHONY: kots-set-config
 kots-set-config:
