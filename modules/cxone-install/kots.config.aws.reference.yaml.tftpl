@@ -43,9 +43,11 @@ spec:
     sca_prod_environment:
       value: https://api-sca.checkmarx.net
 
-    # environment_type is always production
+    # environment_type is either "production" or "development"
+    # This controls how strict the KOTS preflight checks are for memory, cpu, etc
+    # Recommended value: production
     environment_type:
-      value: development
+      value: production
 
     # deployment_type is always cloud
     deployment_type:
@@ -82,7 +84,7 @@ spec:
     # bool - Valid values are "0" (false) and "1" true. 
     # When true, must provide elasticsearch configuration.
     enable_sca_global_inventory:
-      value: "0"
+      value: "1"
 
     # Typically ES is provided via AWS OpenSearch service (must be Elasticsearch engine v 7.10)
     sca_global_inventory_elasticsearch_host:
@@ -209,7 +211,7 @@ spec:
     
     # The name of the CxOne database. By convention, ast.
     external_postgres_db:
-      value: ast
+      value: ${postgres_db}
 
     # Used to enforce SSL connections to postgres. Values are
     # postgres_sslmode_require or postgres_sslmode_allow
@@ -222,19 +224,19 @@ spec:
 
     # Enables analytics features, which requires an additional database.
     enable_analytics:
-      value: "0"
+      value: "1"
 
     # The analaytics database connection information. required when enable_analytics is "1"
     analytics_postgres_host:
-      value: <enter metrics database host>
+      value: ${analytics_postgres_host}
     analytics_postgres_port:
       value: "5432"    
     analytics_postgres_db_name:
-      value: analytics
+      value: ${analytics_postgres_db_name}
     analytics_postgres_user:
-      value: <enter user name>    
+      value: ${analytics_postgres_user} 
     analytics_postgres_password:
-      value: "<enter password>"
+      value: "${analytics_postgres_password}"
     # Can be either analytics_postgres_sslmode_require or analytics_postgres_sslmode_allow
     analytics_postgres_sslmode_value:
       value: analytics_postgres_sslmode_require
