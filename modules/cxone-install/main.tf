@@ -31,6 +31,12 @@ resource "local_file" "kots_config" {
     postgres_password = var.postgres_password #jsondecode(data.aws_secretsmanager_secret_version.rds_secret.secret_string)["password"]
     postgres_db       = var.postgres_database_name
 
+    # RDS - Analytics
+    analytics_postgres_host     = var.analytics_postgres_host
+    analytics_postgres_user     = var.analytics_postgres_user
+    analytics_postgres_password = var.analytics_postgres_password #jsondecode(data.aws_secretsmanager_secret_version.rds_secret.secret_string)["password"]
+    analytics_postgres_db_name  = var.analytics_postgres_database_name
+
     # Redis
     redis_address = var.redis_address
 

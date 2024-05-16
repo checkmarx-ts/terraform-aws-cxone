@@ -155,6 +155,27 @@ variable "postgres_database_name" {
   default     = "ast"
 }
 
+variable "analytics_postgres_host" {
+  type        = string
+  description = "The endpoint for the analytics RDS server."
+}
+
+variable "analytics_postgres_database_name" {
+  type        = string
+  description = "The name of the analytics database."
+}
+
+variable "analytics_postgres_user" {
+  type        = string
+  description = "The user name for the analytics RDS server."
+  default     = "ast"
+}
+
+variable "analytics_postgres_password" {
+  type        = string
+  description = "The user name for the analytics RDS server."
+}
+
 variable "redis_address" {
   type        = string
   description = "The redis endpoint."

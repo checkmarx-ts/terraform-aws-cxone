@@ -506,6 +506,64 @@ variable "db_apply_immediately" {
 
 
 #******************************************************************************
+#   RDS - Analytics - Configuration
+#******************************************************************************
+
+variable "analytics_db_instance_class" {
+  description = "The aurora postgres instance class."
+  type        = string
+  default     = "db.r6g.xlarge"
+}
+
+variable "analytics_db_final_snapshot_identifier" {
+  description = "Identifer for a final DB snapshot for the analytics database. Required when db_skip_final_snapshot is false.."
+  type        = string
+  default     = null
+}
+
+variable "analytics_db_snapshot_identifer" {
+  description = "The snapshot identifier to restore the anatlytics database from."
+  type        = string
+  default     = null
+}
+
+variable "analytics_db_cluster_db_instance_parameter_group_name" {
+  type        = string
+  default     = null
+  description = "The name of the DB Cluster parameter group to use."
+}
+
+variable "analytics_db_master_user_password" {
+  description = "The master user password for RDS. Specify to explicitly set the password otherwise RDS will be allowed to manage it."
+  type        = string
+  default     = null
+}
+
+variable "analytics_db_instances" {
+  type        = map(any)
+  description = "The DB instance configuration"
+  default = {
+    writer   = {}
+    replica1 = {}
+  }
+}
+
+variable "analytics_db_serverlessv2_scaling_configuration" {
+  description = "The serverless v2 scaling minimum and maximum."
+  type = object({
+    min_capacity = number
+    max_capacity = number
+  })
+  default = {
+    min_capacity = 0.5
+    max_capacity = 32
+  }
+}
+
+
+
+
+#******************************************************************************
 # Elasticache Configuration
 #******************************************************************************
 variable "ec_create" {

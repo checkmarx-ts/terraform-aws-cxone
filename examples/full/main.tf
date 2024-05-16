@@ -64,6 +64,16 @@ resource "random_password" "db" {
   min_numeric      = 1
 }
 
+resource "random_password" "analytics_db" {
+  length           = 32
+  special          = false
+  override_special = "!-_"
+  min_special      = 1
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+}
+
 resource "random_password" "kots_admin" {
   length           = 14
   special          = false
@@ -175,6 +185,14 @@ module "checkmarx-one" {
   db_instances                          = var.db_instances
   db_serverlessv2_scaling_configuration = var.db_serverlessv2_scaling_configuration
 
+  analytics_db_instance_class                           = var.analytics_db_instance_class
+  analytics_db_final_snapshot_identifier                = var.analytics_db_final_snapshot_identifier
+  analytics_db_snapshot_identifer                       = var.analytics_db_snapshot_identifer
+  analytics_db_cluster_db_instance_parameter_group_name = var.analytics_db_cluster_db_instance_parameter_group_name
+  analytics_db_instances                                = var.analytics_db_instances
+  analytics_db_serverlessv2_scaling_configuration       = var.analytics_db_serverlessv2_scaling_configuration
+  analytics_db_master_user_password                     = random_password.analytics_db.result
+
   # Elasticache Configuration
   ec_create                         = var.ec_create
   ec_subnets                        = module.vpc.database_subnets
@@ -224,6 +242,10 @@ module "checkmarx-one-install" {
   postgres_database_name                = module.checkmarx-one.db_database_name
   postgres_user                         = module.checkmarx-one.db_master_username
   postgres_password                     = module.checkmarx-one.db_master_password
+  analytics_postgres_host               = module.checkmarx-one.analytics_db_endpoint
+  analytics_postgres_database_name      = module.checkmarx-one.analytics_db_database_name
+  analytics_postgres_user               = module.checkmarx-one.analytics_db_master_username
+  analytics_postgres_password           = module.checkmarx-one.analytics_db_master_password
   redis_address                         = module.checkmarx-one.ec_endpoint
   smtp_host                             = var.smtp_host
   smtp_port                             = var.smtp_port
@@ -241,6 +263,28 @@ module "checkmarx-one-install" {
   availability_zones                    = module.vpc.azs
   pod_eniconfig                         = module.vpc.ENIConfig
   vpc_id                                = module.vpc.vpc_id
+}
+
+provider "kubernetes" {
+  host                   = module.checkmarx-one.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.checkmarx-one.cluster_certificate_authority_data)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args        = ["eks", "get-token", "--cluster-name", module.checkmarx-one.cluster_name]
+    command     = "aws"
+  }
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.checkmarx-one.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.checkmarx-one.cluster_certificate_authority_data)
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      args        = ["eks", "get-token", "--cluster-name", module.checkmarx-one.cluster_name]
+      command     = "aws"
+    }
+  }
 }
 
 

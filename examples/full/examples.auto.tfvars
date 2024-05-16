@@ -309,6 +309,22 @@ db_serverlessv2_scaling_configuration = {
 
 
 #******************************************************************************
+#   RDS - Analytics - Configuration
+#******************************************************************************
+analytics_db_instance_class                           = "db.serverless"
+analytics_db_final_snapshot_identifier                = "your-final-analytics-snapshot-id"
+analytics_db_snapshot_identifer                       = null
+analytics_db_cluster_db_instance_parameter_group_name = "aurora-postgresql13-cluster-analytics"
+analytics_db_instances = {
+  writer = {}
+}
+analytics_db_serverlessv2_scaling_configuration = {
+  min_capacity = 0.5
+  max_capacity = 8
+}
+
+
+#******************************************************************************
 # Elasticache Configuration
 #******************************************************************************
 ec_create                         = true
