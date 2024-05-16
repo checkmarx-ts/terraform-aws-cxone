@@ -6,13 +6,17 @@ This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/
 # Module documentation
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 2.13.0 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | ~> 2.30.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+| <a name="provider_helm"></a> [helm](#provider\_helm) | ~> 2.13.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | n/a |
 
 ## Modules
@@ -28,7 +32,9 @@ No requirements.
 | <a name="module_karpenter"></a> [karpenter](#module\_karpenter) | terraform-aws-modules/eks/aws//modules/karpenter | 20.8.5 |
 | <a name="module_load_balancer_controller_irsa"></a> [load\_balancer\_controller\_irsa](#module\_load\_balancer\_controller\_irsa) | terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks | 5.39.0 |
 | <a name="module_rds"></a> [rds](#module\_rds) | terraform-aws-modules/rds-aurora/aws | 9.3.1 |
+| <a name="module_rds-analytics"></a> [rds-analytics](#module\_rds-analytics) | terraform-aws-modules/rds-aurora/aws | 9.3.1 |
 | <a name="module_rds-proxy"></a> [rds-proxy](#module\_rds-proxy) | terraform-aws-modules/rds-proxy/aws | 3.1.0 |
+| <a name="module_rds-proxy-analytics"></a> [rds-proxy-analytics](#module\_rds-proxy-analytics) | terraform-aws-modules/rds-proxy/aws | 3.1.0 |
 | <a name="module_rds_proxy_sg"></a> [rds\_proxy\_sg](#module\_rds\_proxy\_sg) | terraform-aws-modules/security-group/aws | 5.1.2 |
 | <a name="module_s3_bucket"></a> [s3\_bucket](#module\_s3\_bucket) | terraform-aws-modules/s3-bucket/aws | 4.1.1 |
 
@@ -44,6 +50,7 @@ No requirements.
 | [aws_elasticache_subnet_group.redis](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/elasticache_subnet_group) | resource |
 | [aws_elasticsearch_domain.es](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/elasticsearch_domain) | resource |
 | [aws_iam_policy.s3_bucket_access](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| helm_release.analytics-rds-database-preparation | resource |
 | [random_string.random_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_iam_role.karpenter](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_role) | data source |
@@ -55,6 +62,13 @@ No requirements.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_analytics_db_cluster_db_instance_parameter_group_name"></a> [analytics\_db\_cluster\_db\_instance\_parameter\_group\_name](#input\_analytics\_db\_cluster\_db\_instance\_parameter\_group\_name) | The name of the DB Cluster parameter group to use. | `string` | `null` | no |
+| <a name="input_analytics_db_final_snapshot_identifier"></a> [analytics\_db\_final\_snapshot\_identifier](#input\_analytics\_db\_final\_snapshot\_identifier) | Identifer for a final DB snapshot for the analytics database. Required when db\_skip\_final\_snapshot is false.. | `string` | `null` | no |
+| <a name="input_analytics_db_instance_class"></a> [analytics\_db\_instance\_class](#input\_analytics\_db\_instance\_class) | The aurora postgres instance class. | `string` | `"db.r6g.xlarge"` | no |
+| <a name="input_analytics_db_instances"></a> [analytics\_db\_instances](#input\_analytics\_db\_instances) | The DB instance configuration | `map(any)` | <pre>{<br>  "replica1": {},<br>  "writer": {}<br>}</pre> | no |
+| <a name="input_analytics_db_master_user_password"></a> [analytics\_db\_master\_user\_password](#input\_analytics\_db\_master\_user\_password) | The master user password for RDS. Specify to explicitly set the password otherwise RDS will be allowed to manage it. | `string` | `null` | no |
+| <a name="input_analytics_db_serverlessv2_scaling_configuration"></a> [analytics\_db\_serverlessv2\_scaling\_configuration](#input\_analytics\_db\_serverlessv2\_scaling\_configuration) | The serverless v2 scaling minimum and maximum. | <pre>object({<br>    min_capacity = number<br>    max_capacity = number<br>  })</pre> | <pre>{<br>  "max_capacity": 32,<br>  "min_capacity": 0.5<br>}</pre> | no |
+| <a name="input_analytics_db_snapshot_identifer"></a> [analytics\_db\_snapshot\_identifer](#input\_analytics\_db\_snapshot\_identifer) | The snapshot identifier to restore the anatlytics database from. | `string` | `null` | no |
 | <a name="input_aws_ebs_csi_driver_version"></a> [aws\_ebs\_csi\_driver\_version](#input\_aws\_ebs\_csi\_driver\_version) | The version of the EKS EBS CSI Addon. | `string` | n/a | yes |
 | <a name="input_coredns_version"></a> [coredns\_version](#input\_coredns\_version) | The version of the EKS Core DNS Addon. | `string` | n/a | yes |
 | <a name="input_db_allow_major_version_upgrade"></a> [db\_allow\_major\_version\_upgrade](#input\_db\_allow\_major\_version\_upgrade) | Allows major version upgrades. | `bool` | `false` | no |
@@ -100,16 +114,20 @@ No requirements.
 | <a name="input_ec_subnets"></a> [ec\_subnets](#input\_ec\_subnets) | The subnets to deploy Elasticache into. | `list(string)` | n/a | yes |
 | <a name="input_eks_administrator_principals"></a> [eks\_administrator\_principals](#input\_eks\_administrator\_principals) | The ARNs of the IAM roles for administrator access to EKS. | <pre>list(object({<br>    name          = string<br>    principal_arn = string<br>  }))</pre> | `[]` | no |
 | <a name="input_eks_cluster_endpoint_public_access_cidrs"></a> [eks\_cluster\_endpoint\_public\_access\_cidrs](#input\_eks\_cluster\_endpoint\_public\_access\_cidrs) | List of CIDR blocks which can access the Amazon EKS public API server endpoint | `list(string)` | <pre>[<br>  "0.0.0.0/0"<br>]</pre> | no |
+| <a name="input_eks_cluster_security_group_additional_rules"></a> [eks\_cluster\_security\_group\_additional\_rules](#input\_eks\_cluster\_security\_group\_additional\_rules) | Additional security group rules for the EKS cluster | `any` | `{}` | no |
 | <a name="input_eks_create"></a> [eks\_create](#input\_eks\_create) | Enables the EKS resource creation | `bool` | `true` | no |
 | <a name="input_eks_create_cluster_autoscaler_irsa"></a> [eks\_create\_cluster\_autoscaler\_irsa](#input\_eks\_create\_cluster\_autoscaler\_irsa) | Enables creation of cluster autoscaler IAM role. | `bool` | `true` | no |
 | <a name="input_eks_create_external_dns_irsa"></a> [eks\_create\_external\_dns\_irsa](#input\_eks\_create\_external\_dns\_irsa) | Enables creation of external dns IAM role. | `bool` | `true` | no |
 | <a name="input_eks_create_karpenter"></a> [eks\_create\_karpenter](#input\_eks\_create\_karpenter) | Enables creation of Karpenter resources. | `bool` | `false` | no |
 | <a name="input_eks_create_load_balancer_controller_irsa"></a> [eks\_create\_load\_balancer\_controller\_irsa](#input\_eks\_create\_load\_balancer\_controller\_irsa) | Enables creation of load balancer controller IAM role. | `bool` | `true` | no |
+| <a name="input_eks_enable_custom_networking"></a> [eks\_enable\_custom\_networking](#input\_eks\_enable\_custom\_networking) | Enables custom networking for the EKS VPC CNI. When true, custom networking is enabled with `ENI_CONFIG_LABEL_DEF` = `topology.kubernetes.io/zone` and ENIConfig resources must be created. | `bool` | `false` | no |
 | <a name="input_eks_enable_externalsnat"></a> [eks\_enable\_externalsnat](#input\_eks\_enable\_externalsnat) | Enables [External SNAT](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html) for the EKS VPC CNI. When true, the EKS pods must have a route to a NAT Gateway for outbound communication. | `bool` | `false` | no |
 | <a name="input_eks_enable_fargate"></a> [eks\_enable\_fargate](#input\_eks\_enable\_fargate) | Enables Fargate profiles for the karpenter and kube-system namespaces. | `bool` | `false` | no |
 | <a name="input_eks_node_additional_security_group_ids"></a> [eks\_node\_additional\_security\_group\_ids](#input\_eks\_node\_additional\_security\_group\_ids) | Additional security group ids to attach to EKS nodes. | `list(string)` | `[]` | no |
 | <a name="input_eks_node_groups"></a> [eks\_node\_groups](#input\_eks\_node\_groups) | n/a | <pre>list(object({<br>    name            = string<br>    min_size        = string<br>    desired_size    = string<br>    max_size        = string<br>    volume_type     = optional(string, "gp3")<br>    disk_size       = optional(number, 200)<br>    disk_iops       = optional(number, 3000)<br>    disk_throughput = optional(number, 125)<br>    device_name     = optional(string, "/dev/xvda")<br>    instance_types  = list(string)<br>    capacity_type   = optional(string, "ON_DEMAND")<br>    labels          = optional(map(string), {})<br>    taints          = optional(map(object({ key = string, value = string, effect = string })), {})<br>  }))</pre> | <pre>[<br>  {<br>    "desired_size": 3,<br>    "instance_types": [<br>      "c5.4xlarge"<br>    ],<br>    "max_size": 9,<br>    "min_size": 3,<br>    "name": "ast-app"<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "m5.2xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "m5.4xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine-large": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine-large",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine-large",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "r5.2xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine-extra-large": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine-extra-large",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine-extra-large",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "r5.4xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine-xxl": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine-xxl",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine-xxl",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 1,<br>    "instance_types": [<br>      "c5.2xlarge"<br>    ],<br>    "labels": {<br>      "kics-engine": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 1,<br>    "name": "kics-engine",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "kics-engine",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 1,<br>    "instance_types": [<br>      "c5.2xlarge"<br>    ],<br>    "labels": {<br>      "repostore": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 1,<br>    "name": "repostore",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "repostore",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 1,<br>    "instance_types": [<br>      "m5.2xlarge"<br>    ],<br>    "labels": {<br>      "service": "sca-source-resolver"<br>    },<br>    "max_size": 100,<br>    "min_size": 1,<br>    "name": "sca-source-resolver",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "service",<br>        "value": "sca-source-resolver"<br>      }<br>    }<br>  }<br>]</pre> | no |
 | <a name="input_eks_pod_subnets"></a> [eks\_pod\_subnets](#input\_eks\_pod\_subnets) | The subnets to use for EKS pods. When specified, custom networking configuration is applied to the EKS cluster. | `list(string)` | n/a | yes |
+| <a name="input_eks_post_bootstrap_user_data"></a> [eks\_post\_bootstrap\_user\_data](#input\_eks\_post\_bootstrap\_user\_data) | User data to insert after bootstrapping script. | `string` | `""` | no |
+| <a name="input_eks_pre_bootstrap_user_data"></a> [eks\_pre\_bootstrap\_user\_data](#input\_eks\_pre\_bootstrap\_user\_data) | User data to insert before bootstrapping script. | `string` | `""` | no |
 | <a name="input_eks_private_endpoint_enabled"></a> [eks\_private\_endpoint\_enabled](#input\_eks\_private\_endpoint\_enabled) | Enables the EKS VPC private endpoint. | `bool` | `true` | no |
 | <a name="input_eks_public_endpoint_enabled"></a> [eks\_public\_endpoint\_enabled](#input\_eks\_public\_endpoint\_enabled) | Enables the EKS public endpoint. | `bool` | `false` | no |
 | <a name="input_eks_subnets"></a> [eks\_subnets](#input\_eks\_subnets) | The subnets to deploy EKS into. | `list(string)` | n/a | yes |
@@ -135,9 +153,17 @@ No requirements.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_analytics_db_database_name"></a> [analytics\_db\_database\_name](#output\_analytics\_db\_database\_name) | n/a |
+| <a name="output_analytics_db_endpoint"></a> [analytics\_db\_endpoint](#output\_analytics\_db\_endpoint) | n/a |
+| <a name="output_analytics_db_master_password"></a> [analytics\_db\_master\_password](#output\_analytics\_db\_master\_password) | n/a |
+| <a name="output_analytics_db_master_username"></a> [analytics\_db\_master\_username](#output\_analytics\_db\_master\_username) | n/a |
+| <a name="output_analytics_db_port"></a> [analytics\_db\_port](#output\_analytics\_db\_port) | n/a |
+| <a name="output_analytics_db_reader_endpoint"></a> [analytics\_db\_reader\_endpoint](#output\_analytics\_db\_reader\_endpoint) | n/a |
 | <a name="output_bucket_suffix"></a> [bucket\_suffix](#output\_bucket\_suffix) | n/a |
 | <a name="output_cluster_autoscaler_iam_role_arn"></a> [cluster\_autoscaler\_iam\_role\_arn](#output\_cluster\_autoscaler\_iam\_role\_arn) | n/a |
+| <a name="output_cluster_certificate_authority_data"></a> [cluster\_certificate\_authority\_data](#output\_cluster\_certificate\_authority\_data) | n/a |
 | <a name="output_cluster_endpoint"></a> [cluster\_endpoint](#output\_cluster\_endpoint) | n/a |
+| <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | n/a |
 | <a name="output_db_database_name"></a> [db\_database\_name](#output\_db\_database\_name) | n/a |
 | <a name="output_db_endpoint"></a> [db\_endpoint](#output\_db\_endpoint) | n/a |
 | <a name="output_db_master_password"></a> [db\_master\_password](#output\_db\_master\_password) | n/a |
@@ -155,7 +181,6 @@ No requirements.
 | <a name="output_load_balancer_controller_iam_role_arn"></a> [load\_balancer\_controller\_iam\_role\_arn](#output\_load\_balancer\_controller\_iam\_role\_arn) | n/a |
 | <a name="output_nodegroup_iam_role_name"></a> [nodegroup\_iam\_role\_name](#output\_nodegroup\_iam\_role\_name) | n/a |
 | <a name="output_s3_bucket_name_suffix"></a> [s3\_bucket\_name\_suffix](#output\_s3\_bucket\_name\_suffix) | n/a |
-
 # Regional Considerations
 
 ## GovCloud

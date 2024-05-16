@@ -7,11 +7,11 @@ The project configures the VPC, KMS, ACM, and other basic environment resources,
 Consult the [`example.auto.tfvars`](./example.auto.tfvars) for a full listing of what can be configured in this example, and the `terraform-aws-cxone module`.
 
 # Installation
-This example generates a Makefile in the project folder after Terraform finishes running. The Makefile has several targets that can help bootstrap your environment with the CxOne application. 
+This example generates a `Makefile` in the project folder after Terraform finishes running. The Makefile has several targets that can help bootstrap your environment with the CxOne application. 
 
 The `kots.$DEPLOYMENT_ID.yaml` file is also automatically generated and can be reviewed & modified after Terraform finishes.
 
-Run these commands to bootstrap your cluster.
+Run these commands to bootstrap your cluster using the generated files.
 
 Update your kubectl context:
 
@@ -35,17 +35,27 @@ Install the load balancer controller (wait approx 1 minute after cluster autosca
 make install-load-balancer-controller
 ```
 
+Install the external dns if you're using it (wait approx 1 minute after cluster autoscaler to avoid webhook issues):
+```sh
+make install-external-dns
+```
+
+Manually review your kots configuration file and make any adjustments, if needed.
+
 Install the Checkmarx One application:
 ```sh
 make kots-install
 ```
 
-You can also build your own bootstrapping process using the Makefile as a reference.
+You can also build your own installation process using your organization's tooling and techniques using the Makefile as a reference.
 
 # Module Documentation
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 2.13.0 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | ~> 2.30.0 |
 
 ## Providers
 
@@ -68,6 +78,7 @@ No requirements.
 | Name | Type |
 |------|------|
 | [aws_kms_key.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
+| [random_password.analytics_db](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_password.cxone_admin](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_password.db](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_password.elasticsearch](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
@@ -83,6 +94,13 @@ No requirements.
 |------|-------------|------|---------|:--------:|
 | <a name="input_acm_certificate_arn"></a> [acm\_certificate\_arn](#input\_acm\_certificate\_arn) | The ARN to the SSL certificate in AWS ACM to use for securing the load balancer | `string` | `null` | no |
 | <a name="input_additional_suricata_rules"></a> [additional\_suricata\_rules](#input\_additional\_suricata\_rules) | Additional [suricata rules](https://docs.aws.amazon.com/network-firewall/latest/developerguide/suricata-examples.html) rules to use in the network firewall. When provided these rules will be appended to the default rules prior to the default drop rule. | `string` | `""` | no |
+| <a name="input_analytics_db_cluster_db_instance_parameter_group_name"></a> [analytics\_db\_cluster\_db\_instance\_parameter\_group\_name](#input\_analytics\_db\_cluster\_db\_instance\_parameter\_group\_name) | The name of the DB Cluster parameter group to use. | `string` | `null` | no |
+| <a name="input_analytics_db_final_snapshot_identifier"></a> [analytics\_db\_final\_snapshot\_identifier](#input\_analytics\_db\_final\_snapshot\_identifier) | Identifer for a final DB snapshot for the analytics database. Required when db\_skip\_final\_snapshot is false.. | `string` | `null` | no |
+| <a name="input_analytics_db_instance_class"></a> [analytics\_db\_instance\_class](#input\_analytics\_db\_instance\_class) | The aurora postgres instance class. | `string` | `"db.r6g.xlarge"` | no |
+| <a name="input_analytics_db_instances"></a> [analytics\_db\_instances](#input\_analytics\_db\_instances) | The DB instance configuration | `map(any)` | <pre>{<br>  "replica1": {},<br>  "writer": {}<br>}</pre> | no |
+| <a name="input_analytics_db_master_user_password"></a> [analytics\_db\_master\_user\_password](#input\_analytics\_db\_master\_user\_password) | The master user password for RDS. Specify to explicitly set the password otherwise RDS will be allowed to manage it. | `string` | `null` | no |
+| <a name="input_analytics_db_serverlessv2_scaling_configuration"></a> [analytics\_db\_serverlessv2\_scaling\_configuration](#input\_analytics\_db\_serverlessv2\_scaling\_configuration) | The serverless v2 scaling minimum and maximum. | <pre>object({<br>    min_capacity = number<br>    max_capacity = number<br>  })</pre> | <pre>{<br>  "max_capacity": 32,<br>  "min_capacity": 0.5<br>}</pre> | no |
+| <a name="input_analytics_db_snapshot_identifer"></a> [analytics\_db\_snapshot\_identifer](#input\_analytics\_db\_snapshot\_identifer) | The snapshot identifier to restore the anatlytics database from. | `string` | `null` | no |
 | <a name="input_aws_ebs_csi_driver_version"></a> [aws\_ebs\_csi\_driver\_version](#input\_aws\_ebs\_csi\_driver\_version) | The version of the EKS EBS CSI Addon. | `string` | n/a | yes |
 | <a name="input_coredns_version"></a> [coredns\_version](#input\_coredns\_version) | The version of the EKS Core DNS Addon. | `string` | n/a | yes |
 | <a name="input_create_interface_endpoints"></a> [create\_interface\_endpoints](#input\_create\_interface\_endpoints) | Enables creation of the [interface endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html) specified in `interface_vpc_endpoints` | `bool` | `true` | no |
@@ -134,10 +152,13 @@ No requirements.
 | <a name="input_eks_create_external_dns_irsa"></a> [eks\_create\_external\_dns\_irsa](#input\_eks\_create\_external\_dns\_irsa) | Enables creation of external dns IAM role. | `bool` | `true` | no |
 | <a name="input_eks_create_karpenter"></a> [eks\_create\_karpenter](#input\_eks\_create\_karpenter) | Enables creation of Karpenter resources. | `bool` | `false` | no |
 | <a name="input_eks_create_load_balancer_controller_irsa"></a> [eks\_create\_load\_balancer\_controller\_irsa](#input\_eks\_create\_load\_balancer\_controller\_irsa) | Enables creation of load balancer controller IAM role. | `bool` | `true` | no |
+| <a name="input_eks_enable_custom_networking"></a> [eks\_enable\_custom\_networking](#input\_eks\_enable\_custom\_networking) | Enables custom networking for the EKS VPC CNI. When true, custom networking is enabled with `ENI_CONFIG_LABEL_DEF` = `topology.kubernetes.io/zone` and ENIConfig resources must be created. | `bool` | `false` | no |
 | <a name="input_eks_enable_externalsnat"></a> [eks\_enable\_externalsnat](#input\_eks\_enable\_externalsnat) | Enables [External SNAT](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html) for the EKS VPC CNI. When true, the EKS pods must have a route to a NAT Gateway for outbound communication. | `bool` | `false` | no |
 | <a name="input_eks_enable_fargate"></a> [eks\_enable\_fargate](#input\_eks\_enable\_fargate) | Enables Fargate profiles for the karpenter and kube-system namespaces. | `bool` | `false` | no |
 | <a name="input_eks_node_additional_security_group_ids"></a> [eks\_node\_additional\_security\_group\_ids](#input\_eks\_node\_additional\_security\_group\_ids) | Additional security group ids to attach to EKS nodes. | `list(string)` | `[]` | no |
 | <a name="input_eks_node_groups"></a> [eks\_node\_groups](#input\_eks\_node\_groups) | n/a | <pre>list(object({<br>    name            = string<br>    min_size        = string<br>    desired_size    = string<br>    max_size        = string<br>    volume_type     = optional(string, "gp3")<br>    disk_size       = optional(number, 200)<br>    disk_iops       = optional(number, 3000)<br>    disk_throughput = optional(number, 125)<br>    device_name     = optional(string, "/dev/xvda")<br>    instance_types  = list(string)<br>    capacity_type   = optional(string, "ON_DEMAND")<br>    labels          = optional(map(string), {})<br>    taints          = optional(map(object({ key = string, value = string, effect = string })), {})<br>  }))</pre> | <pre>[<br>  {<br>    "desired_size": 3,<br>    "instance_types": [<br>      "c5.4xlarge"<br>    ],<br>    "max_size": 9,<br>    "min_size": 3,<br>    "name": "ast-app"<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "m5.2xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "m5.4xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine-large": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine-large",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine-large",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "r5.2xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine-extra-large": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine-extra-large",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine-extra-large",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "r5.4xlarge"<br>    ],<br>    "labels": {<br>      "sast-engine-xxl": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sast-engine-xxl",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "sast-engine-xxl",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 1,<br>    "instance_types": [<br>      "c5.2xlarge"<br>    ],<br>    "labels": {<br>      "kics-engine": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 1,<br>    "name": "kics-engine",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "kics-engine",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 1,<br>    "instance_types": [<br>      "c5.2xlarge"<br>    ],<br>    "labels": {<br>      "repostore": "true"<br>    },<br>    "max_size": 100,<br>    "min_size": 1,<br>    "name": "repostore",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "repostore",<br>        "value": "true"<br>      }<br>    }<br>  },<br>  {<br>    "desired_size": 0,<br>    "instance_types": [<br>      "m5.2xlarge"<br>    ],<br>    "labels": {<br>      "service": "sca-source-resolver"<br>    },<br>    "max_size": 100,<br>    "min_size": 0,<br>    "name": "sca-source-resolver",<br>    "taints": {<br>      "dedicated": {<br>        "effect": "NO_SCHEDULE",<br>        "key": "service",<br>        "value": "sca-source-resolver"<br>      }<br>    }<br>  }<br>]</pre> | no |
+| <a name="input_eks_post_bootstrap_user_data"></a> [eks\_post\_bootstrap\_user\_data](#input\_eks\_post\_bootstrap\_user\_data) | User data to insert after bootstrapping script. | `string` | `""` | no |
+| <a name="input_eks_pre_bootstrap_user_data"></a> [eks\_pre\_bootstrap\_user\_data](#input\_eks\_pre\_bootstrap\_user\_data) | User data to insert before bootstrapping script. | `string` | `""` | no |
 | <a name="input_eks_private_endpoint_enabled"></a> [eks\_private\_endpoint\_enabled](#input\_eks\_private\_endpoint\_enabled) | Enables the EKS VPC private endpoint. | `bool` | `true` | no |
 | <a name="input_eks_public_endpoint_enabled"></a> [eks\_public\_endpoint\_enabled](#input\_eks\_public\_endpoint\_enabled) | Enables the EKS public endpoint. | `bool` | `false` | no |
 | <a name="input_eks_version"></a> [eks\_version](#input\_eks\_version) | The version of the EKS Cluster (e.g. 1.27) | `string` | n/a | yes |

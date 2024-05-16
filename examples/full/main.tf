@@ -265,6 +265,19 @@ module "checkmarx-one-install" {
   vpc_id                                = module.vpc.vpc_id
 }
 
+terraform {
+  required_providers {
+    helm = {
+      source  = "registry.terraform.io/hashicorp/helm"
+      version = "~> 2.13.0"
+    }
+    kubernetes = {
+      source  = "registry.terraform.io/hashicorp/kubernetes"
+      version = "~> 2.30.0"
+    }
+  }
+}
+
 provider "kubernetes" {
   host                   = module.checkmarx-one.cluster_endpoint
   cluster_ca_certificate = base64decode(module.checkmarx-one.cluster_certificate_authority_data)
