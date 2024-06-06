@@ -112,7 +112,6 @@ module "eks_node_iam_role" {
   role_name         = "${var.deployment_id}-eks-nodes"
   role_requires_mfa = false
   custom_role_policy_arns = [
-    "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKS_CNI_Policy",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
@@ -140,6 +139,7 @@ resource "aws_iam_policy" "s3_bucket_access" {
     ]
   })
 }
+
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
@@ -231,8 +231,9 @@ module "eks" {
       })
     }
     aws-ebs-csi-driver = {
-      addon_version        = var.aws_ebs_csi_driver_version
-      configuration_values = var.eks_enable_fargate ? local.ebs_csi_fargate_configuration_values : null
+      addon_version            = var.aws_ebs_csi_driver_version
+      configuration_values     = var.eks_enable_fargate ? local.ebs_csi_fargate_configuration_values : null
+      service_account_role_arn = module.ebs_csi_irsa[0].iam_role_arn
     }
   }
   create_kms_key = false
@@ -290,6 +291,24 @@ resource "aws_autoscaling_group_tag" "cluster_autoscaler_taint" {
     key                 = "k8s.io/cluster-autoscaler/node-template/taint/${each.value.taints.dedicated.key}"
     value               = "${each.value.taints.dedicated.value}:${each.value.taints.dedicated.effect}"
     propagate_at_launch = true
+  }
+}
+
+
+module "ebs_csi_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.39.0"
+  count   = var.eks_create ? 1 : 0
+
+  role_name             = "ebs-csi-${var.deployment_id}"
+  role_description      = "IRSA role for EBS CSI Driver"
+  attach_ebs_csi_policy = true
+  ebs_csi_kms_cmk_ids   = [var.kms_key_arn]
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
+    }
   }
 }
 
