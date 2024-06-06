@@ -263,6 +263,7 @@ module "checkmarx-one-install" {
   availability_zones                    = module.vpc.azs
   pod_eniconfig                         = module.vpc.ENIConfig
   vpc_id                                = module.vpc.vpc_id
+  kms_key_arn                           = aws_kms_key.main.arn
 }
 
 terraform {

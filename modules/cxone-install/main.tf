@@ -6,6 +6,16 @@
 #   secret_id = data.aws_secretsmanager_secret.rds_secret.id
 # }
 
+locals {
+  core_configuration_encryption_key               = var.core_configuration_encryption_key == null ? random_password.core_configuration_encryption_key[0].result : var.core_configuration_encryption_key
+  sca_client_secret                               = var.sca_client_secret == null ? random_password.sca_client_secret[0].result : var.sca_client_secret
+  integration_encryption_key                      = var.integration_encryption_key == null ? random_password.integration_encryption_key[0].result : var.integration_encryption_key
+  integrations_repos_manager_azure_tenant_key     = var.integrations_repos_manager_azure_tenant_key == null ? random_password.integrations_repos_manager_azure_tenant_key[0].result : var.integrations_repos_manager_azure_tenant_key
+  integrations_repos_manager_bitbucket_tenant_key = var.integrations_repos_manager_bitbucket_tenant_key == null ? random_password.integrations_repos_manager_bitbucket_tenant_key[0].result : var.integrations_repos_manager_bitbucket_tenant_key
+  integrations_repos_manager_github_tenant_key    = var.integrations_repos_manager_github_tenant_key == null ? random_password.integrations_repos_manager_github_tenant_key[0].result : var.integrations_repos_manager_github_tenant_key
+  integrations_repos_manager_gitlab_tenant_key    = var.integrations_repos_manager_gitlab_tenant_key == null ? random_password.integrations_repos_manager_gitlab_tenant_key[0].result : var.integrations_repos_manager_gitlab_tenant_key
+}
+
 resource "local_file" "kots_config" {
   content = templatefile("${path.module}/kots.config.aws.reference.yaml.tftpl", {
     aws_region     = var.region
@@ -50,6 +60,16 @@ resource "local_file" "kots_config" {
     # Elasticsearch
     elasticsearch_host     = var.elasticsearch_host
     elasticsearch_password = var.elasticsearch_password
+
+    # Keys
+    core_configuration_encryption_key               = local.core_configuration_encryption_key
+    sca_client_secret                               = local.sca_client_secret
+    integration_encryption_key                      = local.integration_encryption_key
+    integrations_repos_manager_azure_tenant_key     = local.integrations_repos_manager_azure_tenant_key
+    integrations_repos_manager_bitbucket_tenant_key = local.integrations_repos_manager_bitbucket_tenant_key
+    integrations_repos_manager_github_tenant_key    = local.integrations_repos_manager_github_tenant_key
+    integrations_repos_manager_gitlab_tenant_key    = local.integrations_repos_manager_gitlab_tenant_key
+
   })
   filename = "kots.${var.deployment_id}.yaml"
 }
@@ -98,6 +118,7 @@ resource "local_file" "storage_class" {
     nodegroup_iam_role_name = var.nodegroup_iam_role_name
     availability_zones      = jsonencode(var.availability_zones)
     karpenter_iam_role_arn  = var.karpenter_iam_role_arn
+    kmsKeyArn               = var.kms_key_arn
 
   })
   filename = "apply-storageclass-config.${var.deployment_id}.sh"

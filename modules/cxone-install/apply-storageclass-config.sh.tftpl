@@ -14,6 +14,8 @@ cat <<EOF | kubectl apply -f -
   parameters:
     fstype: xfs
     type: gp3
+    encrypted: "true"
+    kmsKeyId: ${kmsKeyArn}
   provisioner: ebs.csi.aws.com
   reclaimPolicy: Delete
   volumeBindingMode: WaitForFirstConsumer
