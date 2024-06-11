@@ -148,10 +148,13 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api-sca.checkmarx
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eu.iam.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420058; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eu.api-sca.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420059; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"uploads.sca.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420060; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"uploads.eu.sca.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240611001; rev:1;)
 # Scan results buckets are used for SCA scan result syncing, and vary by the connected SCA region (e.g. NA, or EU)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"microservice-scanresults-prod-storage-1an26shc41yi3.s3.amazonaws.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240420061; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"microservice-scanresults-prodeu-storage-1c25a060x93rl.s3.amazonaws.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240611002; rev:1;)
+# Codebashing
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.stagecodebashing.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240422001; rev:1;)
-# upcoming features                                             
+# Upcoming features                                             
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cx-sca-containers.es.us-east-1.aws.found.io"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:204290001; rev:1;)
 
 
