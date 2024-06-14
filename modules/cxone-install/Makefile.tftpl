@@ -34,7 +34,7 @@ kots-install-from-airgap:
 
 .PHONY: kots-set-config
 kots-set-config:
-	kubectl kots set config ast -n $${NAMESPACE} --config-file $${KOTS_CONFIG_FILE} --deploy
+	kubectl kots set config ast -n $${NAMESPACE} --config-file $${KOTS_CONFIG_FILE} --deploy --current	
 
 
 .PHONY: kots-get-config
