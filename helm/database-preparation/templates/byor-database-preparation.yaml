@@ -17,7 +17,7 @@ spec:
         args:
           - >
             echo Creating byor database...;
-            export PGPASSWORD={{ .Values.rds.masterPassword | quote }};
+            export PGPASSWORD={{ .Values.rds.masterPassword | squote }};
             echo "SELECT 'CREATE DATABASE $rds_byor_db_name' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$rds_byor_db_name')\gexec" | psql -h $rds_writer -d postgres -U $rds_master_username
         env:
           - name: rds_writer
