@@ -113,7 +113,6 @@ module "eks_node_iam_role" {
   role_requires_mfa = false
   custom_role_policy_arns = [
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
-    "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKS_CNI_Policy",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
@@ -220,8 +219,9 @@ module "eks" {
       addon_version = var.kube_proxy_version
     }
     vpc-cni = {
-      addon_version  = var.vpc_cni_version
-      before_compute = var.eks_enable_custom_networking
+      addon_version            = var.vpc_cni_version
+      before_compute           = var.eks_enable_custom_networking
+      service_account_role_arn = module.vpc_cni_irsa[0].iam_role_arn
       configuration_values = jsonencode({
         env = {
           AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = tostring(var.eks_enable_custom_networking)
@@ -308,6 +308,23 @@ module "ebs_csi_irsa" {
     main = {
       provider_arn               = module.eks.oidc_provider_arn
       namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
+    }
+  }
+}
+
+module "vpc_cni_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.39.0"
+  count   = var.eks_create ? 1 : 0
+
+  role_name             = "vpc-cni-${var.deployment_id}"
+  role_description      = "IRSA role for VPC CNI"
+  attach_vpc_cni_policy = true
+  vpc_cni_enable_ipv4   = true
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:aws-node"]
     }
   }
 }
