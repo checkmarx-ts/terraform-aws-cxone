@@ -196,7 +196,7 @@ variable "eks_node_groups" {
     desired_size    = string
     max_size        = string
     volume_type     = optional(string, "gp3")
-    disk_size       = optional(number, 200)
+    disk_size       = optional(number, 225)
     disk_iops       = optional(number, 3000)
     disk_throughput = optional(number, 125)
     device_name     = optional(string, "/dev/xvda")
