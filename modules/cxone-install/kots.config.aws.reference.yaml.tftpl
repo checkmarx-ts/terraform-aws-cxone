@@ -73,9 +73,9 @@ spec:
     DOMAIN:
       value: ${fqdn}
 
-    # Enable TLS for secure communication. Valid values are "0" and "1"  
+    # Enable http to https redirect middleware in Traefik. Deprecated, should always be "0", and handle these redirects if needed outside of Traefik.
     ENABLE_TLS:
-      default: "1"
+      value: "0"
 
     #--------------------------------------------------------------------------
     #  Keys
