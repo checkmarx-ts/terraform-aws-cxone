@@ -142,7 +142,7 @@ resource "aws_iam_policy" "s3_bucket_access" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.8.5"
+  version = "20.23.0"
   create  = var.eks_create
 
   cluster_name    = var.deployment_id
