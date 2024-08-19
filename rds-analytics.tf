@@ -1,6 +1,6 @@
 module "rds-analytics" {
   source  = "terraform-aws-modules/rds-aurora/aws"
-  version = "9.3.1"
+  version = "9.9.0"
   create  = var.db_create
 
   name                                        = "${var.deployment_id}-analytics"
