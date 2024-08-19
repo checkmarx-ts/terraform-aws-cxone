@@ -297,7 +297,7 @@ resource "aws_autoscaling_group_tag" "cluster_autoscaler_taint" {
 
 module "ebs_csi_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.39.0"
+  version = "5.44.0"
   count   = var.eks_create ? 1 : 0
 
   role_name             = "ebs-csi-${var.deployment_id}"
@@ -314,7 +314,7 @@ module "ebs_csi_irsa" {
 
 module "vpc_cni_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.39.0"
+  version = "5.44.0"
   count   = var.eks_create ? 1 : 0
 
   role_name             = "vpc-cni-${var.deployment_id}"
@@ -332,7 +332,7 @@ module "vpc_cni_irsa" {
 
 module "cluster_autoscaler_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.39.0"
+  version = "5.44.0"
   count   = var.eks_create && var.eks_create_cluster_autoscaler_irsa ? 1 : 0
 
   role_name                        = "cluster-autoscaler-${var.deployment_id}"
@@ -351,7 +351,7 @@ module "cluster_autoscaler_irsa" {
 
 module "external_dns_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.39.0"
+  version = "5.44.0"
   count   = var.eks_create && var.eks_create_external_dns_irsa ? 1 : 0
 
   role_name        = "external-dns-${var.deployment_id}"
@@ -370,7 +370,7 @@ module "external_dns_irsa" {
 
 module "load_balancer_controller_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.39.0"
+  version = "5.44.0"
   count   = var.eks_create && var.eks_create_load_balancer_controller_irsa ? 1 : 0
 
   role_name                              = "load_balancer_controller-${var.deployment_id}"
