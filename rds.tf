@@ -35,6 +35,7 @@ module "rds" {
   manage_master_user_password                 = false
   port                                        = var.db_port
   deletion_protection                         = var.db_deletion_protection
+  backup_retention_period                     = var.db_backup_retention_period
   enabled_cloudwatch_logs_exports             = ["postgresql"]
   security_group_rules = {
     ingress_from_vpc = {

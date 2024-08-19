@@ -306,6 +306,7 @@ db_serverlessv2_scaling_configuration = {
   min_capacity = 0.5
   max_capacity = 8
 }
+db_backup_retention_period = 7
 
 
 #******************************************************************************

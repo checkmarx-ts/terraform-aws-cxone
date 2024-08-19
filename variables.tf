@@ -514,6 +514,13 @@ variable "db_apply_immediately" {
   description = "Determines if changes will be applied immediately or wait until the next maintenance window."
 }
 
+variable "db_backup_retention_period" {
+  type        = number
+  default     = null
+  description = "The number of  days to retain database backups for"
+}
+
+
 
 #******************************************************************************
 #   RDS - Analytics - Configuration
