@@ -103,7 +103,7 @@ locals {
 module "s3_bucket" {
   for_each = local.buckets
   source   = "terraform-aws-modules/s3-bucket/aws"
-  version  = "4.1.1"
+  version  = "4.1.2"
 
   bucket           = "${var.deployment_id}-${each.value.name}-${lower(local.s3_bucket_name_suffix)}"
   force_destroy    = true
