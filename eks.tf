@@ -112,6 +112,7 @@ module "eks_node_iam_role" {
   role_name         = "${var.deployment_id}-eks-nodes"
   role_requires_mfa = false
   custom_role_policy_arns = [
+    "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKS_CNI_Policy",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
@@ -142,7 +143,7 @@ resource "aws_iam_policy" "s3_bucket_access" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.23.0"
+  version = "20.8.5" #"20.23.0" #
   create  = var.eks_create
 
   cluster_name    = var.deployment_id
@@ -219,9 +220,9 @@ module "eks" {
       addon_version = var.kube_proxy_version
     }
     vpc-cni = {
-      addon_version            = var.vpc_cni_version
-      before_compute           = var.eks_enable_custom_networking
-      service_account_role_arn = module.vpc_cni_irsa[0].iam_role_arn
+      addon_version  = var.vpc_cni_version
+      before_compute = var.eks_enable_custom_networking
+      #service_account_role_arn = var.eks_create ? module.vpc_cni_irsa[0].iam_role_arn : null
       configuration_values = jsonencode({
         env = {
           AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = tostring(var.eks_enable_custom_networking)
@@ -233,7 +234,7 @@ module "eks" {
     aws-ebs-csi-driver = {
       addon_version            = var.aws_ebs_csi_driver_version
       configuration_values     = var.eks_enable_fargate ? local.ebs_csi_fargate_configuration_values : null
-      service_account_role_arn = module.ebs_csi_irsa[0].iam_role_arn
+      service_account_role_arn = var.eks_create ? module.ebs_csi_irsa[0].iam_role_arn : null
     }
   }
   create_kms_key = false
