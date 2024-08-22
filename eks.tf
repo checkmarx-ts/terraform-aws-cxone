@@ -274,10 +274,11 @@ module "eks" {
 }
 
 resource "aws_eks_addon" "amzn_cloudwatch_observability" {
-  count         = var.aws_cloudwatch_observability_version != null ? 1 : 0
-  cluster_name  = module.eks.cluster_name
-  addon_name    = "amazon-cloudwatch-observability"
-  addon_version = var.aws_cloudwatch_observability_version
+  count                    = var.aws_cloudwatch_observability_version != null ? 1 : 0
+  cluster_name             = module.eks.cluster_name
+  addon_name               = "amazon-cloudwatch-observability"
+  addon_version            = var.aws_cloudwatch_observability_version
+  service_account_role_arn = module.aws_cloudwatch_observability_irsa[0].iam_role_arn
 }
 
 
