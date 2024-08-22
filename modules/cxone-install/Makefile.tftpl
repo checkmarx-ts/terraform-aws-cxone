@@ -147,6 +147,11 @@ apply-storageclass-config:
 	./apply-storageclass-config.$${DEPLOYMENT_ID}.sh
 
 
+.PHONY: install-metrics-server
+install-metrics-server:
+	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+
 .PHONY: clean-kots
 clean-kots:
 	kubectl delete deployment kotsadm -n $${NAMESPACE}
