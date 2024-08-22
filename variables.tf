@@ -171,6 +171,11 @@ variable "aws_ebs_csi_driver_version" {
   description = "The version of the EKS EBS CSI Addon."
 }
 
+variable "aws_cloudwatch_observability_version" {
+  type        = string
+  description = "The version of the AWS Cloudwatch Observability Addon. Specify a version to enable the addon, or leave blank to disable the addon."
+}
+
 variable "launch_template_tags" {
   type        = map(string)
   description = "Tags to associate with launch templates for node groups"

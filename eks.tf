@@ -273,6 +273,14 @@ module "eks" {
   fargate_profiles = var.eks_enable_fargate ? local.fargate_profiles : {}
 }
 
+resource "aws_eks_addon" "amzn_cloudwatch_observability" {
+  count         = var.aws_cloudwatch_observability_version != null ? 1 : 0
+  cluster_name  = module.eks.cluster_name
+  addon_name    = "amazon-cloudwatch-observability"
+  addon_version = var.aws_cloudwatch_observability_version
+}
+
+
 resource "aws_autoscaling_group_tag" "cluster_autoscaler_label" {
   for_each               = { for node_group in var.eks_node_groups : node_group.name => node_group }
   depends_on             = [module.eks]
@@ -384,6 +392,23 @@ module "load_balancer_controller_irsa" {
     }
   }
 }
+
+module "aws_cloudwatch_observability_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.44.0"
+  count   = var.eks_create && var.aws_cloudwatch_observability_version != null ? 1 : 0
+
+  role_name                              = "aws-cloudwatch-observability-${var.deployment_id}"
+  role_description                       = "IRSA role for AWS Cloudwatch Observability"
+  attach_cloudwatch_observability_policy = true
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["amazon-cloudwatch:cloudwatch-agent"]
+    }
+  }
+}
+
 
 data "aws_iam_role" "karpenter" {
   name       = "${var.deployment_id}-eks-nodes"

@@ -147,6 +147,7 @@ module "checkmarx-one" {
   kube_proxy_version                       = var.kube_proxy_version
   vpc_cni_version                          = var.vpc_cni_version
   aws_ebs_csi_driver_version               = var.aws_ebs_csi_driver_version
+  aws_cloudwatch_observability_version     = var.aws_cloudwatch_observability_version
   eks_private_endpoint_enabled             = var.eks_private_endpoint_enabled
   eks_public_endpoint_enabled              = var.eks_public_endpoint_enabled
   eks_cluster_endpoint_public_access_cidrs = var.eks_cluster_endpoint_public_access_cidrs
