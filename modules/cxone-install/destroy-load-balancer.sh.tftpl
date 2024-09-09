@@ -20,7 +20,8 @@ sleep 10
 # The "Node" security group will have references to the ELB security groups, so remove all the rules to allow groups to be deleted successfully
 NODE_SG_ID=$(aws ec2 describe-security-groups --filters Name=tag:Name,Values=$${DEPLOYMENT_ID}-node --query "SecurityGroups[*].GroupId" --output text | tr "\t" "\n")
 aws ec2 revoke-security-group-ingress --group-id $${NODE_SG_ID} --ip-permissions "`aws ec2 describe-security-groups --output json --group-ids $${NODE_SG_ID} --query "SecurityGroups[0].IpPermissions"`"
-sleep 10
+echo "Waiting for rules to delete"
+sleep 20
 
 # Delete the ELB security groups
 aws ec2 describe-security-groups --filters Name=tag:elbv2.k8s.aws/cluster,Values=$${DEPLOYMENT_ID} --query "SecurityGroups[*].GroupId" --output text | tr "\t" "\n" | xargs -I {} aws ec2 delete-security-group --group-id {} 
