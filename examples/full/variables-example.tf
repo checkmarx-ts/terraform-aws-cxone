@@ -96,3 +96,36 @@ variable "kots_admin_email" {
   description = "The email address of the Checkmarx One first admin user."
   type        = string
 }
+
+#******************************************************************************
+#   Bastion Host Configuration
+#******************************************************************************
+variable "bastion_host_enabled" {
+  description = "Controls deployment of a bastion host to the VPC."
+  type        = bool
+  default     = false
+}
+
+variable "bastion_host_instance_type" {
+  description = "The ec2 instance type for the bastion host."
+  type        = string
+  default     = "t3.large"
+}
+
+variable "bastion_host_key_name" {
+  description = "The ec2 keypair name for the bastion host."
+  type        = string
+  default     = null
+}
+
+variable "bastion_host_user_data" {
+  description = "User data for the bastion host. Default behavior is to install some basic tools."
+  type        = string
+  default     = null
+}
+
+variable "bastion_host_remote_management_cidrs" {
+  description = "The list of CIDRs that need access to the bastion host"
+  type        = list(string)
+  default     = null
+}
