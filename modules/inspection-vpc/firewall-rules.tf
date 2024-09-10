@@ -82,7 +82,7 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"602401143452.dkr.
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"prod-${data.aws_region.current.name}-starport-layer-bucket.s3.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420031; rev:1;)
 
 
-# Amazon Linux 2 managed node group updates - region dependent
+# Amazon Linux 2/2023 managed node group updates - region dependent
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"amazonlinux-2-repos-${data.aws_region.current.name}.s3.dualstack.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420032; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"al2023-repos-${data.aws_region.current.name}-de612dc2.s3.dualstack.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420033; rev:1;)
 
@@ -112,7 +112,7 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"proxy-auth.replic
 
 # Used by cxone images, and kube-rbac-proxy in CxOne operator
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"gcr.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240419044; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"checkmarx.jfrog.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420044; rev:1;)
+#pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"checkmarx.jfrog.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420044; rev:1;)
 
 
 # Liquibase schema files required for database migration execution
@@ -155,7 +155,7 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"microservice-scan
 # Codebashing
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.stagecodebashing.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240422001; rev:1;)
 # Upcoming features                                             
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cx-sca-containers.es.us-east-1.aws.found.io"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:204290001; rev:1;)
+#pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cx-sca-containers.es.us-east-1.aws.found.io"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:204290001; rev:1;)
 
 
 # These URLs are randomly generated, and used to discover the correct s3 API signature version to use when communicating with S3 buckets.

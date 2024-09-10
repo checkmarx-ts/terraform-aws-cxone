@@ -38,7 +38,7 @@ resource "aws_networkfirewall_firewall_policy" "main" {
   firewall_policy {
     stateless_default_actions          = ["aws:forward_to_sfe"]
     stateless_fragment_default_actions = ["aws:forward_to_sfe"]
-    stateful_default_actions           = [var.stateful_default_action]
+    stateful_default_actions           = var.stateful_default_actions
     stateful_engine_options {
       rule_order = "STRICT_ORDER"
     }

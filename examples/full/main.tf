@@ -25,7 +25,7 @@ module "vpc" {
   create_interface_endpoints = var.create_interface_endpoints
   create_s3_endpoint         = var.create_s3_endpoint
   enable_firewall            = var.enable_firewall
-  stateful_default_action    = var.stateful_default_action
+  stateful_default_actions   = var.stateful_default_actions
   suricata_rules             = var.suricata_rules
   include_sca_rules          = var.include_sca_rules
   additional_suricata_rules  = local.additional_suricata_rules

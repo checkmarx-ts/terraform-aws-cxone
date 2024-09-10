@@ -36,10 +36,10 @@ variable "enable_firewall" {
   default     = true
 }
 
-variable "stateful_default_action" {
+variable "stateful_default_actions" {
   description = "The [default action](https://docs.aws.amazon.com/network-firewall/latest/developerguide/suricata-rule-evaluation-order.html#suricata-strict-rule-evaluation-order) for the AWS Network Firewall stateful rule group. Choose `aws:drop_established` or `aws:alert_established`"
-  type        = string
-  default     = "aws:drop_established"
+  type        = list(string)
+  default     = ["aws:drop_established", "aws:alert_established"]
 }
 
 variable "suricata_rules" {
