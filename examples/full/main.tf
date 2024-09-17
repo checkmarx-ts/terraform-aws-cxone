@@ -8,7 +8,7 @@ data "aws_availability_zones" "available" {
 locals {
   # Add the fqdn to the firewall rules
   additional_suricata_rules = <<EOF
-# CxOne must talk to itself when performing token exchange to validate the FQDN (cxiam makes the connection).
+# CxOne must talk to itself when performing token exchange to validate the FQDN (cxiam makes the connection) and for CxIAM to function overall.
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"${var.fqdn}"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240401001; rev:1;)
 
 ${var.additional_suricata_rules}

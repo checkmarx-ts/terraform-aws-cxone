@@ -157,7 +157,8 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.eks_subnets
 
-  create_cluster_security_group = true
+  create_cluster_primary_security_group_tags = false
+  create_cluster_security_group              = true
   #cluster_security_group_id     = var.cluster_security_group_id
 
   create_node_security_group = true
