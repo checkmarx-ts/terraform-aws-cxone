@@ -808,3 +808,14 @@ variable "pod_custom_networking_subnets" {
   default     = null
 }
 
+variable "eks_post_bootstrap_user_data" {
+  type        = string
+  description = "User data to insert after bootstrapping script."
+  default     = ""
+}
+
+variable "eks_pre_bootstrap_user_data" {
+  type        = string
+  description = "User data to insert before bootstrapping script."
+  default     = ""
+}

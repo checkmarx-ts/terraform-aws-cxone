@@ -77,6 +77,8 @@ module "eks" {
     iam_role_arn                    = var.nodegroup_iam_role_arn
     vpc_security_group_ids          = var.additional_node_security_group_ids
     key_name                        = var.ec2_key_name
+    post_bootstrap_user_data        = var.eks_post_bootstrap_user_data
+    pre_bootstrap_user_data         = var.eks_pre_bootstrap_user_data
     metadata_options = {
       http_endpoint               = "enabled"
       http_tokens                 = "required"
