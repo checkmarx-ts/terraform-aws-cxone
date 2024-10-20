@@ -16,6 +16,12 @@ locals {
     #Install git
     sudo dnf install git -y
 
+    # Set up docker
+    sudo dnf install docker -y
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    sudo usermod -a -G docker $(whoami)
+
     # Install kots
     export REPL_USE_SUDO=y
     export REPL_INSTALL_PATH=/usr/local/bin
