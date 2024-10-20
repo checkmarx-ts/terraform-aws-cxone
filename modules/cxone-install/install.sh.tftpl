@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# These environment variables are required for the kots commands that follow.
+# Consider injecting them into your environment rather than hard coding in this script.
+NAMESPACE="${namespace}"                     # The k8s namespace to deploy the application into. Suggested: ast
+KOTS_CONFIG="${kots_config_file}"            # The path to the kots configuration file
+LICENSE="${license_file}"                    # The path to the Checkmarx One license file
+SHARED_PASSWORD="${kots_admin_password}"     # The shared password value for the Kots admin console
+RELEASE_CHANNEL="${release_channel}"         # The release channel that matches your license file.
+APP_VERSION="${app_version}"                 # The application version to install
+
+# First, check if kotsadm and the ast application is installed yet. If the application is not installed, 
+# then install it and provide the license and shared password. We will *NOT* provide the configuration yet.
+if ! kubectl kots get apps -n $NAMESPACE | grep ast > /dev/null; then
+  echo "ast app not found, installing..."
+  # 
+  kubectl kots install ast/$RELEASE_CHANNEL -n $NAMESPACE --license-file $LICENSE --shared-password $SHARED_PASSWORD --app-version-label $APP_VERSION --no-port-forward
+else
+  echo "ast app is already installed."
+fi
+ 
+# Second, update the installed application with the desired kots configuration file and trigger a redeployment.
+# This will provide the log output for any missing required configuration fields, and will allow the kots
+# configuration to be version controlled and updated from time to time as needed.
+echo "Updating kots configuration..."
+kubectl kots set config ast -n $NAMESPACE --config-file $KOTS_CONFIG --deploy
+KOTS_UPDATE_EXIT=$?
+if [[ KOTS_UPDATE_EXIT -ne 0 ]]; then
+    echo "An error occurred updating the Kots configuration. Check the kots output above for clues."
+fi

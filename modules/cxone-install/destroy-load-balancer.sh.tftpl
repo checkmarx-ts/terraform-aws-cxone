@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# The AWS Load Balancer Controller creates Load Balancers, Target Groups, and Security Groups outside
+# of the Terraform project's scope. These resources will prevent terraform destroy from running successfully.
+# This script should be run before terraform destroy to ensure these external resources are cleaned up and 
+# allows terraform to run successfully.
+
+
+DEPLOYMENT_ID=${deployment_id}
+# Clean up load balancer
+ELB_ARN=$(aws elbv2 describe-load-balancers | jq -r '.LoadBalancers[].LoadBalancerArn' | xargs -I {} aws elbv2 describe-tags --resource-arns {} --query "TagDescriptions[?Tags[?Key=='elbv2.k8s.aws/cluster' &&Value=='$${DEPLOYMENT_ID}']].ResourceArn" --output text)
+aws elbv2 delete-load-balancer --load-balancer-arn $${ELB_ARN}
+sleep 10
+
+# Clean up target groups
+aws elbv2 describe-target-groups | jq -r '.TargetGroups[].TargetGroupArn' | xargs -I {} aws elbv2 describe-tags --resource-arns {} --query "TagDescriptions[?Tags[?Key=='elbv2.k8s.aws/cluster' &&Value=='$${DEPLOYMENT_ID}']].ResourceArn" --output text | xargs -I {} aws elbv2 delete-target-group --target-group-arn {}
+sleep 10
+
+# Clean up security groups
+# The "Node" security group will have references to the ELB security groups, so remove all the rules to allow groups to be deleted successfully
+NODE_SG_ID=$(aws ec2 describe-security-groups --filters Name=tag:Name,Values=$${DEPLOYMENT_ID}-node --query "SecurityGroups[*].GroupId" --output text | tr "\t" "\n")
+aws ec2 revoke-security-group-ingress --group-id $${NODE_SG_ID} --ip-permissions "`aws ec2 describe-security-groups --output json --group-ids $${NODE_SG_ID} --query "SecurityGroups[0].IpPermissions"`"
+echo "Waiting for rules to delete"
+sleep 20
+
+# Delete the ELB security groups
+aws ec2 describe-security-groups --filters Name=tag:elbv2.k8s.aws/cluster,Values=$${DEPLOYMENT_ID} --query "SecurityGroups[*].GroupId" --output text | tr "\t" "\n" | xargs -I {} aws ec2 delete-security-group --group-id {} 
+sleep 10
