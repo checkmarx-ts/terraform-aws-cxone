@@ -39,7 +39,7 @@ create_s3_endpoint         = true
 
 # Firewall only current works for egress filtering, and breaks ingress. Do not enable.
 enable_firewall            = false
-stateful_default_action    = "aws:drop_established"
+stateful_default_actions   = ["aws:drop_established", "aws:alert_established"]
 include_sca_rules          = true
 create_managed_rule_groups = false
 managed_rule_groups = ["AbusedLegitMalwareDomainsStrictOrder",
