@@ -30,7 +30,7 @@ variable "security_group_ids" {
 variable "engine_version" {
   description = "The aurora postgres engine version."
   type        = string
-  default     = "13.8"
+  default     = "13.12"
 }
 
 variable "postgres_nodes" {
