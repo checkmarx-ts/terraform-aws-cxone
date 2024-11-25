@@ -298,7 +298,7 @@ resource "aws_networkfirewall_rule_group" "cxone" {
   capacity = 200
   name     = "${var.deployment_id}-cxone-deployment"
   type     = "STATEFUL"
-  rules    = file("${path.module}/cxone.rules")
+  rules    = file("${path.module}/cxone.allowall.rules")
 
 }
 
@@ -347,14 +347,13 @@ resource "aws_networkfirewall_firewall" "main" {
 
 
 # Firewall Logging
-
 resource "aws_cloudwatch_log_group" "aws_nfw_alert" {
-  name              = "${var.deployment_id}-aws-nfw-alert"
+  name              = "/aws/vendedlogs/${var.deployment_id}-aws-nfw-alert"
   retention_in_days = 14
 }
 
 resource "aws_cloudwatch_log_group" "aws_nfw_flow" {
-  name              = "${var.deployment_id}-aws-nfw-flow"
+  name              = "/aws/vendedlogs/${var.deployment_id}-aws-nfw-flow"
   retention_in_days = 14
 
   tags = {
