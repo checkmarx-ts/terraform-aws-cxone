@@ -139,7 +139,7 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:".cloudflarestorag
 
 
 # Gov Cloud
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:".cloudflarestorage.com";  nocase; endswith; msg:"matching TLS allowlisted FQDNs"; priority:1; flow:to_server, established; sid:1188; rev:1;)
+
 
 
 
