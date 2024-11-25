@@ -104,6 +104,19 @@ variable "SMTP_from_sender" {
   nullable    = false
 }
 
+variable "SMTP_password" {
+  description = "Defines the smtp server password"
+  type        = string
+  nullable    = false
+}
+
+variable "SMTP_user" {
+  description = "Defines the smtp server username"
+  type        = string
+  nullable    = false
+}
+
+
 variable "object_storage_url" {
   description = "The s3 object storage url to use (region dependent) e.g. s3.us-west-2.amazonaws.com"
   type        = string
