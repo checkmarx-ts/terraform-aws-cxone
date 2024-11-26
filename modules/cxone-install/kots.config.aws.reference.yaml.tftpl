@@ -235,8 +235,8 @@ spec:
 
     # Configure the use of read replicas for read only queries
     # Calling terraform will pass either the readwrite endpoint if no read only provided, so this can always be "1"
-    #use_reader_instance:
-    #  value: "1"      
+    use_reader_instance:
+      value: "1"      
     
     # Always set to external_postgres. Other values used for development only.
     postgres_type:
@@ -246,8 +246,8 @@ spec:
     external_postgres_host:
       value: ${postgres_host}
 
-    #external_postgres_read_host:
-    #  value: ${postgres_read_host}
+    external_postgres_read_host:
+      value: ${postgres_read_host}
 
     # The postgres port. Typically "5432"
     external_postgres_port:
@@ -281,8 +281,8 @@ spec:
     # The analaytics database connection information. required when enable_analytics is "1"
     analytics_postgres_host:
       value: ${analytics_postgres_host}
-    #analytics_postgres_read_host:
-    #  value: ${analytics_postgres_read_host}
+    analytics_postgres_read_host:
+      value: ${analytics_postgres_read_host}
     analytics_postgres_port:
       value: "5432"    
     analytics_postgres_db_name:
