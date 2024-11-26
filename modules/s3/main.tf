@@ -5,7 +5,7 @@ resource "random_string" "random_suffix" {
 }
 
 locals {
-  s3_bucket_name_suffix = "${var.deployment_id}-${random_string.random_suffix.result}"
+  s3_bucket_name_suffix = random_string.random_suffix.result
 
   buckets = {
     api_security = {
@@ -107,8 +107,9 @@ locals {
 module "s3_bucket" {
   for_each = local.buckets
   source   = "terraform-aws-modules/s3-bucket/aws"
+  version  = "4.1.2"
 
-  bucket           = "${each.value.name}-${lower(local.s3_bucket_name_suffix)}"
+  bucket           = "${var.deployment_id}-${each.value.name}-${lower(local.s3_bucket_name_suffix)}"
   force_destroy    = true
   object_ownership = "BucketOwnerPreferred"
   acl              = "private"
@@ -148,7 +149,7 @@ module "s3_bucket" {
     {
       allowed_headers = ["*"]
       allowed_methods = ["GET", "PUT", "POST", "HEAD"]
-      allowed_origins = var.s3_cors_allowed_origins
+      allowed_origins = var.s3_allowed_origins
     }
   ]
 
@@ -158,4 +159,8 @@ module "s3_bucket" {
   ignore_public_acls                    = true
   restrict_public_buckets               = true
   attach_deny_insecure_transport_policy = true
+}
+
+output "s3_bucket_name_suffix" {
+  value = local.s3_bucket_name_suffix
 }
