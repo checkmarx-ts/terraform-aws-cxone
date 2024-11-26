@@ -160,7 +160,3 @@ module "s3_bucket" {
   restrict_public_buckets               = true
   attach_deny_insecure_transport_policy = true
 }
-
-output "s3_bucket_name_suffix" {
-  value = local.s3_bucket_name_suffix
-}
