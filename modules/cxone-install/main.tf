@@ -25,8 +25,9 @@ resource "local_file" "kots_config" {
 
     ms_replica_count = var.ms_replica_count
 
-    fqdn            = var.fqdn
-    nlb_tls_acm_arn = var.acm_certificate_arn
+    fqdn                 = var.fqdn
+    nlb_tls_acm_arn      = var.acm_certificate_arn
+    sca_prod_environment = var.sca_prod_environment
 
     # S3 buckets
     bucket_name_suffix        = var.bucket_suffix
@@ -36,19 +37,22 @@ resource "local_file" "kots_config" {
     object_storage_secret_key = var.object_storage_secret_key
 
     # RDS
-    postgres_host     = var.postgres_host
-    postgres_user     = var.postgres_user
-    postgres_password = var.postgres_password #jsondecode(data.aws_secretsmanager_secret_version.rds_secret.secret_string)["password"]
-    postgres_db       = var.postgres_database_name
+    postgres_host      = var.postgres_host
+    postgres_read_host = var.postgres_read_host != null ? var.postgres_read_host : var.postgres_host
+    postgres_user      = var.postgres_user
+    postgres_password  = var.postgres_password #jsondecode(data.aws_secretsmanager_secret_version.rds_secret.secret_string)["password"]
+    postgres_db        = var.postgres_database_name
 
     # RDS - Analytics
-    analytics_postgres_host     = var.analytics_postgres_host
-    analytics_postgres_user     = var.analytics_postgres_user
-    analytics_postgres_password = var.analytics_postgres_password #jsondecode(data.aws_secretsmanager_secret_version.rds_secret.secret_string)["password"]
-    analytics_postgres_db_name  = var.analytics_postgres_database_name
+    analytics_postgres_host      = var.analytics_postgres_host
+    analytics_postgres_read_host = var.analytics_postgres_read_host != null ? var.analytics_postgres_read_host : var.analytics_postgres_host
+    analytics_postgres_user      = var.analytics_postgres_user
+    analytics_postgres_password  = var.analytics_postgres_password #jsondecode(data.aws_secretsmanager_secret_version.rds_secret.secret_string)["password"]
+    analytics_postgres_db_name   = var.analytics_postgres_database_name
 
     # Redis
     redis_address = var.redis_address
+    redis_port    = var.redis_port
 
     # SMTP
     smtp_host        = var.smtp_host

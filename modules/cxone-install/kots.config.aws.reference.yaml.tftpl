@@ -13,36 +13,18 @@ spec:
     # can be changed. The user will be forced to configure MFA upon first login.
     default_admin_email:
       value: ${admin_email}
+
     # By convention, the first user is named admin
     default_admin_user:
       value: ${admin_username}
+    
     # default_admin_password must be > 14 characters in length.
     default_admin_password:
       value: "${admin_password}"
 
-    # Enable DAST component. 
-    # bool - Valid values are "0" (false) and "1" true 
-    # Recommendation: "1" if licensed for DAST, otherwise "0"
-    enable_dast_component:
-      value: "1"
-
-    # Enable the local flow for SCA Global inventory
-    # Should always be "1", don't change unless advised by Cx
-    enable_sca_local_flow_for_global_inventory:
-      value: "1"
-
-    # Enables using a dedicated node group just for SCA components. 
-    # If enabled, the node group must exists with the correct labels and taint.
-    # bool - Valid values are "0" (false) and "1" true
-    # Recommended value: "0"
-    use_dedicated_sca_nodegroup:
+    # Should always be disabled for self-managed deployments
+    env_is_hosted_by_checkmarx:
       value: "0"
-
-    # Configures the SCA production environment for the Checkmarx Cloud
-    # Valid values are https://api-sca-.checkmarx.net and "https://eu.api-sca.checkmarx.net"
-    # Recommended value: match the region in your kots license file for cloudIamUrl
-    sca_prod_environment:
-      value: https://api-sca.checkmarx.net
 
     # environment_type is either "production" or "development"
     # This controls how strict the KOTS preflight checks are for memory, cpu, etc
@@ -53,11 +35,6 @@ spec:
     # deployment_type is always cloud
     deployment_type:
       value: cloud
-
-    # The minimum microservice replicas. Used to control number of pods per service.
-    # Recommendation: production environments, at least 3. Non-prod can be as low as 1.
-    ms_replica_count:
-      value: "${ms_replica_count}"
     
     # cloud_provider is always AWS, when deploying to AWS.
     cloud_provider:
@@ -76,6 +53,46 @@ spec:
     # Enable http to https redirect middleware in Traefik. Deprecated, should always be "0", and handle these redirects if needed outside of Traefik.
     ENABLE_TLS:
       value: "0"
+
+    #--------------------------------------------------------------------------
+    #  CxOne Components Configuration
+    #--------------------------------------------------------------------------
+    
+    # The minimum microservice replicas. Used to control number of pods per service.
+    # Recommendation: production environments, at least 3. Non-prod can be as low as 1.
+    ms_replica_count:
+      value: "${ms_replica_count}"
+
+    # Enable DAST component. 
+    # bool - Valid values are "0" (false) and "1" true 
+    # Recommendation: "1" if licensed for DAST, otherwise "0"
+    enable_dast_component:
+      value: "1"
+
+    # Enable SCA component.
+    # bool - Valid values are "0" (false) and "1" (true)
+    # Recommendation: Should always be "1" unless advised by Cx. Disabling SCA causes errors in most scenarios.
+    enable_sca_component:
+      value: "1"
+
+    # Enable the local flow for SCA Global inventory
+    # Should always be "1", don't change unless advised by Cx
+    enable_sca_local_flow_for_global_inventory:
+      value: "1"
+
+    # Enables using a dedicated node group just for SCA components. 
+    # If enabled, the node group must exists with the correct labels and taint.
+    # bool - Valid values are "0" (false) and "1" true
+    # Recommended value: "0"
+    use_dedicated_sca_nodegroup:
+      value: "0"
+
+    # Configures the SCA production environment for the Checkmarx Cloud
+    # Valid values are https://api-sca-.checkmarx.net and "https://eu.api-sca.checkmarx.net"
+    # Recommended value: match the region in your kots license file for cloudIamUrl
+    sca_prod_environment:
+      value: ${sca_prod_environment}
+
 
     #--------------------------------------------------------------------------
     #  Keys
@@ -105,9 +122,10 @@ spec:
     # SCA Global Inventory & Elasticsearch
     #--------------------------------------------------------------------------
 
-    # Enables SCA Global Inventory
+    # Enables SCA Global Inventory storage of data in a user provided elasticsearch.
     # bool - Valid values are "0" (false) and "1" true. 
     # When true, must provide elasticsearch configuration.
+    # Recommendation: "1"
     enable_sca_global_inventory:
       value: "1"
 
@@ -128,7 +146,6 @@ spec:
     # These are the names of the various buckets used by Checkmarx One components.
     # The bucket names are passed to Checkmarx One rather than hard coding them.
 
-
     apisec_s3_bucket_name:
       value: ${deployment_id}-apisec-${bucket_name_suffix}
     audit_s3_bucket_name:
@@ -148,7 +165,9 @@ spec:
     logs_s3_bucket_name:
       value: ${deployment_id}-logs-${bucket_name_suffix}
     misc_s3_bucket_name:
-      value: ${deployment_id}-misc-${bucket_name_suffix} 
+      value: ${deployment_id}-misc-${bucket_name_suffix}
+    microengines_s3_bucket_name:
+      value: ${deployment_id}-microengines-${bucket_name_suffix}
     queries_s3_bucket_name:
       value: ${deployment_id}-queries-${bucket_name_suffix}
     redis_shared_s3_bucket_name:
@@ -213,6 +232,11 @@ spec:
     #--------------------------------------------------------------------------
     # Database Settings
     #--------------------------------------------------------------------------
+
+    # Configure the use of read replicas for read only queries
+    # Calling terraform will pass either the readwrite endpoint if no read only provided, so this can always be "1"
+    #use_reader_instance:
+    #  value: "1"      
     
     # Always set to external_postgres. Other values used for development only.
     postgres_type:
@@ -221,6 +245,9 @@ spec:
     # The host name to connect to postgres on
     external_postgres_host:
       value: ${postgres_host}
+
+    #external_postgres_read_host:
+    #  value: ${postgres_read_host}
 
     # The postgres port. Typically "5432"
     external_postgres_port:
@@ -238,10 +265,10 @@ spec:
     external_postgres_db:
       value: ${postgres_db}
 
-    # Used to enforce SSL connections to postgres. Values are
-    # postgres_sslmode_require or postgres_sslmode_allow
-    external_postgres_sslmode:
-      value: postgres_sslmode_require
+    # Used to enforce SSL connections to postgres. Values are require or allow
+    # Recommendation: require
+    postgres_sslmode_value:
+      value: require
 
     #--------------------------------------------------------------------------
     # Metrics Analytics Settings
@@ -254,6 +281,8 @@ spec:
     # The analaytics database connection information. required when enable_analytics is "1"
     analytics_postgres_host:
       value: ${analytics_postgres_host}
+    #analytics_postgres_read_host:
+    #  value: ${analytics_postgres_read_host}
     analytics_postgres_port:
       value: "5432"    
     analytics_postgres_db_name:
@@ -262,9 +291,9 @@ spec:
       value: ${analytics_postgres_user} 
     analytics_postgres_password:
       value: "${analytics_postgres_password}"
-    # Can be either analytics_postgres_sslmode_require or analytics_postgres_sslmode_allow
+    # Can be either require or allow
     analytics_postgres_sslmode_value:
-      value: analytics_postgres_sslmode_require
+      value: require
 
     #--------------------------------------------------------------------------
     # Redis Settings
@@ -280,10 +309,11 @@ spec:
     
     # The port to connect to redis on. Typically 6379.
     external_redis_port:
-      value: "6379"
+      value: "${redis_port}"
     
     external_redis_password: {}
 
+    # Must be "0"
     external_redis_tls_enabled:
       value: "0"
 
@@ -388,3 +418,86 @@ spec:
     # Valid values are ARNs e.g. arn:aws:acm:us-east-1:01234567890:certificate/d3f015a6-5b08-4c1e-8458-250220bf31e2
     nlb_tls_acm_arn:
       value: ${nlb_tls_acm_arn}
+
+
+    #--------------------------------------------------------------------------
+    # Internal certificate authority trust store settings
+    #--------------------------------------------------------------------------
+    
+    # Enables addition of user provided certificates to application trust stores.
+    internal_ca:
+      value: "0"
+
+    # The base 64 encoded pem file containing certificates to add to trust stores.
+    internal_ca_cert:
+      value: ""
+
+    #--------------------------------------------------------------------------
+    # Opentelemetry Configuration
+    #--------------------------------------------------------------------------
+
+    # Enables otel tracing. If enabled, requires additional Otel configuration.
+    # Recommendation: "0"
+    enable_otel_tracing:
+      value: "0"
+
+    #--------------------------------------------------------------------------
+    # Zeebe Node Configuration
+    #--------------------------------------------------------------------------        
+
+    # Enables Zeebe nodes being scheduled on their own node group. When enabled,
+    # zeebe pods are launched with node affinity. Requires a node group with label "zeebe-true" and taint "zeebe=true:NoSchedule"
+    # Recommendation: "0" unless advised otherwise by Cx
+    zeebe_node_affinity:
+      value: "0"
+
+    #--------------------------------------------------------------------------
+    # Camunda Configuration
+    #--------------------------------------------------------------------------     
+    
+    # Enables the use of embedded or external elasticsearch for Camunda. 
+    # Only embedded_elastic is supported at this time.
+    #camunda_search_type:
+    #  value: embedded_elastic
+
+    #--------------------------------------------------------------------------
+    # Advanced Options Configuration
+    #--------------------------------------------------------------------------
+
+    # WARNING Advanced Options allows you to override application defaults by directly
+    # specifying configurations that are not exposed in this interface.
+    # It is for advanced users. Please use with caution.
+
+    advanced_options:
+      value: "0"
+
+    # Specify your advanced configuration options here. These will be
+    # passed directly to the AST Helm install and upgrade commands. You must
+    # specify valid YAML or the install/upgrade will fail.
+
+    # In this example, zeebe is scaled to 4 instances (default is to use ms_replica_count)
+
+    #config_values:
+    #  value: |
+    #    core:
+    #      feature_flag:
+    #        splitio:
+    #          apiKey: ""
+    #          userKey: ""
+    #        localhostMode: true
+    #        flags:
+    #          PENDO_ENABLED: "off"
+    #          GAINSIGHT_ENABLED: "off"
+    #          
+    #        
+    #    apisec:
+    #      enabled: false
+    #    microengines:
+    #      enabled: false
+    #    camunda-platform:
+    #      zeebe:
+    #        clusterSize: 4
+    #        partitionCount: 4
+    #        replicationFactor: 4
+    #      zeebeGateway:
+    #        replicas: 4

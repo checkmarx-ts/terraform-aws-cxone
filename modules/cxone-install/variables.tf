@@ -137,6 +137,12 @@ variable "postgres_host" {
   description = "The endpoint for the main RDS server."
 }
 
+variable "postgres_read_host" {
+  type        = string
+  description = "The endpoint for the main RDS server readonly endpoint."
+  default     = null
+}
+
 variable "postgres_user" {
   type        = string
   description = "The user name for the main RDS server."
@@ -160,6 +166,12 @@ variable "analytics_postgres_host" {
   description = "The endpoint for the analytics RDS server."
 }
 
+variable "analytics_postgres_read_host" {
+  type        = string
+  description = "The endpoint for the analytics RDS server readonly endpoint."
+  default     = null
+}
+
 variable "analytics_postgres_database_name" {
   type        = string
   description = "The name of the analytics database."
@@ -179,6 +191,12 @@ variable "analytics_postgres_password" {
 variable "redis_address" {
   type        = string
   description = "The redis endpoint."
+}
+
+variable "redis_port" {
+  type        = string
+  default     = "6379"
+  description = "The redis port"
 }
 
 
@@ -272,4 +290,13 @@ variable "integrations_repos_manager_gitlab_tenant_key" {
 variable "kms_key_arn" {
   description = "The ARN to the KMS key of the system."
   type        = string
+}
+
+#******************************************************************************
+#  CxOne Component Configuration
+#******************************************************************************
+variable "sca_prod_environment" {
+  description = "The SCA API endpoint to configure. Options are https://api-sca.checkmarx.net and https://eu.api-sca.checkmarx.net."
+  type        = string
+  default     = "https://api-sca.checkmarx.net"
 }

@@ -1,21 +1,22 @@
-
-
 resource "aws_elasticsearch_domain" "es" {
   count                 = var.es_create ? 1 : 0
   domain_name           = var.deployment_id
   elasticsearch_version = "7.10"
 
   cluster_config {
-    instance_type          = var.es_instance_type
-    instance_count         = var.es_instance_count
-    zone_awareness_enabled = true
+    dedicated_master_enabled = var.es_enable_dedicated_master_nodes
+    dedicated_master_count   = var.es_dedicated_master_count
+    dedicated_master_type    = var.es_dedicated_master_type
+    instance_type            = var.es_instance_type
+    instance_count           = var.es_instance_count
+    zone_awareness_enabled   = true
     zone_awareness_config {
       availability_zone_count = min(length(var.es_subnets), var.es_instance_count)
     }
   }
   vpc_options {
     subnet_ids         = slice(var.es_subnets, 0, var.es_instance_count)
-    security_group_ids = [module.elasticache_security_group.security_group_id]
+    security_group_ids = [module.elasticsearch_security_group.security_group_id]
   }
   snapshot_options {
     automated_snapshot_start_hour = 06

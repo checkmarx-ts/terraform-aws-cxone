@@ -7,6 +7,10 @@
 
 
 DEPLOYMENT_ID=${deployment_id}
+
+# Disable the pager
+export AWS_PAGER=""
+
 # Clean up load balancer
 ELB_ARN=$(aws elbv2 describe-load-balancers | jq -r '.LoadBalancers[].LoadBalancerArn' | xargs -I {} aws elbv2 describe-tags --resource-arns {} --query "TagDescriptions[?Tags[?Key=='elbv2.k8s.aws/cluster' &&Value=='$${DEPLOYMENT_ID}']].ResourceArn" --output text)
 aws elbv2 delete-load-balancer --load-balancer-arn $${ELB_ARN}
