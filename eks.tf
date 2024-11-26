@@ -104,7 +104,7 @@ locals {
 
 module "eks_node_iam_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
-  version = "5.37.2"
+  version = "5.48.0"
   trusted_role_services = [
     "ec2.amazonaws.com"
   ]
@@ -116,13 +116,19 @@ module "eks_node_iam_role" {
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
     "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
-    "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-    aws_iam_policy.s3_bucket_access.arn
-  ]
+  "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"]
 }
 
+resource "aws_iam_role_policy_attachment" "s3_access" {
+  count      = var.create_node_s3_iam_role == true ? 1 : 0
+  role       = module.eks_node_iam_role.iam_role_name
+  policy_arn = aws_iam_policy.s3_bucket_access[0].arn
+}
+
+
 resource "aws_iam_policy" "s3_bucket_access" {
-  name = "${var.deployment_id}-s3-access"
+  name  = "${var.deployment_id}-s3-access"
+  count = var.create_node_s3_iam_role == true ? 1 : 0
   policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -308,7 +314,7 @@ resource "aws_autoscaling_group_tag" "cluster_autoscaler_taint" {
 
 module "ebs_csi_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.44.0"
+  version = "5.48.0"
   count   = var.eks_create ? 1 : 0
 
   role_name             = "ebs-csi-${var.deployment_id}"
@@ -325,7 +331,7 @@ module "ebs_csi_irsa" {
 
 module "vpc_cni_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.44.0"
+  version = "5.48.0"
   count   = var.eks_create ? 1 : 0
 
   role_name             = "vpc-cni-${var.deployment_id}"
@@ -343,7 +349,7 @@ module "vpc_cni_irsa" {
 
 module "cluster_autoscaler_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.44.0"
+  version = "5.48.0"
   count   = var.eks_create && var.eks_create_cluster_autoscaler_irsa ? 1 : 0
 
   role_name                        = "cluster-autoscaler-${var.deployment_id}"
@@ -362,7 +368,7 @@ module "cluster_autoscaler_irsa" {
 
 module "external_dns_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.44.0"
+  version = "5.48.0"
   count   = var.eks_create && var.eks_create_external_dns_irsa ? 1 : 0
 
   role_name        = "external-dns-${var.deployment_id}"
@@ -381,7 +387,7 @@ module "external_dns_irsa" {
 
 module "load_balancer_controller_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.44.0"
+  version = "5.48.0"
   count   = var.eks_create && var.eks_create_load_balancer_controller_irsa ? 1 : 0
 
   role_name                              = "load_balancer_controller-${var.deployment_id}"
@@ -397,7 +403,7 @@ module "load_balancer_controller_irsa" {
 
 module "aws_cloudwatch_observability_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.44.0"
+  version = "5.48.0"
   count   = var.eks_create && var.aws_cloudwatch_observability_version != null ? 1 : 0
 
   role_name                              = "aws-cloudwatch-observability-${var.deployment_id}"

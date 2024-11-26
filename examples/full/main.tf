@@ -123,6 +123,7 @@ module "checkmarx-one" {
   # EKS Configuration
   eks_create                               = var.eks_create
   eks_subnets                              = module.vpc.private_subnets
+  create_node_s3_iam_role                  = var.create_node_s3_iam_role
   eks_pod_subnets                          = module.vpc.pod_subnets
   eks_enable_externalsnat                  = var.eks_enable_externalsnat
   eks_enable_fargate                       = var.eks_enable_fargate
@@ -210,13 +211,16 @@ module "checkmarx-one" {
   ec_auto_minor_version_upgrade     = var.ec_auto_minor_version_upgrade
 
   # Elasticsearch Configuration
-  es_create              = var.es_create
-  es_subnets             = module.vpc.database_subnets
-  es_instance_count      = var.es_instance_count
-  es_instance_type       = var.es_instance_type
-  es_volume_size         = var.es_volume_size
-  es_tls_security_policy = var.es_tls_security_policy
-  es_password            = random_password.elasticsearch.result
+  es_create                        = var.es_create
+  es_subnets                       = module.vpc.database_subnets
+  es_enable_dedicated_master_nodes = var.es_enable_dedicated_master_nodes
+  es_dedicated_master_count        = var.es_dedicated_master_count
+  es_dedicated_master_type         = var.es_dedicated_master_type
+  es_instance_count                = var.es_instance_count
+  es_instance_type                 = var.es_instance_type
+  es_volume_size                   = var.es_volume_size
+  es_tls_security_policy           = var.es_tls_security_policy
+  es_password                      = random_password.elasticsearch.result
 }
 
 
@@ -240,10 +244,12 @@ module "checkmarx-one-install" {
   object_storage_access_key             = var.object_storage_access_key
   object_storage_secret_key             = var.object_storage_secret_key
   postgres_host                         = module.checkmarx-one.db_endpoint
+  postgres_read_host                    = module.checkmarx-one.db_reader_endpoint
   postgres_database_name                = module.checkmarx-one.db_database_name
   postgres_user                         = module.checkmarx-one.db_master_username
   postgres_password                     = module.checkmarx-one.db_master_password
   analytics_postgres_host               = module.checkmarx-one.analytics_db_endpoint
+  analytics_postgres_read_host          = module.checkmarx-one.analytics_db_reader_endpoint
   analytics_postgres_database_name      = module.checkmarx-one.analytics_db_database_name
   analytics_postgres_user               = module.checkmarx-one.analytics_db_master_username
   analytics_postgres_password           = module.checkmarx-one.analytics_db_master_password

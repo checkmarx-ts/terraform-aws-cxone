@@ -48,7 +48,8 @@ resource "aws_elasticache_replication_group" "redis" {
   num_node_groups         = var.ec_number_of_shards
 
   transit_encryption_enabled = false #var.redis_auth_token != "" ? true : false #BUG - AST can't work with TLS enabled
-  #auth_token                 = var.redis_auth_token != "" ? var.redis_auth_token : null
+  # auth_token                 = var.redis_auth_token != "" ? var.redis_auth_token : null
+  # auth_token_update_strategy = "SET"
 
   # Per https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/at-rest-encryption.html
   # "The default (service managed) encryption is the only option available in the GovCloud (US) Regions."
@@ -77,7 +78,11 @@ module "elasticache_security_group" {
 # }
 
 output "ec_endpoint" {
-  value = var.ec_enable_serverless ? aws_elasticache_serverless_cache.main[0].endpoint[0].address : aws_elasticache_replication_group.redis[0].configuration_endpoint_address
+  value = var.ec_create ? (var.ec_enable_serverless ? aws_elasticache_serverless_cache.main[0].endpoint[0].address : aws_elasticache_replication_group.redis[0].configuration_endpoint_address) : ""
+}
+
+output "ec" {
+  value = var.ec_create ? aws_elasticache_replication_group.redis[0].* : null
 }
 
 output "ec_port" {

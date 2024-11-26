@@ -32,14 +32,24 @@ kots-install-from-airgap:
 	--airgap --airgap-bundle $${AIRGAP_BUNDLE} --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}'
 
 
+.PHONY: kots-get-config
+kots-get-config:
+	kubectl kots get config -n $${NAMESPACE} --appslug ast --decrypt
+
+
 .PHONY: kots-set-config
 kots-set-config:
 	kubectl kots set config ast -n $${NAMESPACE} --config-file $${KOTS_CONFIG_FILE} --deploy --current	
 
 
-.PHONY: kots-get-config
-kots-get-config:
-	kubectl kots get config -n $${NAMESPACE} --appslug ast
+.PHONY: kots-download-files
+kots-download-files:
+	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite
+
+
+.PHONY: kots-upload-files
+kots-upload-files:
+	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast
 
 
 .PHONY: kots-admin-console
@@ -47,10 +57,11 @@ kots-admin-console:
 	kubectl kots admin-console -n $${NAMESPACE}
 
 
+# Restart all AST services (ignores kots services which are commonly installed in same namespace)
 .PHONY: rollout-restart
 rollout-restart:
-	kubectl -n $${NAMESPACE} rollout restart deploy
-	kubectl -n $${NAMESPACE} rollout restart statefulset
+	kubectl get deploy -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart deploy {}
+	kubectl get statefulset -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart statefulset {}
 
 
 .PHONY: install-cluster-autoscaler
@@ -159,12 +170,34 @@ clean-kots:
 	kubectl delete deployment kotsadm -n $${NAMESPACE}
 	kubectl delete statefulset kotsadm-minio -n $${NAMESPACE}
 	
+.PHONY: clean-ast-namespace
+clean-ast-namespace:
+	kubectl patch service ast-platform-traefik -n $${NAMESPACE} -p '{"metadata":{"finalizers":null}}'
 
+	kubectl patch crd microfrontends.ast.checkmarx.com -n $${NAMESPACE} -p '{"metadata":{"finalizers":[]}}' --type=merge
+	kubectl patch crd microservices.ast.checkmarx.com -n $${NAMESPACE} -p '{"metadata":{"finalizers":[]}}' --type=merge
+	kubectl patch crd platforms.ast.checkmarx.com -n $${NAMESPACE} -p '{"metadata":{"finalizers":[]}}' --type=merge
+
+	kubectl delete crd microfrontends.ast.checkmarx.com -n $${NAMESPACE}
+	kubectl delete crd microservices.ast.checkmarx.com -n $${NAMESPACE}
+	kubectl delete crd platforms.ast.checkmarx.com -n $${NAMESPACE}
+
+	kubectl delete bundles.trust.cert-manager.io trust-bundle
+	helm uninstall trust-manager cert-manager -n $${NAMESPACE}
+	helm uninstall operator-helm-chart -n $${NAMESPACE}
+	kubectl delete -n $${NAMESPACE} --all all
+
+	kubectl delete ns $${NAMESPACE}
 
 
 .PHONY: destroy-load-balancer
 destroy-load-balancer:
 	./destroy-load-balancer.$${DEPLOYMENT_ID}.sh
+
+
+.PHONY: get-support-bundle
+get-support-bundle:
+	kubectl support-bundle --load-cluster-specs --redactors=configmap/ast/kotsadm-redact-spec/redact-spec,configmap/ast/kotsadm-ast-redact-spec/redact-spec
 
 
 .PHONY: totp

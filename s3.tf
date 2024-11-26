@@ -44,6 +44,10 @@ locals {
       name        = "logs"
       enable_cors = true
     }
+    microengines = {
+      name        = "microengines"
+      enable_cors = false
+    }
     misc = {
       name        = "misc"
       enable_cors = false

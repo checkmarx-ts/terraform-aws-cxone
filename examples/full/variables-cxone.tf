@@ -58,6 +58,12 @@ variable "eks_create" {
 #   type        = list(string)
 # }
 
+variable "create_node_s3_iam_role" {
+  type        = bool
+  default     = false
+  description = "Attach a policy to EKS nodes to access S3 buckets."
+}
+
 variable "eks_enable_externalsnat" {
   type        = bool
   description = "Enables [External SNAT](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html) for the EKS VPC CNI. When true, the EKS pods must have a route to a NAT Gateway for outbound communication."
@@ -666,6 +672,24 @@ variable "es_create" {
 #   description = "The subnets to deploy Elasticsearch into."
 #   type        = list(string)
 # }
+
+variable "es_enable_dedicated_master_nodes" {
+  default     = false
+  type        = bool
+  description = "Enable use of dedicated master nodes for the cluster."
+}
+
+variable "es_dedicated_master_count" {
+  default     = 3
+  type        = number
+  description = "The number of master nodes to use for the cluster."
+}
+
+variable "es_dedicated_master_type" {
+  default     = "m7g.large.elasticsearch"
+  type        = string
+  description = "The instance type of the master nodes."
+}
 
 variable "es_instance_type" {
   type        = string
