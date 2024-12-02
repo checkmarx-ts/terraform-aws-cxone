@@ -80,9 +80,9 @@ module "iam" {
 
 
 module "s3" {
-  source                  = "./modules/s3"
-  deployment_id           = var.deployment_id
-  s3_cors_allowed_origins = ["https://${var.subdomain}${var.domain}"]
+  source             = "./modules/s3"
+  deployment_id      = var.deployment_id
+  s3_allowed_origins = ["https://${var.subdomain}${var.domain}"]
 }
 
 
@@ -364,6 +364,16 @@ module "acm" {
 }
 
 
+resource "random_password" "kotsadm_password" {
+  length           = 14
+  special          = false
+  override_special = "!*-_[]{}<>"
+  min_special      = 1
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+}
+
 
 module "checkmarx-one-install" {
   source = "git::https://github.com/checkmarx-ts/terraform-aws-cxone//modules/cxone-install?ref=d3dc90b"
@@ -371,8 +381,8 @@ module "checkmarx-one-install" {
 
   cxone_version       = "3.20.24"
   release_channel     = "beta-1"
-  license_file        = "license.yaml"
-  kots_admin_password = ""
+  license_file        = var.license_file 
+  kots_admin_password = random_password.kotsadm_password.result
 
   deployment_id             = var.deployment_id
   region                    = data.aws_region.current.name
