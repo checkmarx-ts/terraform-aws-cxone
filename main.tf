@@ -261,11 +261,10 @@ module "eks_cluster" {
       max_size           = 15
       launch_template_id = aws_launch_template.self_managed["sca-source-resolver"].id
       autoscaling_group_tags = {
-        "k8s.io/cluster-autoscaler/enabled"              = "true"
-        "k8s.io/cluster-autoscaler/${var.deployment_id}" = "owned"
-        #"k8s.io/cluster-autoscaler/node-template/label/service" = "sca-source-resolver"
-        "k8s.io/cluster-autoscaler/node-template/label/sca-source-resolver" = "true"
-        "k8s.io/cluster-autoscaler/node-template/taint/service"             = "sca-source-resolver:NO_SCHEDULE"
+        "k8s.io/cluster-autoscaler/enabled"                     = "true"
+        "k8s.io/cluster-autoscaler/${var.deployment_id}"        = "owned"
+        "k8s.io/cluster-autoscaler/node-template/label/service" = "sca-source-resolver"
+        "k8s.io/cluster-autoscaler/node-template/taint/service" = "sca-source-resolver:NO_SCHEDULE"
       }
       labels = {
         "service" = "sca-source-resolver"
