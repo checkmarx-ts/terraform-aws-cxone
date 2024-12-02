@@ -35,7 +35,11 @@ terraform.rc
 
 .terraform.lock.hcl
 
-kots.*.yml
+kots.*.yaml
+apply-storageclass-config.*.sh
+custom-networking-config.*.yaml
+destroy-load-balancer.*.sh
+karpenter.*.yaml
 install*.sh
 
 
