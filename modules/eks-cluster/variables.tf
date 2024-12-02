@@ -119,6 +119,12 @@ variable "self_managed_node_groups" {
   }))
 }
 
+variable "eks_create_ebs_csi_irsa" {
+  type        = bool
+  description = "Create EBS CSI irsa iam role"
+  default     = false
+}
+
 variable "eks_create_cluster_autoscaler_irsa" {
   type        = bool
   description = "Create cluster autoscaler irsa iam role"

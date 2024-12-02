@@ -98,6 +98,7 @@ module "eks_cluster" {
   node_security_group_id                   = module.security_groups.eks_node
   nodegroup_iam_role_arn                   = module.iam.eks_nodes_iam_role_arn
   ec2_key_name                             = "stokes"
+  eks_create_ebs_csi_irsa                  = true
   eks_create_cluster_autoscaler_irsa       = true
   eks_create_external_dns_irsa             = true
   eks_create_load_balancer_controller_irsa = true
@@ -381,7 +382,7 @@ module "checkmarx-one-install" {
 
   cxone_version       = "3.20.24"
   release_channel     = "beta-1"
-  license_file        = var.license_file 
+  license_file        = var.license_file
   kots_admin_password = random_password.kotsadm_password.result
 
   deployment_id             = var.deployment_id

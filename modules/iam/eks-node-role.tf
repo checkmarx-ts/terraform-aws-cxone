@@ -3,9 +3,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 data "aws_partition" "current" {}
 
-data "aws_iam_policy" "AmazonEBSCSIDriverPolicy" {
-  arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-}
 data "aws_iam_policy" "AmazonAPIGatewayPushToCloudWatchLogs" {
   arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
 }
@@ -24,11 +21,6 @@ data "aws_iam_policy" "AmazonEC2ContainerRegistryReadOnly" {
 }
 
 
-
-resource "aws_iam_role_policy_attachment" "EksNodesAmazonEBSCSIDriverPolicy" {
-  role       = aws_iam_role.eks_nodes.name
-  policy_arn = data.aws_iam_policy.AmazonEBSCSIDriverPolicy.arn
-}
 
 resource "aws_iam_role_policy_attachment" "EksNodesAmazonAPIGatewayPushToCloudWatchLogs" {
   role       = aws_iam_role.eks_nodes.name

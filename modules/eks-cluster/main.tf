@@ -69,7 +69,8 @@ module "eks" {
 
     }
     aws-ebs-csi-driver = {
-      addon_version = var.aws_ebs_csi_driver_version
+      addon_version            = var.aws_ebs_csi_driver_version
+      service_account_role_arn = var.eks_create_ebs_csi_irsa ? module.ebs_csi_irsa[0].iam_role_arn : null
     }
   }
 
@@ -112,6 +113,23 @@ module "eks" {
     }
   } }
 
+}
+
+module "ebs_csi_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.48.0"
+  count   = var.eks_create_ebs_csi_irsa ? 1 : 0
+
+  role_name             = "ebs-csi-${var.deployment_id}"
+  role_description      = "IRSA role for EBS CSI Driver"
+  attach_ebs_csi_policy = true
+  ebs_csi_kms_cmk_ids   = [var.eks_kms_key_arn]
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
+    }
+  }
 }
 
 
