@@ -148,3 +148,7 @@ variable "s3_bucket_versioning_status" {
   default     = "Disabled"
 }
 
+variable "license_file" {
+  type        = string
+  description = "The path to the kotsadm license file"
+}
