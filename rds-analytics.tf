@@ -1,36 +1,92 @@
+resource "aws_rds_cluster_parameter_group" "analytics" {
+  name        = "${var.deployment_id}-analytics-cluster"
+  family      = "aurora-postgresql13"
+  description = "RDS cluster parameter group for ${var.deployment_id}"
+
+  parameter {
+    name  = "log_autovacuum_min_duration"
+    value = "1000"
+  }
+
+  parameter {
+    name  = "rds.force_autovacuum_logging_level"
+    value = "log"
+  }
+  parameter {
+    name  = "password_encryption"
+    value = "scram-sha-256"
+  }
+}
+
+resource "aws_db_parameter_group" "analytics" {
+  name   = "${var.deployment_id}-analytics-instance"
+  family = "aurora-postgresql13"
+
+  parameter {
+    name  = "auto_explain.log_min_duration"
+    value = "500"
+  }
+
+  parameter {
+    name  = "log_connections"
+    value = "1"
+  }
+  parameter {
+    name  = "log_disconnections"
+    value = "1"
+  }
+  parameter {
+    name  = "log_lock_waits"
+    value = "1"
+  }
+  parameter {
+    name  = "log_min_duration_statement"
+    value = "100"
+  }
+  parameter {
+    name  = "log_min_error_statement"
+    value = "warning"
+  }
+  parameter {
+    name  = "log_statement"
+    value = "ddl"
+  }
+}
+
 module "rds-analytics" {
   source  = "terraform-aws-modules/rds-aurora/aws"
-  version = "9.9.0"
+  version = "9.10.0"
   create  = var.db_create
 
-  name                                        = "${var.deployment_id}-analytics"
-  engine                                      = "aurora-postgresql"
-  engine_version                              = var.db_engine_version
-  allow_major_version_upgrade                 = var.db_allow_major_version_upgrade
-  engine_mode                                 = "provisioned"
-  instance_class                              = var.analytics_db_instance_class
-  vpc_id                                      = var.vpc_id
-  kms_key_id                                  = var.kms_key_arn
-  db_subnet_group_name                        = aws_db_subnet_group.main.name
-  storage_encrypted                           = true
-  apply_immediately                           = var.db_apply_immediately
-  skip_final_snapshot                         = var.db_skip_final_snapshot
-  final_snapshot_identifier                   = var.analytics_db_final_snapshot_identifier
-  auto_minor_version_upgrade                  = var.db_auto_minor_version_upgrade
-  iam_database_authentication_enabled         = false
-  snapshot_identifier                         = var.analytics_db_snapshot_identifer
-  monitoring_interval                         = var.db_monitoring_interval
-  performance_insights_enabled                = var.db_performance_insights_enabled
-  performance_insights_retention_period       = var.db_performance_insights_retention_period
-  db_cluster_db_instance_parameter_group_name = var.analytics_db_cluster_db_instance_parameter_group_name
-  master_username                             = "analytics"
-  database_name                               = "analytics"
-  master_password                             = var.analytics_db_master_user_password
-  manage_master_user_password                 = false
-  port                                        = var.db_port
-  deletion_protection                         = var.db_deletion_protection
-  backup_retention_period                     = var.db_backup_retention_period
-  enabled_cloudwatch_logs_exports             = ["postgresql"]
+  name                                  = "${var.deployment_id}-analytics"
+  engine                                = "aurora-postgresql"
+  engine_version                        = var.db_engine_version
+  allow_major_version_upgrade           = var.db_allow_major_version_upgrade
+  engine_mode                           = "provisioned"
+  instance_class                        = var.analytics_db_instance_class
+  vpc_id                                = var.vpc_id
+  kms_key_id                            = var.kms_key_arn
+  db_subnet_group_name                  = aws_db_subnet_group.main.name
+  storage_encrypted                     = true
+  apply_immediately                     = var.db_apply_immediately
+  skip_final_snapshot                   = var.db_skip_final_snapshot
+  final_snapshot_identifier             = var.analytics_db_final_snapshot_identifier
+  auto_minor_version_upgrade            = var.db_auto_minor_version_upgrade
+  iam_database_authentication_enabled   = false
+  snapshot_identifier                   = var.analytics_db_snapshot_identifer
+  monitoring_interval                   = var.db_monitoring_interval
+  performance_insights_enabled          = var.db_performance_insights_enabled
+  performance_insights_retention_period = var.db_performance_insights_retention_period
+  db_cluster_parameter_group_name       = aws_rds_cluster_parameter_group.analytics.name
+  db_parameter_group_name               = aws_db_parameter_group.analytics.name
+  master_username                       = "analytics"
+  database_name                         = "analytics"
+  master_password                       = var.analytics_db_master_user_password
+  manage_master_user_password           = false
+  port                                  = var.db_port
+  deletion_protection                   = var.db_deletion_protection
+  backup_retention_period               = var.db_backup_retention_period
+  enabled_cloudwatch_logs_exports       = ["postgresql"]
   security_group_rules = {
     ingress_from_vpc = {
       cidr_blocks = data.aws_vpc.main.cidr_block_associations[*].cidr_block
