@@ -110,6 +110,31 @@ variable "eks_create_karpenter" {
 variable "eks_version" {
   type        = string
   description = "The version of the EKS Cluster (e.g. 1.27)"
+  default     = "1.30"
+}
+
+variable "coredns_version" {
+  type        = string
+  description = "The version of the EKS Core DNS Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-coredns.html."
+  default     = "v1.11.4-eksbuild.2"
+}
+
+variable "kube_proxy_version" {
+  type        = string
+  description = "The version of the EKS Kube Proxy Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-kube-proxy.html#kube-proxy-versions."
+  default     = "v1.30.7-eksbuild.2"
+}
+
+variable "vpc_cni_version" {
+  type        = string
+  description = "The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html."
+  default     = "v1.19.2-eksbuild.1"
+}
+
+variable "aws_ebs_csi_driver_version" {
+  type        = string
+  description = "The version of the EKS EBS CSI Addon. Reference https://github.com/kubernetes-sigs/aws-ebs-csi-driver/?tab=readme-ov-file#compatibility."
+  default     = "v1.39.0-eksbuild.1"
 }
 
 variable "eks_private_endpoint_enabled" {
@@ -153,27 +178,6 @@ variable "eks_pre_bootstrap_user_data" {
   type        = string
   description = "User data to insert before bootstrapping script."
   default     = ""
-}
-
-
-variable "coredns_version" {
-  type        = string
-  description = "The version of the EKS Core DNS Addon."
-}
-
-variable "kube_proxy_version" {
-  type        = string
-  description = "The version of the EKS Kube Proxy Addon."
-}
-
-variable "vpc_cni_version" {
-  type        = string
-  description = "The version of the EKS VPC CNI Addon."
-}
-
-variable "aws_ebs_csi_driver_version" {
-  type        = string
-  description = "The version of the EKS EBS CSI Addon."
 }
 
 variable "aws_cloudwatch_observability_version" {
