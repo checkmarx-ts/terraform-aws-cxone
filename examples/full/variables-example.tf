@@ -25,6 +25,22 @@ variable "ms_replica_count" {
   default     = 3
 }
 
+variable "network_load_balancer_scheme" {
+  description = "The load balancer scheme."
+  type        = string
+  default     = "internet-facing"
+  validation {
+    condition     = contains(["internet-facing", "internal"], var.network_load_balancer_scheme)
+    error_message = "Valid values for variable network_load_balancer_scheme are internet-facing or internal"
+  }
+}
+
+variable "internal_ca_cert" {
+  description = "The base64 encoded pem file containing certificates to add to CxOne components' trust stores"
+  type        = string
+  default     = "{}"
+}
+
 #******************************************************************************
 #   S3 Configuration
 #******************************************************************************
@@ -129,3 +145,4 @@ variable "bastion_host_remote_management_cidrs" {
   type        = list(string)
   default     = null
 }
+

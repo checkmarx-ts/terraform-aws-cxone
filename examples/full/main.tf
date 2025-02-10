@@ -271,6 +271,8 @@ module "checkmarx-one-install" {
   pod_eniconfig                         = module.vpc.ENIConfig
   vpc_id                                = module.vpc.vpc_id
   kms_key_arn                           = aws_kms_key.main.arn
+  internal_ca_cert                      = var.internal_ca_cert
+  network_load_balancer_scheme          = var.network_load_balancer_scheme
 }
 
 terraform {

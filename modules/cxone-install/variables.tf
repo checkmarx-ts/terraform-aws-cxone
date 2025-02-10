@@ -18,11 +18,6 @@ variable "fqdn" {
   description = "The fully qualified domain name that will be used for the Checkmarx One deployment"
 }
 
-variable "acm_certificate_arn" {
-  type        = string
-  description = "The ARN for the ACM certificate to use to configure SSL with."
-}
-
 variable "deployment_id" {
   description = "The id of the deployment. Will be used to name resources like EKS cluster, etc."
   type        = string
@@ -299,4 +294,33 @@ variable "sca_prod_environment" {
   description = "The SCA API endpoint to configure. Options are https://api-sca.checkmarx.net and https://eu.api-sca.checkmarx.net."
   type        = string
   default     = "https://api-sca.checkmarx.net"
+}
+
+#******************************************************************************
+#  Loadbalancer Configuration
+#******************************************************************************
+
+variable "acm_certificate_arn" {
+  type        = string
+  description = "The ARN for the ACM certificate to use to configure SSL with."
+}
+
+variable "network_load_balancer_scheme" {
+  description = "The load balancer scheme."
+  type        = string
+  default     = "internet-facing"
+  validation {
+    condition     = contains(["internet-facing", "internal"], var.network_load_balancer_scheme)
+    error_message = "Valid values for variable network_load_balancer_scheme are internet-facing or internal"
+  }
+}
+
+#******************************************************************************
+#  Internal Certificate Authorities
+#******************************************************************************
+
+variable "internal_ca_cert" {
+  description = "The base64 encoded pem file containing certificates to add to CxOne components' trust stores"
+  type        = string
+  default     = "{}"
 }

@@ -50,6 +50,10 @@ resource "local_file" "kots_config" {
     analytics_postgres_password  = var.analytics_postgres_password #jsondecode(data.aws_secretsmanager_secret_version.rds_secret.secret_string)["password"]
     analytics_postgres_db_name   = var.analytics_postgres_database_name
 
+    # Internal CA
+    internal_ca      = (var.internal_ca_cert != null && var.internal_ca_cert != "{}") ? "\"1\"" : "\"0\""
+    internal_ca_cert = var.internal_ca_cert
+
     # Redis
     redis_address = var.redis_address
     redis_port    = var.redis_port
@@ -73,6 +77,8 @@ resource "local_file" "kots_config" {
     integrations_repos_manager_bitbucket_tenant_key = local.integrations_repos_manager_bitbucket_tenant_key
     integrations_repos_manager_github_tenant_key    = local.integrations_repos_manager_github_tenant_key
     integrations_repos_manager_gitlab_tenant_key    = local.integrations_repos_manager_gitlab_tenant_key
+
+    network_load_balancer_scheme = var.network_load_balancer_scheme
 
   })
   filename = "kots.${var.deployment_id}.yaml"

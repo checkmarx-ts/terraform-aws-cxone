@@ -235,8 +235,8 @@ spec:
 
     # Configure the use of read replicas for read only queries
     # Calling terraform will pass either the readwrite endpoint if no read only provided, so this can always be "1"
-    #use_reader_instance:
-    #  value: "1"      
+    use_reader_instance:
+      value: "1"      
     
     # Always set to external_postgres. Other values used for development only.
     postgres_type:
@@ -246,8 +246,8 @@ spec:
     external_postgres_host:
       value: ${postgres_host}
 
-    #external_postgres_read_host:
-    #  value: ${postgres_read_host}
+    external_postgres_read_host:
+      value: ${postgres_read_host}
 
     # The postgres port. Typically "5432"
     external_postgres_port:
@@ -281,8 +281,8 @@ spec:
     # The analaytics database connection information. required when enable_analytics is "1"
     analytics_postgres_host:
       value: ${analytics_postgres_host}
-    #analytics_postgres_read_host:
-    #  value: ${analytics_postgres_read_host}
+    analytics_postgres_read_host:
+      value: ${analytics_postgres_read_host}
     analytics_postgres_port:
       value: "5432"    
     analytics_postgres_db_name:
@@ -348,11 +348,15 @@ spec:
     smtp_port:
       value: "${smtp_port}"
 
-    # Enables TLS connections to the SMTP server. When enabled, SMTP server must
+    # Enables StartTLS connections to the SMTP server. When enabled, SMTP server must
     # be configured with a TLS certificate from a well known Certificate Authority.
     # Valid values are "0" (false/disabled) and "1" (true/enabled)
     smtp_tls_enabled:
-      value: "1"
+      value: "0"
+
+    # Enables Implicit TLS connections to the SMTP server. This is preferred over StartTls(smtp_tls_enabled).
+    smtp_ssl_enabled:
+      value: "0"
 
     # The username and password that Checkmarx One will use to authenticate to 
     # the SMTP server with, when smtp_auth_enabled = "1". Use "0" for no 
@@ -396,7 +400,7 @@ spec:
     #   internal: a load balancer that only has private ip addresses. Recommend when deploying CxOne privately.
     # Reference https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html#load-balancer-scheme
     network_load_balancer_scheme:
-      value: internet-facing
+      value: ${network_load_balancer_scheme}
 
     # SSL Policy Name to be applied to the AWS Network Load Balancer. Reference https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies.
     network_load_balancer_ssl_negotiation_policy:
@@ -426,11 +430,11 @@ spec:
     
     # Enables addition of user provided certificates to application trust stores.
     internal_ca:
-      value: "0"
+      value: ${internal_ca}
 
     # The base 64 encoded pem file containing certificates to add to trust stores.
     internal_ca_cert:
-      value: ""
+      value: ${internal_ca_cert}
 
     #--------------------------------------------------------------------------
     # Opentelemetry Configuration
