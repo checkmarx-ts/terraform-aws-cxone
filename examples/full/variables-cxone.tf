@@ -169,7 +169,8 @@ variable "aws_ebs_csi_driver_version" {
 
 variable "aws_cloudwatch_observability_version" {
   type        = string
-  description = "The version of the AWS Cloudwatch Observability Addon. Specify a version to enable the addon, or leave blank to disable the addon."
+  description = "The version of the AWS Cloudwatch Observability Addon. Specify a version to enable the addon, or leave null to disable the addon."
+  default     = null
 }
 
 variable "launch_template_tags" {
