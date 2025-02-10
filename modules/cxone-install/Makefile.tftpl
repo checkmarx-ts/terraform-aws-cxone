@@ -12,8 +12,6 @@ AIRGAP_BUNDLE = ???
 KOTS_REGISTRY = ???
 REGISTRY_USERNAME = ???
 REGISTRY_PASSWORD = ???
-TOTP = 123
-
 
 
 .PHONY: update-kubeconfig
@@ -30,6 +28,14 @@ kots-install:
 kots-install-from-airgap:
 	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password '$${KOTS_PASSWORD}' --config-values $${KOTS_CONFIG_FILE} \
 	--airgap --airgap-bundle $${AIRGAP_BUNDLE} --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}'
+
+.PHONY: kots-upgrade-from-airgap
+kots-upgrade-from-airgap:
+	kubectl kots upstream upgrade ast -n $${NAMESPACE} \
+	--airgap-bundle $${AIRGAP_BUNDLE} \
+	--kotsadm-registry $${KOTS_REGISTRY} \
+	--registry-username $${REGISTRY_USERNAME} \
+	--registry-password '$${REGISTRY_PASSWORD}' --deploy --disable-image-push
 
 
 .PHONY: kots-get-config
@@ -60,9 +66,9 @@ kots-admin-console:
 # Restart all AST services (ignores kots services which are commonly installed in same namespace)
 .PHONY: rollout-restart
 rollout-restart:
-	kubectl get deploy -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart deploy {}
 	kubectl get statefulset -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart statefulset {}
-
+	kubectl get deploy -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart deploy {}
+	
 
 .PHONY: install-cluster-autoscaler
 install-cluster-autoscaler:
@@ -202,4 +208,4 @@ get-support-bundle:
 
 .PHONY: totp
 totp:
-	echo "$${TOTP}" | totp-cli instant
+	cat .totp | totp-cli instant
