@@ -75,7 +75,7 @@ install-cluster-autoscaler:
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler; \
 	helm repo update autoscaler; \
 	helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
-	--version 9.21.1 \
+	--version 9.37.0 \
 	-n kube-system \
 	--set awsRegion=$${DEPLOY_REGION} \
 	--set rbac.serviceAccount.create=true \
