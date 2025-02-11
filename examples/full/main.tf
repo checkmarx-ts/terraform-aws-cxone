@@ -233,6 +233,7 @@ module "checkmarx-one-install" {
   kots_admin_password = random_password.kots_admin.result
 
   deployment_id                         = var.deployment_id
+  cxone_namespace                       = var.cxone_namespace
   region                                = data.aws_region.current.name
   admin_email                           = var.kots_admin_email
   admin_password                        = random_password.cxone_admin.result

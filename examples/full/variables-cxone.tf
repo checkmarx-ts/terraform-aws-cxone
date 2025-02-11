@@ -17,6 +17,12 @@ variable "deployment_id" {
   }
 }
 
+variable "cxone_namespace" {
+  description = "The kubernetes namespace in which to deploy the CxOne application."
+  type        = string
+  default     = "ast"
+}
+
 # variable "kms_key_arn" {
 #   type        = string
 #   description = "The ARN of the KMS key to use for encryption in AWS services"

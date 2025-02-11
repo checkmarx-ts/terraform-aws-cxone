@@ -94,10 +94,9 @@ resource "local_file" "makefile" {
     tf_cxone_version                      = var.cxone_version
     tf_release_channel                    = var.release_channel
     tf_kots_password                      = var.kots_admin_password
-    tf_namespace                          = "ast"
+    tf_namespace                          = var.cxone_namespace
     tf_license_file                       = var.license_file
     tf_kots_config_file                   = "kots.${var.deployment_id}.yaml"
-    namespace                             = "ast"
     kots_config_file                      = "kots.${var.deployment_id}.yaml"
     license_file                          = var.license_file
     release_channel                       = var.release_channel

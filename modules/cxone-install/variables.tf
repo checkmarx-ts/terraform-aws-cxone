@@ -28,6 +28,12 @@ variable "deployment_id" {
   }
 }
 
+variable "cxone_namespace" {
+  description = "The kubernetes namespace in which to deploy the CxOne application."
+  type        = string
+  default     = "ast"
+}
+
 variable "vpc_id" {
   description = "The VPC Id Checkmarx One is deployed into."
   type        = string
