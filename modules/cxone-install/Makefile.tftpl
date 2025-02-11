@@ -8,10 +8,10 @@ KOTS_PASSWORD = ${tf_kots_password}
 NAMESPACE = ${tf_namespace}
 LICENSE_FILE = ${tf_license_file}
 KOTS_CONFIG_FILE = ${tf_kots_config_file}
-AIRGAP_BUNDLE = ???
-KOTS_REGISTRY = ???
-REGISTRY_USERNAME = ???
-REGISTRY_PASSWORD = ???
+AIRGAP_BUNDLE = ${tf_airgap_bundle}
+KOTS_REGISTRY = ${tf_kots_registry}
+REGISTRY_USERNAME = ${tf_registry_username}
+REGISTRY_PASSWORD = ${tf_registry_password}
 
 
 .PHONY: update-kubeconfig
@@ -21,18 +21,18 @@ update-kubeconfig:
 
 .PHONY: kots-install
 kots-install:
-	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password '$${KOTS_PASSWORD}' --config-values $${KOTS_CONFIG_FILE} --app-version-label $${CXONE_VERSION}
+	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --config-values '$${KOTS_CONFIG_FILE}' --app-version-label $${CXONE_VERSION}
 
 
 .PHONY: kots-install-from-airgap
 kots-install-from-airgap:
-	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password '$${KOTS_PASSWORD}' --config-values $${KOTS_CONFIG_FILE} \
-	--airgap --airgap-bundle $${AIRGAP_BUNDLE} --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}'
+	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --config-values '$${KOTS_CONFIG_FILE}' \
+	--airgap --airgap-bundle '$${AIRGAP_BUNDLE}' --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}'
 
 .PHONY: kots-upgrade-from-airgap
 kots-upgrade-from-airgap:
 	kubectl kots upstream upgrade ast -n $${NAMESPACE} \
-	--airgap-bundle $${AIRGAP_BUNDLE} \
+	--airgap-bundle '$${AIRGAP_BUNDLE}' \
 	--kotsadm-registry $${KOTS_REGISTRY} \
 	--registry-username $${REGISTRY_USERNAME} \
 	--registry-password '$${REGISTRY_PASSWORD}' --deploy --disable-image-push
@@ -45,7 +45,7 @@ kots-get-config:
 
 .PHONY: kots-set-config
 kots-set-config:
-	kubectl kots set config ast -n $${NAMESPACE} --config-file $${KOTS_CONFIG_FILE} --deploy --current	
+	kubectl kots set config ast -n $${NAMESPACE} --config-file '$${KOTS_CONFIG_FILE}' --deploy --current	
 
 
 .PHONY: kots-download-files
@@ -146,8 +146,6 @@ install-karpenter:
 	--set controller.resources.limits.cpu=1 \
 	--set controller.resources.limits.memory=1Gi
 	kubectl apply -f karpenter.$${DEPLOYMENT_ID}.yaml 
-
-	#	--set settings.clusterEndpoint=${cluster_endpoint} \
 
 
 .PHONY: uninstall-karpenter

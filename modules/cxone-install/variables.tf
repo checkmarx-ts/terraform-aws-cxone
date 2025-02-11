@@ -324,3 +324,31 @@ variable "internal_ca_cert" {
   type        = string
   default     = "{}"
 }
+
+#******************************************************************************
+#  Airgap Support
+#******************************************************************************
+
+variable "airgap_bundle_path" {
+  description = "The file path to the airgap bundle."
+  type        = string
+  default     = ""
+}
+
+variable "kots_registry" {
+  description = "The registry address to use for airgap installation."
+  type        = string
+  default     = ""
+}
+
+variable "kots_registry_username" {
+  description = "The registry username to use for airgap installation."
+  type        = string
+  default     = ""
+}
+
+variable "kots_registry_password" {
+  description = "The registry password to use for airgap installation."
+  type        = string
+  default     = ""
+}

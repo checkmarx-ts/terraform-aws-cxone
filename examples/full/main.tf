@@ -273,6 +273,10 @@ module "checkmarx-one-install" {
   kms_key_arn                           = aws_kms_key.main.arn
   internal_ca_cert                      = var.internal_ca_cert
   network_load_balancer_scheme          = var.network_load_balancer_scheme
+  airgap_bundle_path                    = var.airgap_bundle_path
+  kots_registry                         = var.kots_registry
+  kots_registry_username                = var.kots_registry_username
+  kots_registry_password                = var.kots_registry_password
 }
 
 terraform {

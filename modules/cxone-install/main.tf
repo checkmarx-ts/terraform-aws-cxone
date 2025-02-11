@@ -108,6 +108,10 @@ resource "local_file" "makefile" {
     karpenter_iam_role_arn                = var.karpenter_iam_role_arn
     cluster_endpoint                      = var.cluster_endpoint
     vpc_id                                = var.vpc_id
+    tf_airgap_bundle                      = var.airgap_bundle_path
+    tf_kots_registry                      = var.kots_registry
+    tf_registry_username                  = var.kots_registry_username
+    tf_registry_password                  = var.kots_registry_password
   })
   filename = "Makefile"
 }
