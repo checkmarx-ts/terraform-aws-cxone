@@ -57,6 +57,12 @@ kots-download-files:
 kots-upload-files:
 	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast
 
+.PHONY: sync-kustomizations
+sync-kustomizations:
+	rm -rf ./ast
+	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite
+	rsync -av --progress --checksum --include="*/" --include="*.yaml" --exclude="*" kustomizations/ ast
+	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast
 
 .PHONY: kots-admin-console
 kots-admin-console:
@@ -207,3 +213,4 @@ get-support-bundle:
 .PHONY: totp
 totp:
 	cat .totp | totp-cli instant
+
