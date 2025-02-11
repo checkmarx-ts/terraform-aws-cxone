@@ -27,7 +27,7 @@ kots-install:
 .PHONY: kots-install-from-airgap
 kots-install-from-airgap:
 	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --config-values '$${KOTS_CONFIG_FILE}' \
-	--airgap --airgap-bundle '$${AIRGAP_BUNDLE}' --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}'
+	--airgap --airgap-bundle '$${AIRGAP_BUNDLE}' --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}' --disable-image-push
 
 .PHONY: kots-upgrade-from-airgap
 kots-upgrade-from-airgap:
