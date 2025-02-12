@@ -51,7 +51,7 @@ resource "local_file" "kots_config" {
     analytics_postgres_db_name   = var.analytics_postgres_database_name
 
     # Internal CA
-    internal_ca      = (var.internal_ca_cert != null && var.internal_ca_cert != "{}") ? "\"1\"" : "\"0\""
+    internal_ca      = (var.internal_ca_cert != null && var.internal_ca_cert != "") ? "\"1\"" : "\"0\""
     internal_ca_cert = var.internal_ca_cert
 
     # Redis
