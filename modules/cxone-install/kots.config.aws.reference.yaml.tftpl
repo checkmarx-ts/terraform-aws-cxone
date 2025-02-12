@@ -481,47 +481,47 @@ spec:
 
     # In this example, zeebe is scaled to 4 instances (default is to use ms_replica_count)
 
-    #config_values:
-    #  value: |
-    #    global:      
-    #      isFedrampCluster: true
-    #    sca:
-    #      isFedrampCluster: true
-    #      imageRegistry: "XXXX.dkr.ecr.us-west-2.amazonaws.com" # change for current env
-    #      featureFlagsStrategy: "Checkmarx"
-    #      featureFlagsApiKey: ""
-    #      featureFlagsServiceUri: "http://flags:26500"
-    #      isDependencyResolutionEnabled: "true"
-    #    core:        
-    #      ast_access_management:
-    #        resources:
-    #          requests:
-    #            cpu: "2"
-    #            memory: "4000Mi"
-    #          limits:
-    #            cpu: ""
-    #            memory: "4000Mi"
-    #      repostore:
-    #        resources:
-    #          requests:
-    #            cpu: "6500m"
-    #            memory: "14000Mi"
-    #          limits:
-    #            cpu: ""
-    #            memory: "14000Mi"
-    #      feature_flag:
-    #        splitio:
-    #          apiKey: ""
-    #          userKey: ""
-    #        localhostMode: true     
-    #    apisec:
-    #      enabled: false
-    #    microengines:
-    #      enabled: false
-    #    camunda-platform:
-    #      zeebe:
-    #        clusterSize: 4
-    #        partitionCount: 4
-    #        replicationFactor: 4
-    #      zeebeGateway:
-    #        replicas: 4
+    # config_values:
+    #   value: |
+    #     global:      
+    #       isFedrampCluster: true
+    #     sca:
+    #       isFedrampCluster: true
+    #       imageRegistry: "XXXX.dkr.ecr.us-west-2.amazonaws.com" # change for current env
+    #       featureFlagsStrategy: "Checkmarx"
+    #       featureFlagsApiKey: ""
+    #       featureFlagsServiceUri: "http://flags:26500"
+    #       isDependencyResolutionEnabled: "true"
+    #     core:        
+    #       ast_access_management:
+    #         resources:
+    #           requests:
+    #             cpu: "2"
+    #             memory: "4000Mi"
+    #           limits:
+    #             cpu: ""
+    #             memory: "4000Mi"
+    #       repostore:
+    #         resources:
+    #           requests:
+    #             cpu: "6500m"
+    #             memory: "14000Mi"
+    #           limits:
+    #             cpu: ""
+    #             memory: "14000Mi"
+    #       feature_flag:
+    #         splitio:
+    #           apiKey: ""
+    #           userKey: ""
+    #         localhostMode: true     
+    #     apisec:
+    #       enabled: false
+    #     microengines:
+    #       enabled: false
+    #     camunda-platform:
+    #       zeebe:
+    #         clusterSize: 4
+    #         partitionCount: 4
+    #         replicationFactor: 4
+    #       zeebeGateway:
+    #         replicas: 4
