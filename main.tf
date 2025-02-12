@@ -32,15 +32,15 @@ module "vpc_endpoints" {
 
 
 
+
 module "bastion" {
   source = "./modules/bastion-host"
 
   deployment_id           = var.deployment_id
   subnet_id               = module.vpc.private_subnets[0]
-  key_name                = "stokes"             # The EC2 keypair name to access the server with
-  remote_management_cidrs = ["45.30.164.210/32"] # Enter your IP address here, if you will use this server.
+  key_name                = var.ec2_key_name            # The EC2 keypair name to access the server with
+  remote_management_cidrs = var.remote_management_cidrs # Enter your IP address here, if you will use this server.
 }
-
 
 
 module "security_groups" {
@@ -97,7 +97,7 @@ module "eks_cluster" {
   cluster_security_group_id                = module.security_groups.eks_cluster
   node_security_group_id                   = module.security_groups.eks_node
   nodegroup_iam_role_arn                   = module.iam.eks_nodes_iam_role_arn
-  ec2_key_name                             = "stokes"
+  ec2_key_name                             = var.ec2_key_name
   eks_create_ebs_csi_irsa                  = true
   eks_create_cluster_autoscaler_irsa       = true
   eks_create_external_dns_irsa             = true
@@ -278,12 +278,6 @@ module "eks_cluster" {
       }
     }
   ]
-
-
-
-
-  #pod_custom_networking_subnets = module.vpc.pod_subnet_info
-
 }
 
 
@@ -376,11 +370,16 @@ resource "random_password" "kotsadm_password" {
 
 
 module "checkmarx-one-install" {
-  source = "git::https://github.com/checkmarx-ts/terraform-aws-cxone//modules/cxone-install?ref=d3dc90b"
+  source = "git::https://github.com/checkmarx-ts/terraform-aws-cxone//modules/cxone-install?ref=5a80044"
+
+  airgap_bundle_path     = var.airgap_bundle_path
+  kots_registry          = var.kots_registry
+  kots_registry_username = var.kots_registry_username
+  kots_registry_password = var.kots_registry_password
 
 
-  cxone_version       = "3.20.24"
-  release_channel     = "beta-1"
+  cxone_version       = var.cxone_version
+  release_channel     = var.cxone_release_channel
   license_file        = var.license_file
   kots_admin_password = random_password.kotsadm_password.result
 
@@ -419,7 +418,7 @@ module "checkmarx-one-install" {
   karpenter_iam_role_arn                = "adsf"
   cluster_endpoint                      = module.eks_cluster.cluster_endpoint
   nodegroup_iam_role_name               = module.iam.eks_nodes_iam_role_name
-  availability_zones                    = ["us-west-2a", "us-west-2b"]
+  availability_zones                    = module.vpc.azs #["us-west-2a", "us-west-2b"]
   pod_eniconfig                         = "null"
   vpc_id                                = module.vpc.vpc_id
   kms_key_arn                           = module.kms.eks_kms_key_arn

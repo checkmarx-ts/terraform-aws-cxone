@@ -33,6 +33,17 @@ variable "engine_version" {
   default     = "13.12"
 }
 
+variable "db_instances" {
+  type        = map(any)
+  description = "The db instance configuration"
+  default = {
+    1 = {
+      instance_class      = "db.r6g.xlarge"
+      publicly_accessible = false
+    }
+  }
+}
+
 variable "postgres_nodes" {
   description = "Configuration for the Aurora Postgres DB nodes"
   type = object({

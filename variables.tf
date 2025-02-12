@@ -152,3 +152,49 @@ variable "license_file" {
   type        = string
   description = "The path to the kotsadm license file"
 }
+
+variable "ec2_key_name" {
+  description = "The keyname for ec2 instances"
+  type        = string
+}
+
+variable "remote_management_cidrs" {
+  description = "The list of CIDRs used for remote management"
+  type        = list(string)
+}
+
+variable "cxone_version" {
+  description = "The cxone version to install"
+  type        = string
+}
+
+variable "cxone_release_channel" {
+  description = "The release channel to install from"
+  type        = string
+  default     = "beta-1"
+}
+
+
+variable "airgap_bundle_path" {
+  description = "The file path to the airgap bundle."
+  type        = string
+  default     = ""
+}
+
+variable "kots_registry" {
+  description = "The registry address to use for airgap installation."
+  type        = string
+  default     = ""
+}
+
+variable "kots_registry_username" {
+  description = "The registry username to use for airgap installation."
+  type        = string
+  default     = ""
+}
+
+variable "kots_registry_password" {
+  description = "The registry password to use for airgap installation."
+  type        = string
+  default     = ""
+}

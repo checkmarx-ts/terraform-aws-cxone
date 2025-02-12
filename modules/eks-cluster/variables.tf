@@ -34,7 +34,7 @@ variable "enable_public_endpoint" {
 variable "eks_cluster_version" {
   description = "EKS Kubernetes version to be used"
   type        = string
-  default     = "1.29"
+  default     = "1.30"
   nullable    = false
 }
 
@@ -147,25 +147,25 @@ variable "eks_create_load_balancer_controller_irsa" {
 variable "coredns_version" {
   type        = string
   description = "The version of the EKS Core DNS Addon."
-  default     = "v1.11.3-eksbuild.1"
+  default     = "v1.11.4-eksbuild.2"
 }
 
 variable "kube_proxy_version" {
   type        = string
   description = "The version of the EKS Kube Proxy Addon."
-  default     = "v1.29.7-eksbuild.2"
+  default     = "v1.30.7-eksbuild.2"
 }
 
 variable "vpc_cni_version" {
   type        = string
   description = "The version of the EKS VPC CNI Addon."
-  default     = "v1.18.3-eksbuild.2"
+  default     = "v1.19.2-eksbuild.1"
 }
 
 variable "aws_ebs_csi_driver_version" {
   type        = string
   description = "The version of the EKS EBS CSI Addon."
-  default     = "v1.34.0-eksbuild.1"
+  default     = "v1.39.0-eksbuild.1"
 }
 
 variable "eks_pre_bootstrap_user_data" {

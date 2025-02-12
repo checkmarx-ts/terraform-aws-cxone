@@ -6,6 +6,10 @@ data "aws_region" "current" {}
 
 data "aws_partition" "current" {}
 
+output "azs" {
+  value = slice(local.aws_azs, 0, local.az_count)
+}
+
 
 locals {
 
