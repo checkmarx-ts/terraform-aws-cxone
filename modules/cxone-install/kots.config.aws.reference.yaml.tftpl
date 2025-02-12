@@ -483,17 +483,37 @@ spec:
 
     #config_values:
     #  value: |
-    #    core:
+    #    global:      
+    #      isFedrampCluster: true
+    #    sca:
+    #      isFedrampCluster: true
+    #      imageRegistry: "XXXX.dkr.ecr.us-west-2.amazonaws.com" # change for current env
+    #      featureFlagsStrategy: "Checkmarx"
+    #      featureFlagsApiKey: ""
+    #      featureFlagsServiceUri: "http://flags:26500"
+    #      isDependencyResolutionEnabled: "true"
+    #    core:        
+    #      ast_access_management:
+    #        resources:
+    #          requests:
+    #            cpu: "2"
+    #            memory: "4000Mi"
+    #          limits:
+    #            cpu: ""
+    #            memory: "4000Mi"
+    #      repostore:
+    #        resources:
+    #          requests:
+    #            cpu: "6500m"
+    #            memory: "14000Mi"
+    #          limits:
+    #            cpu: ""
+    #            memory: "14000Mi"
     #      feature_flag:
     #        splitio:
     #          apiKey: ""
     #          userKey: ""
-    #        localhostMode: true
-    #        flags:
-    #          PENDO_ENABLED: "off"
-    #          GAINSIGHT_ENABLED: "off"
-    #          
-    #        
+    #        localhostMode: true     
     #    apisec:
     #      enabled: false
     #    microengines:
