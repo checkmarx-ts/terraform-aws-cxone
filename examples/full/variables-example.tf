@@ -38,7 +38,7 @@ variable "network_load_balancer_scheme" {
 variable "internal_ca_cert" {
   description = "The base64 encoded pem file containing certificates to add to CxOne components' trust stores"
   type        = string
-  default     = "{}"
+  default     = ""
 }
 
 #******************************************************************************
