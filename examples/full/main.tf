@@ -38,6 +38,7 @@ resource "aws_kms_key" "main" {
   description             = "KMS Key for the Checkmarx One deployment named ${var.deployment_id}"
   deletion_window_in_days = 7
   enable_key_rotation     = true
+  policy                  = null # Set your policy per your organization's needs.
   tags = {
     Name = var.deployment_id
   }
