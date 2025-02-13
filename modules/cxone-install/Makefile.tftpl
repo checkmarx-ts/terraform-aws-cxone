@@ -19,15 +19,27 @@ update-kubeconfig:
 	aws eks update-kubeconfig --name $${EKS_CLUSTER_NAME}
 
 
+.PHONY: bootstrap-cluster
+bootstrap-cluster:
+	make update-kubeconfig
+	make apply-storageclass-config
+	make install-cluster-autoscaler
+	make install-external-dns
+	make install-metrics-server
+	make install-load-balancer-controller
+	sleep 30
+
+
 .PHONY: kots-install
 kots-install:
-	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --config-values '$${KOTS_CONFIG_FILE}' --app-version-label $${CXONE_VERSION}
+	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --config-values '$${KOTS_CONFIG_FILE}' --app-version-label $${CXONE_VERSION} --skip-preflights
 
 
 .PHONY: kots-install-from-airgap
 kots-install-from-airgap:
 	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --config-values '$${KOTS_CONFIG_FILE}' \
-	--airgap --airgap-bundle '$${AIRGAP_BUNDLE}' --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}' --disable-image-push
+	--airgap --airgap-bundle '$${AIRGAP_BUNDLE}' --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}' --disable-image-push --skip-preflights
+
 
 .PHONY: kots-upgrade-from-airgap
 kots-upgrade-from-airgap:
@@ -43,9 +55,14 @@ kots-get-config:
 	kubectl kots get config -n $${NAMESPACE} --appslug ast --decrypt
 
 
-.PHONY: kots-set-config
-kots-set-config:
-	kubectl kots set config ast -n $${NAMESPACE} --config-file '$${KOTS_CONFIG_FILE}' --deploy --current	
+.PHONY: kots-stage-config
+kots-stage-config:
+	kubectl kots set config ast -n $${NAMESPACE} --config-file '$${KOTS_CONFIG_FILE}' --current
+
+
+.PHONY: kots-deploy-config
+kots-deploy-config:
+	kubectl kots set config ast -n $${NAMESPACE} --config-file '$${KOTS_CONFIG_FILE}' --current --deploy
 
 
 .PHONY: kots-download-files
@@ -57,12 +74,27 @@ kots-download-files:
 kots-upload-files:
 	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast
 
-.PHONY: sync-kustomizations
-sync-kustomizations:
+
+.PHONY: update-config
+update-config:
+	 terraform apply -target="module.cxone.module.checkmarx-one-install" --auto-approve
+
+
+.PHONY: stage-kustomizations
+stage-kustomizations:
 	rm -rf ./ast
 	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite
 	rsync -av --progress --checksum --include="*/" --include="*.yaml" --exclude="*" kustomizations/ ast
 	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast
+
+
+.PHONY: deploy-kustomizations
+deploy-kustomizations:
+	rm -rf ./ast
+	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite
+	rsync -av --progress --checksum --include="*/" --include="*.yaml" --exclude="*" kustomizations/ ast
+	kubectl kots upload --namespace $${NAMESPACE} --deploy --slug ast ./ast	
+
 
 .PHONY: kots-admin-console
 kots-admin-console:
