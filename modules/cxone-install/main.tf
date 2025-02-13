@@ -14,14 +14,16 @@ locals {
   integrations_repos_manager_bitbucket_tenant_key = var.integrations_repos_manager_bitbucket_tenant_key == null ? random_password.integrations_repos_manager_bitbucket_tenant_key[0].result : var.integrations_repos_manager_bitbucket_tenant_key
   integrations_repos_manager_github_tenant_key    = var.integrations_repos_manager_github_tenant_key == null ? random_password.integrations_repos_manager_github_tenant_key[0].result : var.integrations_repos_manager_github_tenant_key
   integrations_repos_manager_gitlab_tenant_key    = var.integrations_repos_manager_gitlab_tenant_key == null ? random_password.integrations_repos_manager_gitlab_tenant_key[0].result : var.integrations_repos_manager_gitlab_tenant_key
+  integrations_webhook_encryption_key             = var.integrations_webhook_encryption_key == null ? random_password.integrations_webhook_encryption_key[0].result : var.integrations_webhook_encryption_key
 }
 
 resource "local_file" "kots_config" {
   content = templatefile("${path.module}/kots.config.aws.reference.yaml.tftpl", {
-    aws_region     = var.region
-    admin_email    = var.admin_email
-    admin_username = "admin"
-    admin_password = var.admin_password
+    aws_region      = var.region
+    admin_email     = var.admin_email
+    admin_username  = "admin"
+    admin_password  = var.admin_password
+    advanced_config = indent(8, var.kots_advanced_config)
 
     ms_replica_count = var.ms_replica_count
 
@@ -77,6 +79,7 @@ resource "local_file" "kots_config" {
     integrations_repos_manager_bitbucket_tenant_key = local.integrations_repos_manager_bitbucket_tenant_key
     integrations_repos_manager_github_tenant_key    = local.integrations_repos_manager_github_tenant_key
     integrations_repos_manager_gitlab_tenant_key    = local.integrations_repos_manager_gitlab_tenant_key
+    integrations_webhook_encryption_key             = local.integrations_webhook_encryption_key
 
     network_load_balancer_scheme = var.network_load_balancer_scheme
 

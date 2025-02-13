@@ -118,6 +118,9 @@ spec:
     integrations_repos_manager_gitlab_tenant_key:
       value: ${integrations_repos_manager_gitlab_tenant_key}
 
+    integrations_webhook_encryption_key:
+      value: ${integrations_webhook_encryption_key}
+
     #--------------------------------------------------------------------------
     # SCA Global Inventory & Elasticsearch
     #--------------------------------------------------------------------------
@@ -473,13 +476,18 @@ spec:
     # It is for advanced users. Please use with caution.
 
     advanced_options:
-      value: "0"
+      value: "1"
 
     # Specify your advanced configuration options here. These will be
     # passed directly to the AST Helm install and upgrade commands. You must
     # specify valid YAML or the install/upgrade will fail.
 
     # In this example, zeebe is scaled to 4 instances (default is to use ms_replica_count)
+
+    config_values:
+      value: |
+        ${advanced_config}
+   
 
     # config_values:
     #   value: |

@@ -173,3 +173,17 @@ variable "kots_registry_password" {
   type        = string
   default     = ""
 }
+
+variable "kots_advanced_config" {
+  description = "The kots advanced config section."
+  type        = string
+  default     = <<-EOF
+camunda-platform:
+  zeebeGateway:
+    resources:
+      requests:
+        cpu: "1000m"
+      limits:
+        cpu: "1000m"
+EOF
+}

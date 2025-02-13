@@ -228,10 +228,11 @@ module "checkmarx-one" {
 module "checkmarx-one-install" {
   source = "../../modules/cxone-install"
 
-  cxone_version       = var.kots_cxone_version
-  release_channel     = var.kots_release_channel
-  license_file        = var.kots_license_file
-  kots_admin_password = random_password.kots_admin.result
+  cxone_version        = var.kots_cxone_version
+  release_channel      = var.kots_release_channel
+  license_file         = var.kots_license_file
+  kots_admin_password  = random_password.kots_admin.result
+  kots_advanced_config = var.kots_advanced_config
 
   deployment_id                         = var.deployment_id
   cxone_namespace                       = var.cxone_namespace
