@@ -187,3 +187,9 @@ camunda-platform:
         cpu: "1000m"
 EOF
 }
+
+variable "password_override" {
+  description = "A password value that will be used to override all other generated passwords. Only use this for testing purposes."
+  type        = string
+  default     = null
+}
