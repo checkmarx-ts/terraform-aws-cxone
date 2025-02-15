@@ -133,7 +133,7 @@ variable "kube_proxy_version" {
 variable "vpc_cni_version" {
   type        = string
   description = "The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html."
-  default     = "v1.19.2-eksbuild.1"
+  default     = "v1.19.2-eksbuild.5"
 }
 
 variable "aws_ebs_csi_driver_version" {
