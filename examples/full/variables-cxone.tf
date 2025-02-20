@@ -612,6 +612,22 @@ variable "ec_enable_serverless" {
   description = "Enables the use of elasticache for redis serverless."
 }
 
+variable "ec_transit_encryption_enabled" {
+  description = "Enables REDIS TLS connections."
+  type        = bool
+  default     = false
+}
+
+variable "ec_auth_token_strategy" {
+  description = "The auth token strategy."
+  type        = string
+  default     = "SET"
+  validation {
+    condition     = contains(["ROTATE", "SET"], var.ec_auth_token_strategy)
+    error_message = "Valid values for variable ec_auth_token_strategy are SET or ROTATE"
+  }
+}
+
 variable "ec_serverless_max_storage" {
   type        = number
   default     = 5

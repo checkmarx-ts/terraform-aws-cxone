@@ -314,17 +314,18 @@ spec:
     external_redis_port:
       value: "${redis_port}"
     
-    external_redis_password: {}
+    external_redis_password:
+      value: "${redis_auth_token}"
 
-    # Must be "0"
+    # Redis TLS support is preliminary
     external_redis_tls_enabled:
-      value: "0"
+      value: "${external_redis_tls_enabled}"
 
     external_redis_cluster_mode_enabled:
       value: "1"
 
     external_redis_tls_skipverify:
-      value: "0"
+      value: "${external_redis_tls_skipverify}"
 
     #--------------------------------------------------------------------------
     # SMTP Settings

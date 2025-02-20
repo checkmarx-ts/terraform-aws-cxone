@@ -95,6 +95,16 @@ resource "random_password" "cxone_admin" {
   min_numeric      = 1
 }
 
+resource "random_password" "redis_auth" {
+  length           = 16
+  special          = false
+  override_special = "-_"
+  min_special      = 1
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+}
+
 module "acm" {
   source  = "terraform-aws-modules/acm/aws"
   version = "5.0.1"
@@ -200,6 +210,9 @@ module "checkmarx-one" {
   ec_create                         = var.ec_create
   ec_subnets                        = module.vpc.database_subnets
   ec_enable_serverless              = var.ec_enable_serverless
+  ec_transit_encryption_enabled     = var.ec_transit_encryption_enabled
+  ec_auth_token_strategy            = var.ec_auth_token_strategy
+  ec_redis_auth_token               = var.ec_transit_encryption_enabled == true ? (var.password_override != null ? var.password_override : random_password.redis_auth.result) : ""
   ec_serverless_max_storage         = var.ec_serverless_max_storage
   ec_serverless_max_ecpu_per_second = var.ec_serverless_max_ecpu_per_second
   ec_engine_version                 = var.ec_engine_version
@@ -257,6 +270,8 @@ module "checkmarx-one-install" {
   analytics_postgres_user               = module.checkmarx-one.analytics_db_master_username
   analytics_postgres_password           = module.checkmarx-one.analytics_db_master_password
   redis_address                         = module.checkmarx-one.ec_endpoint
+  redis_tls_enabled                     = var.ec_transit_encryption_enabled
+  redis_auth_token                      = var.ec_transit_encryption_enabled == true ? (var.password_override != null ? var.password_override : random_password.redis_auth.result) : ""
   smtp_host                             = var.smtp_host
   smtp_port                             = var.smtp_port
   smtp_password                         = var.smtp_password

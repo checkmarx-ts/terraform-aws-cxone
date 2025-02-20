@@ -57,8 +57,11 @@ resource "local_file" "kots_config" {
     internal_ca_cert = var.internal_ca_cert
 
     # Redis
-    redis_address = var.redis_address
-    redis_port    = var.redis_port
+    redis_address                 = var.redis_address
+    redis_port                    = var.redis_port
+    external_redis_tls_skipverify = var.redis_tls_skipverify ? "1" : "0"
+    external_redis_tls_enabled    = var.redis_tls_enabled ? "1" : "0"
+    redis_auth_token              = var.redis_auth_token
 
     # SMTP
     smtp_host        = var.smtp_host

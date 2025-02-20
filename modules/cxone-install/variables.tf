@@ -378,3 +378,21 @@ camunda-platform:
         cpu: "1000m"
 EOF
 }
+
+variable "redis_tls_skipverify" {
+  description = "Skip verification of REDIS TLS connections."
+  type        = bool
+  default     = true
+}
+
+variable "redis_tls_enabled" {
+  description = "Enables REDIS TLS connections."
+  type        = bool
+  default     = false
+}
+
+variable "redis_auth_token" {
+  description = "The REDIS Auth token."
+  type        = string
+  default     = ""
+}
