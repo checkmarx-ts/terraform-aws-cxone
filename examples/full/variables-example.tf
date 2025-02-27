@@ -128,6 +128,12 @@ variable "bastion_host_instance_type" {
   default     = "t3.large"
 }
 
+variable "bastion_host_volume_size" {
+  description = "The volume size for the bastion host root volume"
+  type        = number
+  default     = 250
+}
+
 variable "bastion_host_key_name" {
   description = "The ec2 keypair name for the bastion host."
   type        = string

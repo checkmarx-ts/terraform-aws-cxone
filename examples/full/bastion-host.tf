@@ -72,6 +72,17 @@ module "ec2_instance" {
     AdministratorAccess          = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AdministratorAccess"
   }
 
+  ebs_block_device = [
+    {
+      device_name = "/dev/xvda"
+      volume_type = "gp3"
+      volume_size = var.bastion_host_volume_size
+      encrypted   = true
+      kms_key_id  = aws_kms_key.main.arn
+
+    }
+  ]
+
   tags = {
     Terraform   = "true"
     Environment = "dev"
