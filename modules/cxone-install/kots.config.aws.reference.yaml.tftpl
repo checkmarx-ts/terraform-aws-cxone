@@ -100,6 +100,9 @@ spec:
     core_configuration_encryption_key:
       value: ${core_configuration_encryption_key}
 
+    dast_scan_manager_encryption_hex_key:
+      value: ${dast_scan_manager_encryption_hex_key}
+
     sca_client_secret:
       value: ${sca_client_secret}
 
@@ -156,7 +159,9 @@ spec:
     configuration_s3_bucket_name:
       value: ${deployment_id}-configuration-${bucket_name_suffix} 
     cxone_s3_bucket_name:
-      value: ${deployment_id}-cxone-${bucket_name_suffix}  
+      value: ${deployment_id}-cxone-${bucket_name_suffix}
+    dast_s3_bucket_name:
+      value: ${deployment_id}-dast-${bucket_name_suffix}
     engine_logs_s3_bucket_name:
       value: ${deployment_id}-engine-logs-${bucket_name_suffix}
     export_s3_bucket_name:

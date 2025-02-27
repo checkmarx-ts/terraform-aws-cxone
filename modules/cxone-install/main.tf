@@ -8,6 +8,7 @@
 
 locals {
   core_configuration_encryption_key               = var.core_configuration_encryption_key == null ? random_password.core_configuration_encryption_key[0].result : var.core_configuration_encryption_key
+  dast_scan_manager_encryption_hex_key            = var.dast_scan_manager_encryption_hex_key == null ? random_password.dast_scan_manager_encryption_hex_key[0].result : var.dast_scan_manager_encryption_hex_key
   sca_client_secret                               = var.sca_client_secret == null ? random_password.sca_client_secret[0].result : var.sca_client_secret
   integration_encryption_key                      = var.integration_encryption_key == null ? random_password.integration_encryption_key[0].result : var.integration_encryption_key
   integrations_repos_manager_azure_tenant_key     = var.integrations_repos_manager_azure_tenant_key == null ? random_password.integrations_repos_manager_azure_tenant_key[0].result : var.integrations_repos_manager_azure_tenant_key
@@ -76,6 +77,7 @@ resource "local_file" "kots_config" {
 
     # Keys
     core_configuration_encryption_key               = local.core_configuration_encryption_key
+    dast_scan_manager_encryption_hex_key            = local.dast_scan_manager_encryption_hex_key
     sca_client_secret                               = local.sca_client_secret
     integration_encryption_key                      = local.integration_encryption_key
     integrations_repos_manager_azure_tenant_key     = local.integrations_repos_manager_azure_tenant_key

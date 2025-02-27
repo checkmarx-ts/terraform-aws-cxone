@@ -24,6 +24,10 @@ locals {
       name        = "cxone"
       enable_cors = false
     }
+    dast = {
+      name        = "dast"
+      enable_cors = false
+    }
     engine_logs = {
       name        = "engine-logs"
       enable_cors = false
