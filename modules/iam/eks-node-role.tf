@@ -23,27 +23,32 @@ data "aws_iam_policy" "AmazonEC2ContainerRegistryReadOnly" {
 
 
 resource "aws_iam_role_policy_attachment" "EksNodesAmazonAPIGatewayPushToCloudWatchLogs" {
-  role       = aws_iam_role.eks_nodes.name
+  count      = var.create_node_role ? 1 : 0
+  role       = aws_iam_role.eks_nodes[0].name
   policy_arn = data.aws_iam_policy.AmazonAPIGatewayPushToCloudWatchLogs.arn
 }
 
 resource "aws_iam_role_policy_attachment" "EksNodesAmazonEKS_CNI_Policy" {
-  role       = aws_iam_role.eks_nodes.name
+  count      = var.create_node_role ? 1 : 0
+  role       = aws_iam_role.eks_nodes[0].name
   policy_arn = data.aws_iam_policy.AmazonEKS_CNI_Policy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "EksNodesAmazonEKSWorkerNodePolicy" {
-  role       = aws_iam_role.eks_nodes.name
+  count      = var.create_node_role ? 1 : 0
+  role       = aws_iam_role.eks_nodes[0].name
   policy_arn = data.aws_iam_policy.AmazonEKSWorkerNodePolicy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "EksNodesAmazonSSMManagedInstanceCore" {
-  role       = aws_iam_role.eks_nodes.name
+  count      = var.create_node_role ? 1 : 0
+  role       = aws_iam_role.eks_nodes[0].name
   policy_arn = data.aws_iam_policy.AmazonSSMManagedInstanceCore.arn
 }
 
 resource "aws_iam_role_policy_attachment" "EksNodesAmazonEC2ContainerRegistryReadOnly" {
-  role       = aws_iam_role.eks_nodes.name
+  count      = var.create_node_role ? 1 : 0
+  role       = aws_iam_role.eks_nodes[0].name
   policy_arn = data.aws_iam_policy.AmazonEC2ContainerRegistryReadOnly.arn
 }
 
@@ -52,7 +57,8 @@ resource "aws_iam_role_policy_attachment" "EksNodesAmazonEC2ContainerRegistryRea
 
 # Policy to Allow Minio Nodegroup to aceess the S3 Buckets
 resource "aws_iam_policy" "ast_s3_buckets_policy" {
-  name = "${var.deployment_id}-eks-ng-minio-gateway-S3"
+  count = var.create_node_role ? 1 : 0
+  name  = "${var.deployment_id}-eks-ng-minio-gateway-S3"
   policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -71,11 +77,13 @@ resource "aws_iam_policy" "ast_s3_buckets_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "ast_s3_buckets_policy_attachment" {
-  role       = aws_iam_role.eks_nodes.name
-  policy_arn = aws_iam_policy.ast_s3_buckets_policy.arn
+  count      = var.create_node_role ? 1 : 0
+  role       = aws_iam_role.eks_nodes[0].name
+  policy_arn = aws_iam_policy.ast_s3_buckets_policy[0].arn
 }
 
 resource "aws_iam_role" "eks_nodes" {
+  count              = var.create_node_role ? 1 : 0
   name               = "${var.deployment_id}-eks-nodes"
   description        = "IAM Role for Checkmarx One EKS Nodes"
   assume_role_policy = <<EOF
@@ -96,6 +104,7 @@ EOF
 }
 
 resource "aws_iam_instance_profile" "eks_nodes" {
-  name = "${var.deployment_id}-eks-nodes"
-  role = aws_iam_role.eks_nodes.name
+  count = var.create_node_role ? 1 : 0
+  name  = "${var.deployment_id}-eks-nodes"
+  role  = aws_iam_role.eks_nodes[0].name
 }

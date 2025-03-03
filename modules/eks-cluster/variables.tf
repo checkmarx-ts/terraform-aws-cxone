@@ -67,9 +67,13 @@ variable "cluster_access_iam_role_arn" {
   description = "The role for cluster administrators."
 }
 
-
 variable "nodegroup_iam_role_arn" {
   description = "The ARN to the IAM role for the EKS nodes."
+  nullable    = false
+}
+
+variable "ebs_csi_role_arn" {
+  description = "The ARN to the role for the EBS CSI Driver."
   nullable    = false
 }
 
@@ -118,31 +122,6 @@ variable "self_managed_node_groups" {
     taints                 = optional(map(object({ key = string, value = string, effect = string })), {})
   }))
 }
-
-variable "eks_create_ebs_csi_irsa" {
-  type        = bool
-  description = "Create EBS CSI irsa iam role"
-  default     = false
-}
-
-variable "eks_create_cluster_autoscaler_irsa" {
-  type        = bool
-  description = "Create cluster autoscaler irsa iam role"
-  default     = false
-}
-
-variable "eks_create_external_dns_irsa" {
-  type        = bool
-  description = "Create external dns irsa iam role"
-  default     = false
-}
-
-variable "eks_create_load_balancer_controller_irsa" {
-  type        = bool
-  description = "Create load balancer controller irsa iam role"
-  default     = false
-}
-
 
 variable "coredns_version" {
   type        = string

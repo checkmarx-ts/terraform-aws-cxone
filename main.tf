@@ -76,6 +76,15 @@ module "iam" {
   deployment_id              = var.deployment_id
   administrator_iam_role_arn = var.administrator_iam_role_arn
   s3_bucket_name_suffix      = module.s3.s3_bucket_name_suffix
+  eks_kms_key_arn            = module.kms.eks_kms_key_arn
+  oidc_provider_arn          = module.eks_cluster.oidc_provider_arn
+
+  create_node_role                     = true
+  create_cluster_access_role           = true
+  create_ebs_csi_irsa                  = true
+  create_cluster_autoscaler_irsa       = true
+  create_external_dns_irsa             = true
+  create_load_balancer_controller_irsa = true
 }
 
 
@@ -89,19 +98,16 @@ module "s3" {
 module "eks_cluster" {
   source = "./modules/eks-cluster"
 
-  deployment_id                            = var.deployment_id
-  vpc_id                                   = module.vpc.vpc_id
-  subnet_ids                               = module.vpc.public_subnets
-  eks_kms_key_arn                          = module.kms.eks_kms_key_arn
-  cluster_access_iam_role_arn              = module.iam.cluster_access_iam_role_arn
-  cluster_security_group_id                = module.security_groups.eks_cluster
-  node_security_group_id                   = module.security_groups.eks_node
-  nodegroup_iam_role_arn                   = module.iam.eks_nodes_iam_role_arn
-  ec2_key_name                             = var.ec2_key_name
-  eks_create_ebs_csi_irsa                  = true
-  eks_create_cluster_autoscaler_irsa       = true
-  eks_create_external_dns_irsa             = true
-  eks_create_load_balancer_controller_irsa = true
+  deployment_id               = var.deployment_id
+  vpc_id                      = module.vpc.vpc_id
+  subnet_ids                  = module.vpc.public_subnets
+  eks_kms_key_arn             = module.kms.eks_kms_key_arn
+  cluster_access_iam_role_arn = module.iam.cluster_access_iam_role_arn
+  cluster_security_group_id   = module.security_groups.eks_cluster
+  node_security_group_id      = module.security_groups.eks_node
+  nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
+  ec2_key_name                = var.ec2_key_name
+  ebs_csi_role_arn            = module.iam.ebs_csi_role_arn
 
   self_managed_node_groups = [
     {
@@ -377,7 +383,6 @@ module "checkmarx-one-install" {
   kots_registry_username = var.kots_registry_username
   kots_registry_password = var.kots_registry_password
 
-
   cxone_version       = var.cxone_version
   release_channel     = var.cxone_release_channel
   license_file        = var.license_file
@@ -412,9 +417,9 @@ module "checkmarx-one-install" {
   smtp_from_sender                      = var.SMTP_from_sender
   elasticsearch_host                    = module.opensearch.endpoint                 #"{{ elasticsearch_host }}"     #
   elasticsearch_password                = random_password.opensearch_password.result # "{{ elasticsearch_password }}" 
-  cluster_autoscaler_iam_role_arn       = module.eks_cluster.cluster_autoscaler_role_arn
-  load_balancer_controller_iam_role_arn = module.eks_cluster.load_balancer_controller_role_arn
-  external_dns_iam_role_arn             = module.eks_cluster.external_dns_role_arn
+  cluster_autoscaler_iam_role_arn       = module.iam.cluster_autoscaler_role_arn
+  load_balancer_controller_iam_role_arn = module.iam.load_balancer_controller_role_arn
+  external_dns_iam_role_arn             = module.iam.external_dns_role_arn
   karpenter_iam_role_arn                = "adsf"
   cluster_endpoint                      = module.eks_cluster.cluster_endpoint
   nodegroup_iam_role_name               = module.iam.eks_nodes_iam_role_name

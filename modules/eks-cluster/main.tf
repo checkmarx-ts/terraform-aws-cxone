@@ -70,7 +70,7 @@ module "eks" {
     }
     aws-ebs-csi-driver = {
       addon_version            = var.aws_ebs_csi_driver_version
-      service_account_role_arn = var.eks_create_ebs_csi_irsa ? module.ebs_csi_irsa[0].iam_role_arn : null
+      service_account_role_arn = var.ebs_csi_role_arn
     }
   }
 
@@ -113,78 +113,6 @@ module "eks" {
     }
   } }
 
-}
-
-module "ebs_csi_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.48.0"
-  count   = var.eks_create_ebs_csi_irsa ? 1 : 0
-
-  role_name             = "ebs-csi-${var.deployment_id}"
-  role_description      = "IRSA role for EBS CSI Driver"
-  attach_ebs_csi_policy = true
-  ebs_csi_kms_cmk_ids   = [var.eks_kms_key_arn]
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
-    }
-  }
-}
-
-
-module "cluster_autoscaler_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.48.0"
-  count   = var.eks_create_cluster_autoscaler_irsa ? 1 : 0
-
-  role_name                        = "cluster-autoscaler-${var.deployment_id}"
-  role_description                 = "IRSA role for cluster autoscaler"
-  attach_cluster_autoscaler_policy = true
-
-  cluster_autoscaler_cluster_names = [module.eks.cluster_name]
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:cluster-autoscaler"]
-    }
-  }
-}
-
-
-module "external_dns_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.48.0"
-  count   = var.eks_create_external_dns_irsa ? 1 : 0
-
-  role_name        = "external-dns-${var.deployment_id}"
-  role_description = "IRSA role for cluster external dns controller"
-  #external_dns_hosted_zone_arns = var.external_dns_hosted_zone_arns
-  # setting to false because we don't want to rely on exeternal policies
-  attach_external_dns_policy = true
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:external-dns"]
-    }
-  }
-}
-
-
-module "load_balancer_controller_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.48.0"
-  count   = var.eks_create_load_balancer_controller_irsa ? 1 : 0
-
-  role_name                              = "load_balancer_controller-${var.deployment_id}"
-  role_description                       = "IRSA role for cluster load balancer controller"
-  attach_load_balancer_controller_policy = true
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
-    }
-  }
 }
 
 terraform {
