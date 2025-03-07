@@ -27,6 +27,7 @@ module "ebs_csi_pod_identity" {
   version = "1.10.0"
 
   name                      = "${var.deployment_id}-ebs-csi"
+  use_name_prefix           = false
   description               = "EBS CSI IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
   attach_aws_ebs_csi_policy = true
   aws_ebs_csi_kms_arns      = [var.eks_kms_key_arn]

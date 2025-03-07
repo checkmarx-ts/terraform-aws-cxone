@@ -26,6 +26,7 @@ module "cluster_autoscaler_pod_identity" {
   version = "1.10.0"
 
   name                             = "${var.deployment_id}-cluster-autoscaler"
+  use_name_prefix                  = false
   description                      = "Cluster autoscaler IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
   attach_cluster_autoscaler_policy = true
   cluster_autoscaler_cluster_names = [var.eks_cluster_name]
@@ -38,3 +39,4 @@ resource "aws_eks_pod_identity_association" "cluster_autoscaler" {
   service_account = "cluster-autoscaler"
   role_arn        = var.cluster_autoscaler_role_arn == null ? module.cluster_autoscaler_pod_identity[0].iam_role_arn : var.cluster_autoscaler_role_arn
 }
+

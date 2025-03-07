@@ -26,6 +26,7 @@ module "load_balancer_controller_pod_identity" {
   version = "1.10.0"
 
   name                            = "${var.deployment_id}-load-balancer-controller"
+  use_name_prefix                 = false
   description                     = "Load balancer controller IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
   attach_aws_lb_controller_policy = true
 }

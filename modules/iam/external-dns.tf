@@ -38,8 +38,9 @@ module "external_dns_pod_identity" {
   source  = "terraform-aws-modules/eks-pod-identity/aws"
   version = "1.10.0"
 
-  name        = "${var.deployment_id}-external-dns"
-  description = "External DNS IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
+  name            = "${var.deployment_id}-external-dns"
+  use_name_prefix = false
+  description     = "External DNS IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
 
   attach_external_dns_policy    = true
   external_dns_hosted_zone_arns = var.external_dns_hosted_zone_arns

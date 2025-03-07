@@ -27,6 +27,7 @@ module "vpc_cni_pod_identity" {
   version = "1.10.0"
 
   name                      = "${var.deployment_id}-vpc-cni"
+  use_name_prefix           = false
   description               = "VPC CNI IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
   attach_aws_vpc_cni_policy = true
   aws_vpc_cni_enable_ipv4   = true
@@ -39,3 +40,4 @@ resource "aws_eks_pod_identity_association" "vpc_cni" {
   service_account = "aws-node" #kube-proxy
   role_arn        = var.vpc_cni_role_arn == null ? module.vpc_cni_pod_identity[0].iam_role_arn : var.vpc_cni_role_arn
 }
+
