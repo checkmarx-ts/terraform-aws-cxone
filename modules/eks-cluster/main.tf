@@ -16,6 +16,9 @@ module "eks" {
   cluster_name    = var.deployment_id
   cluster_version = var.eks_cluster_version
 
+  iam_role_arn    = var.cluster_iam_role_arn
+  create_iam_role = false
+
   cluster_enabled_log_types = ["audit", "api", "authenticator", "scheduler"]
 
   cluster_endpoint_private_access = var.enable_private_endpoint
@@ -61,6 +64,10 @@ module "eks" {
     vpc-cni = {
       addon_version  = var.vpc_cni_version
       before_compute = var.pod_custom_networking_subnets != null ? true : false
+      pod_identity_association = {
+        role_arn        = var.vpc_cni_role_arn
+        service_account = "aws-node"
+      }
       configuration_values = jsonencode({
         env = {
           AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = var.pod_custom_networking_subnets != null ? "true" : "false"
@@ -69,8 +76,14 @@ module "eks" {
 
     }
     aws-ebs-csi-driver = {
-      addon_version            = var.aws_ebs_csi_driver_version
-      service_account_role_arn = var.ebs_csi_role_arn
+      addon_version = var.aws_ebs_csi_driver_version
+      pod_identity_association = {
+        role_arn        = var.ebs_csi_role_arn
+        service_account = "ebs-csi-controller-sa"
+      }
+    }
+    eks-pod-identity-agent = {
+      addon_version = var.aws_eks_pod_identity_agent_driver_version
     }
   }
 
@@ -105,6 +118,7 @@ module "eks" {
     labels                 = node_group.labels
     taints                 = node_group.taints
     autoscaling_group_tags = node_group.autoscaling_group_tags
+    mixed_instances_policy = node_group.mixed_instances_policy
     tags = {
       Name = "${var.deployment_id}-${node_group.name}"
     }

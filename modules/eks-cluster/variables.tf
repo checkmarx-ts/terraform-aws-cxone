@@ -67,13 +67,25 @@ variable "cluster_access_iam_role_arn" {
   description = "The role for cluster administrators."
 }
 
+variable "cluster_iam_role_arn" {
+  type        = string
+  nullable    = false
+  description = "The role for the EKS cluster itself."
+}
+
 variable "nodegroup_iam_role_arn" {
+  type        = string
   description = "The ARN to the IAM role for the EKS nodes."
   nullable    = false
 }
 
 variable "ebs_csi_role_arn" {
   description = "The ARN to the role for the EBS CSI Driver."
+  nullable    = false
+}
+
+variable "vpc_cni_role_arn" {
+  description = "The ARN to the role for the VPC CNI Driver."
   nullable    = false
 }
 
@@ -116,10 +128,11 @@ variable "self_managed_node_groups" {
     min_size               = string
     desired_size           = string
     max_size               = string
-    launch_template_id     = string
+    launch_template_id     = optional(string, null)
     autoscaling_group_tags = optional(map(string), {})
     labels                 = optional(map(string), {})
     taints                 = optional(map(object({ key = string, value = string, effect = string })), {})
+    mixed_instances_policy = optional(map(object({})), {})
   }))
 }
 
@@ -132,19 +145,25 @@ variable "coredns_version" {
 variable "kube_proxy_version" {
   type        = string
   description = "The version of the EKS Kube Proxy Addon."
-  default     = "v1.30.7-eksbuild.2"
+  default     = "v1.30.9-eksbuild.3"
 }
 
 variable "vpc_cni_version" {
   type        = string
   description = "The version of the EKS VPC CNI Addon."
-  default     = "v1.19.2-eksbuild.1"
+  default     = "v1.19.3-eksbuild.1"
 }
 
 variable "aws_ebs_csi_driver_version" {
   type        = string
   description = "The version of the EKS EBS CSI Addon."
-  default     = "v1.39.0-eksbuild.1"
+  default     = "v1.40.0-eksbuild.1"
+}
+
+variable "aws_eks_pod_identity_agent_driver_version" {
+  type        = string
+  description = "The version of the EKS Pod Identity Agent Addon."
+  default     = "v1.3.5-eksbuild.2"
 }
 
 variable "eks_pre_bootstrap_user_data" {
