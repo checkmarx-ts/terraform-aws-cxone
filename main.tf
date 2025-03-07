@@ -1,6 +1,25 @@
 data "aws_region" "current" {}
 data "aws_partition" "current" {}
 
+locals {
+  spot_instance_groups = {
+    # Repostore is special group since we only need slightly over 16Gb memory.
+    repostore = ["c5n.2xlarge", "m5.2xlarge", "m5a.2xlarge", "m5ad.2xlarge", "m5d.2xlarge", "m5dn.2xlarge", "m5n.2xlarge", "m5zn.2xlarge", "m6a.2xlarge", "m6i.2xlarge", "m6id.2xlarge", "m6idn.2xlarge", "m6in.2xlarge", "m7a.2xlarge", "m7i-flex.2xlarge", "m7i.2xlarge"]
+    # Zeebe special case needs 2x8
+    zeebe = ["m7a.large", "m5zn.large", "m6a.large", "m6i.large", "m7i.large"]
+    # small = 4x8 for kics
+    small = ["c5.xlarge", "c5a.xlarge", "c5ad.xlarge", "c5d.xlarge", "c6a.xlarge", "c6i.xlarge", "c6id.xlarge", "c6in.xlarge", "c7a.xlarge", "c7i-flex.xlarge", "c7i.xlarge", "inf1.xlarge"]
+    # medium = 8x32
+    medium = ["m5.2xlarge", "m5a.2xlarge", "m5ad.2xlarge", "m5d.2xlarge", "m5dn.2xlarge", "m5n.2xlarge", "m5zn.2xlarge", "m6a.2xlarge", "m6i.2xlarge", "m6id.2xlarge", "m6idn.2xlarge", "m6in.2xlarge", "m7a.2xlarge", "m7i-flex.2xlarge", "m7i.2xlarge", "m5zn.3xlarge"]
+    # large = 16x64
+    large = ["m5.4xlarge", "m5a.4xlarge", "m5ad.4xlarge", "m5d.4xlarge", "m5dn.4xlarge", "m5n.4xlarge", "m6a.4xlarge", "m6i.4xlarge", "m6id.4xlarge", "m6idn.4xlarge", "m6in.4xlarge", "m7a.4xlarge", "m7i-flex.4xlarge", "m7i.4xlarge", "m5zn.6xlarge"]
+    # xlarge = 32x128
+    xlarge = ["m5.8xlarge", "m5a.8xlarge", "m5ad.8xlarge", "m5d.8xlarge", "m5dn.8xlarge", "m5n.8xlarge", "m6a.8xlarge", "m6i.8xlarge", "m6id.8xlarge", "m6idn.8xlarge", "m6in.8xlarge", "m7a.8xlarge", "m7i-flex.8xlarge", "m7i.8xlarge"]
+    # xxlarge = 48x192
+    xxlarge = ["m5.12xlarge", "m5a.12xlarge", "m5ad.12xlarge", "m5d.12xlarge", "m5dn.12xlarge", "m5n.12xlarge", "m5zn.12xlarge", "m6a.12xlarge", "m6i.12xlarge", "m6id.12xlarge", "m6idn.12xlarge", "m6in.12xlarge", "m7a.12xlarge", "m7i-flex.12xlarge", "m7i.12xlarge"]
+  }
+}
+
 #Use this version of the VPC module to deploy a VPC without firewall
 # module "vpc" {
 #   source        = "./modules/vpc"
@@ -75,16 +94,20 @@ module "iam" {
 
   deployment_id              = var.deployment_id
   administrator_iam_role_arn = var.administrator_iam_role_arn
-  s3_bucket_name_suffix      = module.s3.s3_bucket_name_suffix
-  eks_kms_key_arn            = module.kms.eks_kms_key_arn
-  oidc_provider_arn          = module.eks_cluster.oidc_provider_arn
 
-  create_node_role                     = true
-  create_cluster_access_role           = true
-  create_ebs_csi_irsa                  = true
-  create_cluster_autoscaler_irsa       = true
-  create_external_dns_irsa             = true
-  create_load_balancer_controller_irsa = true
+  eks_kms_key_arn               = module.kms.eks_kms_key_arn
+  eks_cluster_name              = module.eks_cluster.cluster_name
+  external_dns_hosted_zone_arns = var.external_dns_hosted_zone_arns
+
+  cluster_access_role_arn           = null
+  node_role_arn                     = null
+  cluster_role_arn                  = null
+  cluster_autoscaler_role_arn       = null
+  load_balancer_controller_role_arn = null
+  create_external_dns_pod_identity  = true
+  external_dns_role_arn             = null
+  ebs_csi_role_arn                  = null
+  vpc_cni_role_arn                  = null
 }
 
 
@@ -106,14 +129,16 @@ module "eks_cluster" {
   cluster_security_group_id   = module.security_groups.eks_cluster
   node_security_group_id      = module.security_groups.eks_node
   nodegroup_iam_role_arn      = module.iam.eks_nodes_iam_role_arn
+  cluster_iam_role_arn        = module.iam.eks_cluster_iam_role_arn
   ec2_key_name                = var.ec2_key_name
   ebs_csi_role_arn            = module.iam.ebs_csi_role_arn
+  vpc_cni_role_arn            = module.iam.vpc_cni_role_arn
 
   self_managed_node_groups = [
     {
-      name               = "ast-app"
-      min_size           = 6
-      desired_size       = 6
+      name               = "ast-app2"
+      min_size           = 3
+      desired_size       = 3
       max_size           = 15
       launch_template_id = aws_launch_template.self_managed["ast-app"].id
       autoscaling_group_tags = {
@@ -121,6 +146,26 @@ module "eks_cluster" {
         "k8s.io/cluster-autoscaler/${var.deployment_id}"        = "owned"
         "k8s.io/cluster-autoscaler/node-template/label/ast-app" = "true"
       }
+      # mixed_instances_policy = {
+      #   instances_distribution = {
+      #     on_demand_base_capacity                  = 0
+      #     on_demand_percentage_above_base_capacity = 25
+      #     spot_allocation_strategy                 = "capacity-optimized"
+      #   }
+      #   launch_template = {
+      #     launch_template_specification = {
+      #       launch_template_id = aws_launch_template.self_managed["ast-app"].id
+      #     }
+      #     override = {
+      #       instance_type     = "t3.2xlarge"
+      #       weighted_capacity = "1"
+      #     }
+      #     override = {
+      #       instance_type     = "t3a.2xlarge"
+      #       weighted_capacity = "1"
+      #     }
+      #   }
+      # }
     },
     {
       name               = "sast-engine"
@@ -309,6 +354,13 @@ module "rds" {
   database_password    = random_password.rds_password.result
   database_username    = "ast"
   kms_key_arn          = module.kms.eks_kms_key_arn
+
+  # Monitoring can be enabled by setting a non zero value for cluster_monitoring_interval and provided an IAM role.
+  monitoring_role_arn         = module.iam.rds_role_arn
+  cluster_monitoring_interval = 60
+  # Monitoring is disabled with this config:
+  # monitoring_role_arn         = null
+  # cluster_monitoring_interval = 0
 }
 
 module "rds-analytics" {
@@ -376,7 +428,7 @@ resource "random_password" "kotsadm_password" {
 
 
 module "checkmarx-one-install" {
-  source = "git::https://github.com/checkmarx-ts/terraform-aws-cxone//modules/cxone-install?ref=5a80044"
+  source = "git::https://github.com/checkmarx-ts/terraform-aws-cxone//modules/cxone-install?ref=8a1736d"
 
   airgap_bundle_path     = var.airgap_bundle_path
   kots_registry          = var.kots_registry
