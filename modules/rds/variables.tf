@@ -103,3 +103,16 @@ variable "database_password" {
   sensitive   = true
   description = "Password of the database"
 }
+
+variable "cluster_monitoring_interval" {
+  default     = 0
+  type        = number
+  description = "The interval, in seconds, between points when Enhanced Monitoring metrics are collected for instances. Set to `0` to disable. Default is `0`"
+}
+
+variable "monitoring_role_arn" {
+  type        = string
+  description = "The IAM Role ARN to use for enhanced monitoring"
+  default     = null
+
+}

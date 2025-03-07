@@ -1,12 +1,17 @@
 module "rds-aurora" {
   source  = "terraform-aws-modules/rds-aurora/aws"
-  version = "9.10.0"
+  version = "9.13.0"
 
   name = "${var.deployment_id}-checkmarxone-${var.database_name}"
 
   engine         = "aurora-postgresql"
   engine_mode    = "provisioned"
   engine_version = var.engine_version
+
+  create_monitoring_role      = false
+  monitoring_role_arn         = var.monitoring_role_arn
+  cluster_monitoring_interval = var.cluster_monitoring_interval
+
 
   vpc_id                 = var.vpc_id
   create_db_subnet_group = false
