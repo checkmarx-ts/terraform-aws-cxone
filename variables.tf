@@ -198,3 +198,9 @@ variable "kots_registry_password" {
   type        = string
   default     = ""
 }
+
+variable "external_dns_hosted_zone_arns" {
+  description = "The route 53 hosted zone for use with external dns."
+  type        = list(string)
+}
+
