@@ -2,10 +2,6 @@
 # IAM Role for the RDS Enhanced Monitoring
 # ---------------------------------------------------------------------------------------------------------------------
 
-locals {
-  rds_role_name = split("/", var.rds_role_arn == null ? aws_iam_role.eks_nodes[0].arn : var.node_role_arn)[1]
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
 # Related Variables & Outputs
 # ---------------------------------------------------------------------------------------------------------------------
@@ -18,10 +14,6 @@ variable "rds_role_arn" {
 
 output "rds_role_arn" {
   value = var.rds_role_arn == null ? aws_iam_role.rds[0].arn : var.rds_role_arn
-}
-
-output "rds_role_name" {
-  value = local.rds_role_name
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
