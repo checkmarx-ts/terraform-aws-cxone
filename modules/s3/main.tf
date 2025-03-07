@@ -24,6 +24,10 @@ locals {
       name        = "cxone"
       enable_cors = false
     }
+    dast = {
+      name        = "dast"
+      enable_cors = false
+    }
     engine_logs = {
       name        = "engine-logs"
       enable_cors = false
@@ -107,7 +111,7 @@ locals {
 module "s3_bucket" {
   for_each = local.buckets
   source   = "terraform-aws-modules/s3-bucket/aws"
-  version  = "4.1.2"
+  version  = "4.6.0"
 
   bucket           = "${var.deployment_id}-${each.value.name}-${lower(local.s3_bucket_name_suffix)}"
   force_destroy    = true
