@@ -29,8 +29,6 @@ acm_certificate_arn = null
 # Set to your primary VPC CIDR range. Recommend at least a /17 for Checkmarx One.
 primary_cidr_block = "10.77.0.0/16"
 
-# The secondary CIDR. Used as described at https://aws.amazon.com/blogs/containers/addressing-ipv4-address-exhaustion-in-amazon-eks-clusters-using-private-nat-gateways/
-secondary_cidr_block = "100.64.0.0/18"
 
 # The interface endpoints to create. These have a charge, but are needed if running EKS privately.
 interface_vpc_endpoints    = ["ec2", "ec2messages", "ssm", "ssmmessages", "ecr.api", "ecr.dkr", "kms", "logs", "sts", "elasticloadbalancing", "autoscaling"]
