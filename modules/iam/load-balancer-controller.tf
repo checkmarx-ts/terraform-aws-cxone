@@ -12,6 +12,12 @@ variable "load_balancer_controller_role_arn" {
   default     = null
 }
 
+variable "load_balancer_controller_role_permissions_boundary_policy_arn" {
+  description = "The permissions boundary policy arn for the Load Balancer Controller IAM role."
+  type        = string
+  default     = null
+}
+
 output "load_balancer_controller_role_arn" {
   value = var.load_balancer_controller_role_arn == null ? module.load_balancer_controller_pod_identity[0].iam_role_arn : var.load_balancer_controller_role_arn
 }
@@ -29,6 +35,7 @@ module "load_balancer_controller_pod_identity" {
   use_name_prefix                 = false
   description                     = "Load balancer controller IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
   attach_aws_lb_controller_policy = true
+  permissions_boundary_arn        = var.load_balancer_controller_role_permissions_boundary_policy_arn
 }
 
 # Pod Identity Association is always created, even if the role was pre-existing.

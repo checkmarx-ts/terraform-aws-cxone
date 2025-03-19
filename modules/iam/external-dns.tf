@@ -13,6 +13,12 @@ variable "external_dns_role_arn" {
   default     = null
 }
 
+variable "external_dns_role_permissions_boundary_policy_arn" {
+  description = "The permissions boundary policy arn for the External DNS IAM role."
+  type        = string
+  default     = null
+}
+
 variable "create_external_dns_pod_identity" {
   type        = bool
   description = "Controls creation of pod identity association for external dns iam role."
@@ -44,6 +50,7 @@ module "external_dns_pod_identity" {
 
   attach_external_dns_policy    = true
   external_dns_hosted_zone_arns = var.external_dns_hosted_zone_arns
+  permissions_boundary_arn      = var.external_dns_role_permissions_boundary_policy_arn
 }
 
 # Pod Identity Association is always created, even if the role was pre-existing.

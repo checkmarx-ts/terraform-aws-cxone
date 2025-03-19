@@ -16,6 +16,12 @@ variable "cluster_role_arn" {
   default     = null
 }
 
+variable "cluster_role_permissions_boundary_policy_arn" {
+  description = "The permissions boundary policy arn for the EKS Cluster IAM role."
+  type        = string
+  default     = null
+}
+
 output "eks_cluster_iam_role_arn" {
   value = var.cluster_role_arn == null ? aws_iam_role.eks_cluster[0].arn : var.cluster_role_arn
 }
@@ -82,10 +88,11 @@ resource "aws_iam_role_policy_attachment" "cluster_encryption" {
 
 # Cluster Role & Profile
 resource "aws_iam_role" "eks_cluster" {
-  count              = var.cluster_role_arn == null ? 1 : 0
-  name               = "${var.deployment_id}-eks-cluster"
-  description        = "IAM Role for Checkmarx One EKS Cluster for deployment id ${var.deployment_id}"
-  assume_role_policy = <<EOF
+  count                = var.cluster_role_arn == null ? 1 : 0
+  name                 = "${var.deployment_id}-eks-cluster"
+  description          = "IAM Role for Checkmarx One EKS Cluster for deployment id ${var.deployment_id}"
+  permissions_boundary = var.cluster_role_permissions_boundary_policy_arn
+  assume_role_policy   = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [

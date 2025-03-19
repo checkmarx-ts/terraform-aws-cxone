@@ -16,6 +16,12 @@ variable "node_role_arn" {
   default     = null
 }
 
+variable "node_role_permissions_boundary_policy_arn" {
+  description = "The permissions boundary policy arn for the EKS Nodes IAM role."
+  type        = string
+  default     = null
+}
+
 output "eks_nodes_iam_role_arn" {
   value = var.node_role_arn == null ? aws_iam_role.eks_nodes[0].arn : var.node_role_arn
 }
@@ -109,10 +115,11 @@ resource "aws_iam_role_policy_attachment" "ast_s3_buckets_policy_attachment" {
 
 # IAM Role & Profile
 resource "aws_iam_role" "eks_nodes" {
-  count              = var.node_role_arn == null ? 1 : 0
-  name               = "${var.deployment_id}-eks-nodes"
-  description        = "IAM Role for Checkmarx One EKS Nodes"
-  assume_role_policy = <<EOF
+  count                = var.node_role_arn == null ? 1 : 0
+  name                 = "${var.deployment_id}-eks-nodes"
+  description          = "IAM Role for Checkmarx One EKS Nodes"
+  permissions_boundary = var.node_role_permissions_boundary_policy_arn
+  assume_role_policy   = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [

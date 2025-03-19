@@ -14,6 +14,12 @@ variable "cluster_access_role_arn" {
   default     = null
 }
 
+variable "cluster_access_role_permissions_boundary_policy_arn" {
+  description = "The permissions boundary policy arn for the cluster access role IAM role."
+  type        = string
+  default     = null
+}
+
 output "cluster_access_iam_role_arn" {
   value = var.cluster_access_role_arn == null ? aws_iam_role.cluster_access[0].arn : var.cluster_access_role_arn
 }
@@ -35,9 +41,10 @@ data "aws_iam_policy_document" "cluster_access" {
 }
 
 resource "aws_iam_role" "cluster_access" {
-  count              = var.cluster_access_role_arn == null ? 1 : 0
-  name               = "${var.deployment_id}-cluster-access"
-  assume_role_policy = data.aws_iam_policy_document.cluster_access[0].json
-  description        = "Role used for admin EKS cluster access for the deployment with id ${var.deployment_id}."
+  count                = var.cluster_access_role_arn == null ? 1 : 0
+  name                 = "${var.deployment_id}-cluster-access"
+  assume_role_policy   = data.aws_iam_policy_document.cluster_access[0].json
+  description          = "Role used for admin EKS cluster access for the deployment with id ${var.deployment_id}."
+  permissions_boundary = var.cluster_access_role_permissions_boundary_policy_arn
 }
 

@@ -13,6 +13,12 @@ variable "ebs_csi_role_arn" {
   default     = null
 }
 
+variable "ebs_csi_role_permissions_boundary_policy_arn" {
+  description = "The permissions boundary policy arn for the EBS CSI Driver IAM role."
+  type        = string
+  default     = null
+}
+
 output "ebs_csi_role_arn" {
   value = var.ebs_csi_role_arn == null ? module.ebs_csi_pod_identity[0].iam_role_arn : var.ebs_csi_role_arn
 }
@@ -31,6 +37,7 @@ module "ebs_csi_pod_identity" {
   description               = "EBS CSI IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
   attach_aws_ebs_csi_policy = true
   aws_ebs_csi_kms_arns      = [var.eks_kms_key_arn]
+  permissions_boundary_arn  = var.ebs_csi_role_permissions_boundary_policy_arn
 }
 
 # Pod Identity Association is always created, even if the role was pre-existing.

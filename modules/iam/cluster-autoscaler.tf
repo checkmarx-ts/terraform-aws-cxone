@@ -12,6 +12,12 @@ variable "cluster_autoscaler_role_arn" {
   default     = null
 }
 
+variable "cluster_autoscaler_role_permissions_boundary_policy_arn" {
+  description = "The permissions boundary policy arn for the cluster autoscaler IAM role."
+  type        = string
+  default     = null
+}
+
 output "cluster_autoscaler_role_arn" {
   value = var.cluster_autoscaler_role_arn == null ? module.cluster_autoscaler_pod_identity[0].iam_role_arn : var.cluster_autoscaler_role_arn
 }
@@ -30,6 +36,7 @@ module "cluster_autoscaler_pod_identity" {
   description                      = "Cluster autoscaler IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
   attach_cluster_autoscaler_policy = true
   cluster_autoscaler_cluster_names = [var.eks_cluster_name]
+  permissions_boundary_arn         = var.cluster_autoscaler_role_permissions_boundary_policy_arn
 }
 
 # Pod Identity Association is always created, even if the role was pre-existing.

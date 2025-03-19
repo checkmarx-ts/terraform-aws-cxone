@@ -12,6 +12,12 @@ variable "rds_role_arn" {
   default     = null
 }
 
+variable "rds_role_permissions_boundary_policy_arn" {
+  description = "The permissions boundary policy arn for the RDS IAM role."
+  type        = string
+  default     = null
+}
+
 output "rds_role_arn" {
   value = var.rds_role_arn == null ? aws_iam_role.rds[0].arn : var.rds_role_arn
 }
@@ -35,10 +41,11 @@ resource "aws_iam_role_policy_attachment" "AmazonRDSEnhancedMonitoringRole" {
 
 # IAM Role & Profile
 resource "aws_iam_role" "rds" {
-  count              = var.rds_role_arn == null ? 1 : 0
-  name               = "${var.deployment_id}-rds"
-  description        = "IAM Role for Checkmarx One RDS with deployment id ${var.deployment_id}."
-  assume_role_policy = <<EOF
+  count                = var.rds_role_arn == null ? 1 : 0
+  name                 = "${var.deployment_id}-rds"
+  description          = "IAM Role for Checkmarx One RDS with deployment id ${var.deployment_id}."
+  permissions_boundary = var.rds_role_permissions_boundary_policy_arn
+  assume_role_policy   = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [

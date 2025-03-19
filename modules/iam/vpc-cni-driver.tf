@@ -12,6 +12,12 @@ variable "vpc_cni_role_arn" {
   default     = null
 }
 
+variable "vpc_cni_role_permissions_boundary_policy_arn" {
+  description = "The permissions boundary policy arn for the VPC CNI IAM role."
+  type        = string
+  default     = null
+}
+
 output "vpc_cni_role_arn" {
   value = var.vpc_cni_role_arn == null ? module.vpc_cni_pod_identity[0].iam_role_arn : var.vpc_cni_role_arn
 }
@@ -31,6 +37,7 @@ module "vpc_cni_pod_identity" {
   description               = "VPC CNI IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
   attach_aws_vpc_cni_policy = true
   aws_vpc_cni_enable_ipv4   = true
+  permissions_boundary_arn  = var.vpc_cni_role_permissions_boundary_policy_arn
 }
 
 # Pod Identity Association is always created, even if the role was pre-existing.
