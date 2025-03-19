@@ -208,8 +208,3 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
-resource "aws_route_table_association" "pod" {
-  for_each       = { for idx, az in local.azs : az => idx }
-  subnet_id      = aws_subnet.pod[each.key].id
-  route_table_id = aws_route_table.private.id
-}

@@ -23,39 +23,12 @@ output "private_subnets" {
   value       = [for s in aws_subnet.private : s.id]
 }
 
-output "pod_subnets" {
-  description = "List of pod subnet IDs in the VPC"
-  value       = [for s in aws_subnet.pod : s.id]
-}
-
 output "database_subnets" {
   description = "List of database subnet IDs in the VPC"
   value       = [for s in aws_subnet.database : s.id]
 }
 
-output "pod_subnet_info" {
-  description = "List of map of pod subnets including `subnet_id` and `availability_zone`. Useful for creating ENIConfigs for [EKS Custom Networking](https://docs.aws.amazon.com/eks/latest/userguide/cni-custom-network.html)."
-  value = [for s in aws_subnet.pod : {
-    subnet_id         = s.id
-    availability_zone = s.availability_zone
-  }]
-}
-
 output "azs" {
   description = "The Availability Zones deployed into"
   value       = local.azs
-}
-
-output "ENIConfig" {
-  description = "List of map of pod subnets including `subnet_id` and `availability_zone`. Useful for creating ENIConfigs for [EKS Custom Networking](https://docs.aws.amazon.com/eks/latest/userguide/cni-custom-network.html)."
-  value = join("", [for s in aws_subnet.pod : <<EOF
----
-apiVersion: crd.k8s.amazonaws.com/v1alpha1
-kind: ENIConfig
-metadata:
-  name: ${s.availability_zone}
-spec:
-  subnet: ${s.id}
-EOF
-  ])
 }
