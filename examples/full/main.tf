@@ -20,7 +20,6 @@ module "vpc" {
   source                     = "../../modules/inspection-vpc"
   deployment_id              = var.deployment_id
   primary_cidr_block         = var.primary_cidr_block
-  secondary_cidr_block       = var.secondary_cidr_block
   interface_vpc_endpoints    = var.interface_vpc_endpoints
   create_interface_endpoints = var.create_interface_endpoints
   create_s3_endpoint         = var.create_s3_endpoint

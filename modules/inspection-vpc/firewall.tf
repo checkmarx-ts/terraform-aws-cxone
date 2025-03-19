@@ -58,7 +58,7 @@ resource "aws_networkfirewall_firewall_policy" "main" {
     policy_variables {
       rule_variables {
         key = "HOME_NET"
-        ip_set { definition = [var.primary_cidr_block, var.secondary_cidr_block] }
+        ip_set { definition = [var.primary_cidr_block] }
       }
     }
   }

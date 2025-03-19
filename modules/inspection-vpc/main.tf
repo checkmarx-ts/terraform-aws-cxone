@@ -6,7 +6,7 @@ data "aws_availability_zones" "available" {
 
 locals {
   azs             = slice(data.aws_availability_zones.available.names, 0, 2)
-  vpc_cidr_blocks = [var.primary_cidr_block, var.secondary_cidr_block]
+  vpc_cidr_blocks = [var.primary_cidr_block]
 
   # Here we are calculating the CIDRs for the subnets from the given primary VPC CIDR block. 
   # This VPC should not be used for production. It is optimized to reduce AWS costs at the expense of availability.
@@ -34,10 +34,6 @@ locals {
   firewall_subnet_cidr  = slice(local.subnet_cidrs, 1, 2)[0]
   private_subnet_cidrs  = slice(local.subnet_cidrs, 2, 4)
   database_subnet_cidrs = slice(local.subnet_cidrs, 4, 6)
-
-  # Calculate 2 /19s for the secondary cidr to use for pod custom networking. The secondary_cidr_block must be at least a /18.
-  secondary_cidr_size = split("/", var.secondary_cidr_block)[1]
-  pod_subnet_cidrs    = cidrsubnets(var.secondary_cidr_block, (19 - local.secondary_cidr_size), (19 - local.secondary_cidr_size))
 }
 
 #******************************************************************************
@@ -49,11 +45,6 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true # Required for EKS
 
   tags = { Name = "${var.deployment_id}" }
-}
-
-resource "aws_vpc_ipv4_cidr_block_association" "secondary_cidr_block" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = var.secondary_cidr_block
 }
 
 resource "aws_subnet" "public" {
@@ -97,18 +88,6 @@ resource "aws_subnet" "database" {
   tags              = { Name = "${var.deployment_id} - database subnet ${each.key}" }
 }
 
-resource "aws_subnet" "pod" {
-  for_each          = { for idx, az in local.azs : az => idx if var.secondary_cidr_block != null }
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = local.pod_subnet_cidrs[each.value]
-  availability_zone = each.key
-  tags = {
-    Name                                         = "${var.deployment_id} - pod subnet ${each.key}"
-    "kubernetes.io/cluster/${var.deployment_id}" = "shared"
-    "kubernetes.io/role/cni"                     = "1"
-  }
-  depends_on = [aws_vpc_ipv4_cidr_block_association.secondary_cidr_block]
-}
 
 #******************************************************************************
 #   IGW & NAT Gateway
@@ -153,14 +132,6 @@ resource "aws_route_table" "igw" {
     for_each = { for idx, az in local.azs : az => idx if var.enable_firewall }
     content {
       cidr_block      = local.private_subnet_cidrs[route.value]
-      vpc_endpoint_id = [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0]
-    }
-  }
-
-  dynamic "route" {
-    for_each = { for idx, az in local.azs : az => idx if var.enable_firewall }
-    content {
-      cidr_block      = local.pod_subnet_cidrs[route.value]
       vpc_endpoint_id = [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0]
     }
   }

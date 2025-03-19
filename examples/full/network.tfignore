@@ -14,7 +14,6 @@ module "vpc" {
 
   name                  = var.deployment_id
   cidr                  = var.vpc_cidr
-  secondary_cidr_blocks = var.secondary_vpc_cidr != null ? [var.secondary_vpc_cidr] : []
 
   azs = local.aws_azs
 
@@ -53,7 +52,7 @@ module "vpc_endpoint_security_group" {
   name                = "${var.deployment_id}-vpc-endpoints"
   description         = "VPC endpoint security group for Checkmarx One deployment named ${var.deployment_id}"
   vpc_id              = module.vpc.vpc_id
-  ingress_cidr_blocks = concat([module.vpc.vpc_cidr_block], module.vpc.vpc_secondary_cidr_blocks)
+  ingress_cidr_blocks = module.vpc.vpc_cidr_block
   ingress_rules       = ["https-443-tcp"]
 }
 

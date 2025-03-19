@@ -32,7 +32,6 @@ module "vpc" {
   source                     = "../../terraform-aws-cxone/modules/inspection-vpc"
   deployment_id              = "bos-inspection-vpc"
   primary_cidr_block         = "10.77.0.0/16"
-  secondary_cidr_block       = "100.64.0.0/18"
   interface_vpc_endpoints    = ["ec2", "ec2messages", "ssm", "ssmmessages", "ecr.api", "ecr.dkr", "kms", "logs", "sts", "elasticloadbalancing", "autoscaling"]
   create_interface_endpoints = true
   create_s3_endpoint         = true

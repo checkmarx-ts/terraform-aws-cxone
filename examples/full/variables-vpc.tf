@@ -5,12 +5,6 @@ variable "primary_cidr_block" {
   nullable    = false
 }
 
-variable "secondary_cidr_block" {
-  description = "The secondary VPC CIDR block for the EKS Pod [Custom Networking](https://aws.github.io/aws-eks-best-practices/networking/custom-networking/) configuration. Must be at least a /18."
-  type        = string
-  default     = "100.64.0.0/18"
-  nullable    = false
-}
 
 variable "interface_vpc_endpoints" {
   type        = list(string)
