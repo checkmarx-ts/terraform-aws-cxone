@@ -65,12 +65,6 @@ variable "eks_enable_custom_networking" {
   default     = false
 }
 
-variable "eks_pod_subnets" {
-  description = "The subnets to use for EKS pods. When specified, custom networking configuration is applied to the EKS cluster."
-  type        = list(string)
-  nullable    = true
-}
-
 variable "eks_enable_externalsnat" {
   type        = bool
   description = "Enables [External SNAT](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html) for the EKS VPC CNI. When true, the EKS pods must have a route to a NAT Gateway for outbound communication."

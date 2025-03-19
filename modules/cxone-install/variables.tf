@@ -110,12 +110,6 @@ variable "availability_zones" {
   nullable = false
 }
 
-variable "pod_eniconfig" {
-  description = "The ENIConfigs for EKS custom networking configuration."
-  type        = string
-  nullable    = true
-}
-
 #******************************************************************************
 #   S3 Access Configuration
 #******************************************************************************

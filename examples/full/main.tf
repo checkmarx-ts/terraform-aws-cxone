@@ -134,7 +134,6 @@ module "checkmarx-one" {
   eks_create                               = var.eks_create
   eks_subnets                              = module.vpc.private_subnets
   create_node_s3_iam_role                  = var.create_node_s3_iam_role
-  eks_pod_subnets                          = module.vpc.pod_subnets
   eks_enable_externalsnat                  = var.eks_enable_externalsnat
   eks_enable_fargate                       = var.eks_enable_fargate
   eks_create_cluster_autoscaler_irsa       = var.eks_create_cluster_autoscaler_irsa
@@ -285,7 +284,6 @@ module "checkmarx-one-install" {
   cluster_endpoint                      = module.checkmarx-one.cluster_endpoint
   nodegroup_iam_role_name               = module.checkmarx-one.nodegroup_iam_role_name
   availability_zones                    = module.vpc.azs
-  pod_eniconfig                         = module.vpc.ENIConfig
   vpc_id                                = module.vpc.vpc_id
   kms_key_arn                           = aws_kms_key.main.arn
   internal_ca_cert                      = var.internal_ca_cert

@@ -143,11 +143,6 @@ resource "local_file" "storage_class" {
   filename = "apply-storageclass-config.${var.deployment_id}.sh"
 }
 
-resource "local_file" "ENIConfig" {
-  content  = var.pod_eniconfig
-  filename = "custom-networking-config.${var.deployment_id}.yaml"
-}
-
 resource "local_file" "destroy_load_balancer" {
   content = templatefile("${path.module}/destroy-load-balancer.sh.tftpl", {
     deployment_id = var.deployment_id

@@ -274,9 +274,7 @@ module "eks" {
   cluster_security_group_additional_rules = var.eks_cluster_security_group_additional_rules
   eks_managed_node_groups                 = local.eks_nodegroups
 
-  fargate_profile_defaults = {
-    subnet_ids = var.eks_enable_custom_networking ? var.eks_pod_subnets : null
-  }
+  
   fargate_profiles = var.eks_enable_fargate ? local.fargate_profiles : {}
 }
 
