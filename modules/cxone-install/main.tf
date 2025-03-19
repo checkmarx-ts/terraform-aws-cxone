@@ -14,14 +14,16 @@ locals {
   integrations_repos_manager_bitbucket_tenant_key = var.integrations_repos_manager_bitbucket_tenant_key == null ? random_password.integrations_repos_manager_bitbucket_tenant_key[0].result : var.integrations_repos_manager_bitbucket_tenant_key
   integrations_repos_manager_github_tenant_key    = var.integrations_repos_manager_github_tenant_key == null ? random_password.integrations_repos_manager_github_tenant_key[0].result : var.integrations_repos_manager_github_tenant_key
   integrations_repos_manager_gitlab_tenant_key    = var.integrations_repos_manager_gitlab_tenant_key == null ? random_password.integrations_repos_manager_gitlab_tenant_key[0].result : var.integrations_repos_manager_gitlab_tenant_key
+  integrations_webhook_encryption_key             = var.integrations_webhook_encryption_key == null ? random_password.integrations_webhook_encryption_key[0].result : var.integrations_webhook_encryption_key
 }
 
 resource "local_file" "kots_config" {
   content = templatefile("${path.module}/kots.config.aws.reference.yaml.tftpl", {
-    aws_region     = var.region
-    admin_email    = var.admin_email
-    admin_username = "admin"
-    admin_password = var.admin_password
+    aws_region      = var.region
+    admin_email     = var.admin_email
+    admin_username  = "admin"
+    admin_password  = var.admin_password
+    advanced_config = indent(8, var.kots_advanced_config)
 
     ms_replica_count = var.ms_replica_count
 
@@ -50,9 +52,16 @@ resource "local_file" "kots_config" {
     analytics_postgres_password  = var.analytics_postgres_password #jsondecode(data.aws_secretsmanager_secret_version.rds_secret.secret_string)["password"]
     analytics_postgres_db_name   = var.analytics_postgres_database_name
 
+    # Internal CA
+    internal_ca      = (var.internal_ca_cert != null && var.internal_ca_cert != "") ? "\"1\"" : "\"0\""
+    internal_ca_cert = var.internal_ca_cert
+
     # Redis
-    redis_address = var.redis_address
-    redis_port    = var.redis_port
+    redis_address                 = var.redis_address
+    redis_port                    = var.redis_port
+    external_redis_tls_skipverify = var.redis_tls_skipverify ? "1" : "0"
+    external_redis_tls_enabled    = var.redis_tls_enabled ? "1" : "0"
+    redis_auth_token              = var.redis_auth_token
 
     # SMTP
     smtp_host        = var.smtp_host
@@ -73,6 +82,9 @@ resource "local_file" "kots_config" {
     integrations_repos_manager_bitbucket_tenant_key = local.integrations_repos_manager_bitbucket_tenant_key
     integrations_repos_manager_github_tenant_key    = local.integrations_repos_manager_github_tenant_key
     integrations_repos_manager_gitlab_tenant_key    = local.integrations_repos_manager_gitlab_tenant_key
+    integrations_webhook_encryption_key             = local.integrations_webhook_encryption_key
+
+    network_load_balancer_scheme = var.network_load_balancer_scheme
 
   })
   filename = "kots.${var.deployment_id}.yaml"
@@ -88,10 +100,9 @@ resource "local_file" "makefile" {
     tf_cxone_version                      = var.cxone_version
     tf_release_channel                    = var.release_channel
     tf_kots_password                      = var.kots_admin_password
-    tf_namespace                          = "ast"
+    tf_namespace                          = var.cxone_namespace
     tf_license_file                       = var.license_file
     tf_kots_config_file                   = "kots.${var.deployment_id}.yaml"
-    namespace                             = "ast"
     kots_config_file                      = "kots.${var.deployment_id}.yaml"
     license_file                          = var.license_file
     release_channel                       = var.release_channel
@@ -102,6 +113,10 @@ resource "local_file" "makefile" {
     karpenter_iam_role_arn                = var.karpenter_iam_role_arn
     cluster_endpoint                      = var.cluster_endpoint
     vpc_id                                = var.vpc_id
+    tf_airgap_bundle                      = var.airgap_bundle_path
+    tf_kots_registry                      = var.kots_registry
+    tf_registry_username                  = var.kots_registry_username
+    tf_registry_password                  = var.kots_registry_password
   })
   filename = "Makefile"
 }

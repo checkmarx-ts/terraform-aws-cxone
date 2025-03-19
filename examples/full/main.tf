@@ -37,6 +37,7 @@ resource "aws_kms_key" "main" {
   description             = "KMS Key for the Checkmarx One deployment named ${var.deployment_id}"
   deletion_window_in_days = 7
   enable_key_rotation     = true
+  policy                  = null # Set your policy per your organization's needs.
   tags = {
     Name = var.deployment_id
   }
@@ -56,7 +57,7 @@ resource "random_password" "elasticsearch" {
 resource "random_password" "db" {
   length           = 32
   special          = false
-  override_special = "!-_"
+  override_special = "-_"
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -66,7 +67,7 @@ resource "random_password" "db" {
 resource "random_password" "analytics_db" {
   length           = 32
   special          = false
-  override_special = "!-_"
+  override_special = "-_"
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -76,7 +77,7 @@ resource "random_password" "analytics_db" {
 resource "random_password" "kots_admin" {
   length           = 14
   special          = false
-  override_special = "!-_"
+  override_special = "-_"
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -86,7 +87,17 @@ resource "random_password" "kots_admin" {
 resource "random_password" "cxone_admin" {
   length           = 14
   special          = false
-  override_special = "!-_"
+  override_special = "-_"
+  min_special      = 1
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+}
+
+resource "random_password" "redis_auth" {
+  length           = 16
+  special          = false
+  override_special = "-_"
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -176,7 +187,7 @@ module "checkmarx-one" {
   db_autoscaling_scale_out_cooldown           = var.db_autoscaling_scale_out_cooldown
   db_autoscaling_scale_in_cooldown            = var.db_autoscaling_scale_in_cooldown
   db_port                                     = var.db_port
-  db_master_user_password                     = random_password.db.result
+  db_master_user_password                     = var.password_override != null ? var.password_override : random_password.db.result
   db_create_rds_proxy                         = var.db_create_rds_proxy
   db_create                                   = var.db_create
   db_performance_insights_enabled             = var.db_performance_insights_enabled
@@ -192,12 +203,15 @@ module "checkmarx-one" {
   analytics_db_cluster_db_instance_parameter_group_name = var.analytics_db_cluster_db_instance_parameter_group_name
   analytics_db_instances                                = var.analytics_db_instances
   analytics_db_serverlessv2_scaling_configuration       = var.analytics_db_serverlessv2_scaling_configuration
-  analytics_db_master_user_password                     = random_password.analytics_db.result
+  analytics_db_master_user_password                     = var.password_override != null ? var.password_override : random_password.analytics_db.result
 
   # Elasticache Configuration
   ec_create                         = var.ec_create
   ec_subnets                        = module.vpc.database_subnets
   ec_enable_serverless              = var.ec_enable_serverless
+  ec_transit_encryption_enabled     = var.ec_transit_encryption_enabled
+  ec_auth_token_strategy            = var.ec_auth_token_strategy
+  ec_redis_auth_token               = var.ec_transit_encryption_enabled == true ? (var.password_override != null ? var.password_override : random_password.redis_auth.result) : ""
   ec_serverless_max_storage         = var.ec_serverless_max_storage
   ec_serverless_max_ecpu_per_second = var.ec_serverless_max_ecpu_per_second
   ec_engine_version                 = var.ec_engine_version
@@ -219,22 +233,24 @@ module "checkmarx-one" {
   es_instance_type                 = var.es_instance_type
   es_volume_size                   = var.es_volume_size
   es_tls_security_policy           = var.es_tls_security_policy
-  es_password                      = random_password.elasticsearch.result
+  es_password                      = var.password_override != null ? var.password_override : random_password.elasticsearch.result
 }
 
 
 module "checkmarx-one-install" {
   source = "../../modules/cxone-install"
 
-  cxone_version       = var.kots_cxone_version
-  release_channel     = var.kots_release_channel
-  license_file        = var.kots_license_file
-  kots_admin_password = random_password.kots_admin.result
+  cxone_version        = var.kots_cxone_version
+  release_channel      = var.kots_release_channel
+  license_file         = var.kots_license_file
+  kots_admin_password  = var.password_override != null ? var.password_override : random_password.kots_admin.result
+  kots_advanced_config = var.kots_advanced_config
 
   deployment_id                         = var.deployment_id
+  cxone_namespace                       = var.cxone_namespace
   region                                = data.aws_region.current.name
   admin_email                           = var.kots_admin_email
-  admin_password                        = random_password.cxone_admin.result
+  admin_password                        = var.password_override != null ? var.password_override : random_password.cxone_admin.result
   fqdn                                  = var.fqdn
   acm_certificate_arn                   = var.acm_certificate_arn != null ? var.acm_certificate_arn : module.acm[0].acm_certificate_arn
   bucket_suffix                         = module.checkmarx-one.s3_bucket_name_suffix
@@ -253,13 +269,15 @@ module "checkmarx-one-install" {
   analytics_postgres_user               = module.checkmarx-one.analytics_db_master_username
   analytics_postgres_password           = module.checkmarx-one.analytics_db_master_password
   redis_address                         = module.checkmarx-one.ec_endpoint
+  redis_tls_enabled                     = var.ec_transit_encryption_enabled
+  redis_auth_token                      = var.ec_transit_encryption_enabled == true ? (var.password_override != null ? var.password_override : random_password.redis_auth.result) : ""
   smtp_host                             = var.smtp_host
   smtp_port                             = var.smtp_port
   smtp_password                         = var.smtp_password
   smtp_user                             = var.smtp_user
   smtp_from_sender                      = var.smtp_from_sender
   elasticsearch_host                    = module.checkmarx-one.es_endpoint
-  elasticsearch_password                = random_password.elasticsearch.result
+  elasticsearch_password                = var.password_override != null ? var.password_override : random_password.elasticsearch.result
   cluster_autoscaler_iam_role_arn       = module.checkmarx-one.cluster_autoscaler_iam_role_arn
   load_balancer_controller_iam_role_arn = module.checkmarx-one.load_balancer_controller_iam_role_arn
   external_dns_iam_role_arn             = module.checkmarx-one.external_dns_iam_role_arn
@@ -270,6 +288,12 @@ module "checkmarx-one-install" {
   pod_eniconfig                         = module.vpc.ENIConfig
   vpc_id                                = module.vpc.vpc_id
   kms_key_arn                           = aws_kms_key.main.arn
+  internal_ca_cert                      = var.internal_ca_cert
+  network_load_balancer_scheme          = var.network_load_balancer_scheme
+  airgap_bundle_path                    = var.airgap_bundle_path
+  kots_registry                         = var.kots_registry
+  kots_registry_username                = var.kots_registry_username
+  kots_registry_password                = var.kots_registry_password
 }
 
 terraform {

@@ -17,6 +17,12 @@ variable "deployment_id" {
   }
 }
 
+variable "cxone_namespace" {
+  description = "The kubernetes namespace in which to deploy the CxOne application."
+  type        = string
+  default     = "ast"
+}
+
 # variable "kms_key_arn" {
 #   type        = string
 #   description = "The ARN of the KMS key to use for encryption in AWS services"
@@ -109,6 +115,31 @@ variable "eks_create_karpenter" {
 variable "eks_version" {
   type        = string
   description = "The version of the EKS Cluster (e.g. 1.27)"
+  default     = "1.30"
+}
+
+variable "coredns_version" {
+  type        = string
+  description = "The version of the EKS Core DNS Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-coredns.html."
+  default     = "v1.11.4-eksbuild.2"
+}
+
+variable "kube_proxy_version" {
+  type        = string
+  description = "The version of the EKS Kube Proxy Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-kube-proxy.html#kube-proxy-versions."
+  default     = "v1.30.9-eksbuild.3"
+}
+
+variable "vpc_cni_version" {
+  type        = string
+  description = "The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html."
+  default     = "v1.19.2-eksbuild.5"
+}
+
+variable "aws_ebs_csi_driver_version" {
+  type        = string
+  description = "The version of the EKS EBS CSI Addon. Reference https://github.com/kubernetes-sigs/aws-ebs-csi-driver/?tab=readme-ov-file#compatibility."
+  default     = "v1.39.0-eksbuild.1"
 }
 
 variable "eks_private_endpoint_enabled" {
@@ -147,29 +178,10 @@ variable "eks_pre_bootstrap_user_data" {
   default     = ""
 }
 
-variable "coredns_version" {
-  type        = string
-  description = "The version of the EKS Core DNS Addon."
-}
-
-variable "kube_proxy_version" {
-  type        = string
-  description = "The version of the EKS Kube Proxy Addon."
-}
-
-variable "vpc_cni_version" {
-  type        = string
-  description = "The version of the EKS VPC CNI Addon."
-}
-
-variable "aws_ebs_csi_driver_version" {
-  type        = string
-  description = "The version of the EKS EBS CSI Addon."
-}
-
 variable "aws_cloudwatch_observability_version" {
   type        = string
-  description = "The version of the AWS Cloudwatch Observability Addon. Specify a version to enable the addon, or leave blank to disable the addon."
+  description = "The version of the AWS Cloudwatch Observability Addon. Specify a version to enable the addon, or leave null to disable the addon."
+  default     = null
 }
 
 variable "launch_template_tags" {
@@ -598,6 +610,22 @@ variable "ec_enable_serverless" {
   type        = bool
   default     = false
   description = "Enables the use of elasticache for redis serverless."
+}
+
+variable "ec_transit_encryption_enabled" {
+  description = "Enables REDIS TLS connections."
+  type        = bool
+  default     = false
+}
+
+variable "ec_auth_token_strategy" {
+  description = "The auth token strategy."
+  type        = string
+  default     = "SET"
+  validation {
+    condition     = contains(["ROTATE", "SET"], var.ec_auth_token_strategy)
+    error_message = "Valid values for variable ec_auth_token_strategy are SET or ROTATE"
+  }
 }
 
 variable "ec_serverless_max_storage" {

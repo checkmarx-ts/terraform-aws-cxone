@@ -25,6 +25,22 @@ variable "ms_replica_count" {
   default     = 3
 }
 
+variable "network_load_balancer_scheme" {
+  description = "The load balancer scheme."
+  type        = string
+  default     = "internet-facing"
+  validation {
+    condition     = contains(["internet-facing", "internal"], var.network_load_balancer_scheme)
+    error_message = "Valid values for variable network_load_balancer_scheme are internet-facing or internal"
+  }
+}
+
+variable "internal_ca_cert" {
+  description = "The base64 encoded pem file containing certificates to add to CxOne components' trust stores"
+  type        = string
+  default     = ""
+}
+
 #******************************************************************************
 #   S3 Configuration
 #******************************************************************************
@@ -127,5 +143,53 @@ variable "bastion_host_user_data" {
 variable "bastion_host_remote_management_cidrs" {
   description = "The list of CIDRs that need access to the bastion host"
   type        = list(string)
+  default     = null
+}
+
+#******************************************************************************
+#  Airgap Support
+#******************************************************************************
+
+variable "airgap_bundle_path" {
+  description = "The file path to the airgap bundle."
+  type        = string
+  default     = ""
+}
+
+variable "kots_registry" {
+  description = "The registry address to use for airgap installation."
+  type        = string
+  default     = ""
+}
+
+variable "kots_registry_username" {
+  description = "The registry username to use for airgap installation."
+  type        = string
+  default     = ""
+}
+
+variable "kots_registry_password" {
+  description = "The registry password to use for airgap installation."
+  type        = string
+  default     = ""
+}
+
+variable "kots_advanced_config" {
+  description = "The kots advanced config section."
+  type        = string
+  default     = <<-EOF
+camunda-platform:
+  zeebeGateway:
+    resources:
+      requests:
+        cpu: "1000m"
+      limits:
+        cpu: "1000m"
+EOF
+}
+
+variable "password_override" {
+  description = "A password value that will be used to override all other generated passwords. Only use this for testing purposes."
+  type        = string
   default     = null
 }

@@ -66,3 +66,14 @@ resource "random_password" "integrations_repos_manager_gitlab_tenant_key" {
   min_lower   = 1
   min_numeric = 1
 }
+resource "random_password" "integrations_webhook_encryption_key" {
+  count       = var.integrations_webhook_encryption_key == null ? 1 : 0
+  length      = 16
+  special     = false
+  min_special = 0
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+}
+
+

@@ -8,12 +8,10 @@ KOTS_PASSWORD = ${tf_kots_password}
 NAMESPACE = ${tf_namespace}
 LICENSE_FILE = ${tf_license_file}
 KOTS_CONFIG_FILE = ${tf_kots_config_file}
-AIRGAP_BUNDLE = ???
-KOTS_REGISTRY = ???
-REGISTRY_USERNAME = ???
-REGISTRY_PASSWORD = ???
-TOTP = 123
-
+AIRGAP_BUNDLE = ${tf_airgap_bundle}
+KOTS_REGISTRY = ${tf_kots_registry}
+REGISTRY_USERNAME = ${tf_registry_username}
+REGISTRY_PASSWORD = ${tf_registry_password}
 
 
 .PHONY: update-kubeconfig
@@ -21,15 +19,35 @@ update-kubeconfig:
 	aws eks update-kubeconfig --name $${EKS_CLUSTER_NAME}
 
 
+.PHONY: bootstrap-cluster
+bootstrap-cluster:
+	make update-kubeconfig
+	make apply-storageclass-config
+	make install-cluster-autoscaler
+	make install-external-dns
+	make install-metrics-server
+	make install-load-balancer-controller
+	sleep 30
+
+
 .PHONY: kots-install
 kots-install:
-	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password '$${KOTS_PASSWORD}' --config-values $${KOTS_CONFIG_FILE} --app-version-label $${CXONE_VERSION}
+	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --config-values '$${KOTS_CONFIG_FILE}' --app-version-label $${CXONE_VERSION} --skip-preflights
 
 
 .PHONY: kots-install-from-airgap
 kots-install-from-airgap:
-	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file $${LICENSE_FILE} --shared-password '$${KOTS_PASSWORD}' --config-values $${KOTS_CONFIG_FILE} \
-	--airgap --airgap-bundle $${AIRGAP_BUNDLE} --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}'
+	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --config-values '$${KOTS_CONFIG_FILE}' \
+	--airgap --airgap-bundle '$${AIRGAP_BUNDLE}' --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}' --disable-image-push --skip-preflights
+
+
+.PHONY: kots-upgrade-from-airgap
+kots-upgrade-from-airgap:
+	kubectl kots upstream upgrade ast -n $${NAMESPACE} \
+	--airgap-bundle '$${AIRGAP_BUNDLE}' \
+	--kotsadm-registry $${KOTS_REGISTRY} \
+	--registry-username $${REGISTRY_USERNAME} \
+	--registry-password '$${REGISTRY_PASSWORD}' --deploy --disable-image-push
 
 
 .PHONY: kots-get-config
@@ -37,9 +55,14 @@ kots-get-config:
 	kubectl kots get config -n $${NAMESPACE} --appslug ast --decrypt
 
 
-.PHONY: kots-set-config
-kots-set-config:
-	kubectl kots set config ast -n $${NAMESPACE} --config-file $${KOTS_CONFIG_FILE} --deploy --current	
+.PHONY: kots-stage-config
+kots-stage-config:
+	kubectl kots set config ast -n $${NAMESPACE} --config-file '$${KOTS_CONFIG_FILE}' --current
+
+
+.PHONY: kots-deploy-config
+kots-deploy-config:
+	kubectl kots set config ast -n $${NAMESPACE} --config-file '$${KOTS_CONFIG_FILE}' --current --deploy
 
 
 .PHONY: kots-download-files
@@ -52,6 +75,27 @@ kots-upload-files:
 	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast
 
 
+.PHONY: update-config
+update-config:
+	 terraform apply -target="module.cxone.module.checkmarx-one-install" --auto-approve
+
+
+.PHONY: stage-kustomizations
+stage-kustomizations:
+	rm -rf ./ast
+	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite
+	rsync -av --progress --checksum --include="*/" --include="*.yaml" --exclude="*" kustomizations/ ast
+	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast
+
+
+.PHONY: deploy-kustomizations
+deploy-kustomizations:
+	rm -rf ./ast
+	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite
+	rsync -av --progress --checksum --include="*/" --include="*.yaml" --exclude="*" kustomizations/ ast
+	kubectl kots upload --namespace $${NAMESPACE} --deploy --slug ast ./ast	
+
+
 .PHONY: kots-admin-console
 kots-admin-console:
 	kubectl kots admin-console -n $${NAMESPACE}
@@ -60,16 +104,16 @@ kots-admin-console:
 # Restart all AST services (ignores kots services which are commonly installed in same namespace)
 .PHONY: rollout-restart
 rollout-restart:
-	kubectl get deploy -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart deploy {}
 	kubectl get statefulset -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart statefulset {}
-
+	kubectl get deploy -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart deploy {}
+	
 
 .PHONY: install-cluster-autoscaler
 install-cluster-autoscaler:
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler; \
 	helm repo update autoscaler; \
 	helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
-	--version 9.21.1 \
+	--version 9.37.0 \
 	-n kube-system \
 	--set awsRegion=$${DEPLOY_REGION} \
 	--set rbac.serviceAccount.create=true \
@@ -141,8 +185,6 @@ install-karpenter:
 	--set controller.resources.limits.memory=1Gi
 	kubectl apply -f karpenter.$${DEPLOYMENT_ID}.yaml 
 
-	#	--set settings.clusterEndpoint=${cluster_endpoint} \
-
 
 .PHONY: uninstall-karpenter
 uninstall-karpenter:
@@ -202,4 +244,5 @@ get-support-bundle:
 
 .PHONY: totp
 totp:
-	echo "$${TOTP}" | totp-cli instant
+	cat .totp | totp-cli instant
+
