@@ -1,5 +1,12 @@
 
 
+# cxone-install
+
+This folder contains a [Terraform](https://www.terraform.io) module for generating a reference implementation of installation scripts for Checkmarkx One. 
+
+The folder generates scripts, a [Makefile](./Makefile.tftpl), and a reference [Kots configuration](./kots.config.aws.reference.yaml.tftpl) that can be used to install Checkmarx One. This module is optional, and is intended to serve as a reference implementation which can be adapted to your specific processes and needs.
+
+
 # Module Documentation
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
