@@ -1,6 +1,6 @@
-#******************************************************************************
+#*************************************************************************************
 #   Base Infrastructure Configuration - These variables are used by the example itself
-#******************************************************************************
+#*************************************************************************************
 
 variable "route_53_hosted_zone_id" {
   type        = string
@@ -144,6 +144,40 @@ variable "bastion_host_remote_management_cidrs" {
   description = "The list of CIDRs that need access to the bastion host"
   type        = list(string)
   default     = null
+}
+
+#******************************************************************************
+#   Cluster Proxy Configuration
+#******************************************************************************
+
+variable "cluster_proxy_enabled" {
+  description = "Controls deployment of a proxy instance for the eks cluster to the VPC."
+  type        = bool
+  default     = false
+}
+
+variable "cluster_proxy_ami" {
+  description = "The ami to use for the cluster proxy instance."
+  type        = string
+  default     = "ami-075686beab831bb7f"
+}
+
+variable "cluster_proxy_instance_type" {
+  description = "The instance type for the cluster proxy."
+  type        = string
+  default     = "t3.large"
+}
+
+variable "cluster_proxy_user_data" {
+  description = "User data for the cluster proxy. Default behavior is to install squid proxy."
+  type        = string
+  default     = null
+}
+
+variable "cluster_proxy_port" {
+  description = "The port used for the cluster proxy instance."
+  type        = string
+  default     = "xxxx"
 }
 
 #******************************************************************************

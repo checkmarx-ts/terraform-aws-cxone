@@ -86,6 +86,10 @@ resource "local_file" "kots_config" {
 
     network_load_balancer_scheme = var.network_load_balancer_scheme
 
+    cluster_proxy_enabled = var.cluster_proxy_enabled
+    cluster_proxy_ip      = var.cluster_proxy_ip
+    cluster_proxy_port    = var.cluster_proxy_port
+
   })
   filename = "kots.${var.deployment_id}.yaml"
 }

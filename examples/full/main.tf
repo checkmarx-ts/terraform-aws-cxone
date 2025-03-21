@@ -292,6 +292,9 @@ module "checkmarx-one-install" {
   kots_registry                         = var.kots_registry
   kots_registry_username                = var.kots_registry_username
   kots_registry_password                = var.kots_registry_password
+  cluster_proxy_enabled                 = var.cluster_proxy_enabled
+  cluster_proxy_ip                      = module.cluster_proxy_ec2_instance.private_ip
+  cluster_proxy_port                    = var.cluster_proxy_port
 }
 
 terraform {
