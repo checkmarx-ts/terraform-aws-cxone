@@ -110,6 +110,31 @@ variable "eks_create_karpenter" {
 variable "eks_version" {
   type        = string
   description = "The version of the EKS Cluster (e.g. 1.27)"
+  default     = "1.30"
+}
+
+variable "coredns_version" {
+  type        = string
+  description = "The version of the EKS Core DNS Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-coredns.html."
+  default     = "v1.11.4-eksbuild.2"
+}
+
+variable "kube_proxy_version" {
+  type        = string
+  description = "The version of the EKS Kube Proxy Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-kube-proxy.html#kube-proxy-versions."
+  default     = "v1.30.9-eksbuild.3"
+}
+
+variable "vpc_cni_version" {
+  type        = string
+  description = "The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html."
+  default     = "v1.19.2-eksbuild.5"
+}
+
+variable "aws_ebs_csi_driver_version" {
+  type        = string
+  description = "The version of the EKS EBS CSI Addon. Reference https://github.com/kubernetes-sigs/aws-ebs-csi-driver/?tab=readme-ov-file#compatibility."
+  default     = "v1.39.0-eksbuild.1"
 }
 
 variable "eks_private_endpoint_enabled" {
@@ -153,27 +178,6 @@ variable "eks_pre_bootstrap_user_data" {
   type        = string
   description = "User data to insert before bootstrapping script."
   default     = ""
-}
-
-
-variable "coredns_version" {
-  type        = string
-  description = "The version of the EKS Core DNS Addon."
-}
-
-variable "kube_proxy_version" {
-  type        = string
-  description = "The version of the EKS Kube Proxy Addon."
-}
-
-variable "vpc_cni_version" {
-  type        = string
-  description = "The version of the EKS VPC CNI Addon."
-}
-
-variable "aws_ebs_csi_driver_version" {
-  type        = string
-  description = "The version of the EKS EBS CSI Addon."
 }
 
 variable "aws_cloudwatch_observability_version" {
@@ -229,15 +233,17 @@ variable "eks_node_groups" {
     name           = "ast-app"
     min_size       = 3
     desired_size   = 3
-    max_size       = 9
-    instance_types = ["c5.4xlarge"]
+    max_size       = 30
+    instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+    capacity_type  = "ON_DEMAND"
     },
     {
       name           = "sast-engine"
       min_size       = 0
       desired_size   = 0
-      max_size       = 100
-      instance_types = ["m5.2xlarge"]
+      max_size       = 50
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
       labels = {
         "sast-engine" = "true"
       }
@@ -253,8 +259,9 @@ variable "eks_node_groups" {
       name           = "sast-engine-large"
       min_size       = 0
       desired_size   = 0
-      max_size       = 100
-      instance_types = ["m5.4xlarge"]
+      max_size       = 50
+      capacity_type  = "ON_DEMAND"
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
       labels = {
         "sast-engine-large" = "true"
       }
@@ -270,8 +277,8 @@ variable "eks_node_groups" {
       name           = "sast-engine-extra-large"
       min_size       = 0
       desired_size   = 0
-      max_size       = 100
-      instance_types = ["r5.2xlarge"]
+      max_size       = 50
+      instance_types = ["r6iz.2xlarge"]
       labels = {
         "sast-engine-extra-large" = "true"
       }
@@ -287,8 +294,8 @@ variable "eks_node_groups" {
       name           = "sast-engine-xxl"
       min_size       = 0
       desired_size   = 0
-      max_size       = 100
-      instance_types = ["r5.4xlarge"]
+      max_size       = 50
+      instance_types = ["r6iz.4xlarge"]
       labels = {
         "sast-engine-xxl" = "true"
       }
@@ -301,17 +308,46 @@ variable "eks_node_groups" {
       }
     },
     {
-      name           = "kics-engine"
-      min_size       = 1
-      desired_size   = 1
-      max_size       = 100
-      instance_types = ["c5.2xlarge"]
+      name           = "sast-engine-xxxl"
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 50
+      instance_types = ["r6iz.4xlarge"]
       labels = {
-        "kics-engine" = "true"
+        "sast-engine-xxxl" = "true"
       }
       taints = {
         dedicated = {
-          key    = "kics-engine"
+          key    = "sast-engine-xxxl"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    },
+    {
+      name           = "kics-engine"
+      min_size       = 1
+      desired_size   = 1
+      max_size       = 20
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
+      labels = {
+        "kics-engine" = "true"
+      }
+    },
+    {
+      name           = "zeebe"
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 5
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
+      labels = {
+        "zeebe" = "true"
+      }
+      taints = {
+        dedicated = {
+          key    = "zeebe"
           value  = "true"
           effect = "NO_SCHEDULE"
         }
@@ -321,8 +357,9 @@ variable "eks_node_groups" {
       name           = "repostore"
       min_size       = 1
       desired_size   = 1
-      max_size       = 100
-      instance_types = ["m5.2xlarge"]
+      max_size       = 10
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
       labels = {
         "repostore" = "true"
       }
@@ -335,11 +372,30 @@ variable "eks_node_groups" {
       }
     },
     {
+      name           = "minio-gateway"
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 10
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
+      labels = {
+        "minio-gateway" = "true"
+      }
+      taints = {
+        dedicated = {
+          key    = "minio-gateway"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    },
+    {
       name           = "sca-source-resolver"
       min_size       = 1
       desired_size   = 1
-      max_size       = 100
-      instance_types = ["m5.2xlarge"]
+      max_size       = 10
+      instance_types = ["m7i.4xlarge", "m6a.4xlarge", "m6i.4xlarge"]
+      capacity_type  = "ON_DEMAND"
       labels = {
         "service" = "sca-source-resolver"
       }
@@ -606,6 +662,28 @@ variable "ec_enable_serverless" {
   type        = bool
   default     = false
   description = "Enables the use of elasticache for redis serverless."
+}
+
+variable "ec_transit_encryption_enabled" {
+  description = "Enables REDIS TLS connections."
+  type        = bool
+  default     = false
+}
+
+variable "ec_redis_auth_token" {
+  description = "The auth token for REDIS. Requires ec_transit_encryption_enabled."
+  type        = string
+  default     = ""
+}
+
+variable "ec_auth_token_strategy" {
+  description = "The auth token strategy."
+  type        = string
+  default     = "SET"
+  validation {
+    condition     = contains(["ROTATE", "SET"], var.ec_auth_token_strategy)
+    error_message = "Valid values for variable ec_auth_token_strategy are SET or ROTATE"
+  }
 }
 
 variable "ec_serverless_max_storage" {

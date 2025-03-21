@@ -2,7 +2,7 @@
 
 This folder contains a [Terraform](https://www.terraform.io) module for deploying an [AWS Virtual Private Cloud (VPC)](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html). 
 
-The VPC is designed for use in development environments and is not intended to be used in production. The module is optimized to reduce costs for non-prod VPCs at the expense of high availability, while also providing use of [AWS Network Firewall](https://aws.amazon.com/network-firewall/) and [NAT Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html). 
+The VPC is designed for use in development environments and is not intended to be used in production. Checkmarx customers should bring their own VPC vs. using this module. The module is optimized to reduce costs for non-prod VPCs at the expense of high availability, while also providing use of [AWS Network Firewall](https://aws.amazon.com/network-firewall/) and [NAT Gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html). 
 
 The VPC creates "Pod Subnets" in a secondary VPC CIDR attachment as a solution for ipv4 conservation as suggested in the AWS Blog Post [*Addressing IPv4 address exhaustion in Amazon EKS clusters using private NAT gateways*.](https://aws.amazon.com/blogs/containers/addressing-ipv4-address-exhaustion-in-amazon-eks-clusters-using-private-nat-gateways/)
 
@@ -91,7 +91,8 @@ The embedded rules can be customized in these ways:
 | Bring your own complete rules | Provide your rules in the `suricata_rules` variable. These rules will completely replace the embedded rules. |
 | Append some custom rules | Provide your rules in `additional_suricata_rules` variable. These rules will be injected into the default rules. They will be executed after the embedded rules but before the default drop rule. Use a sequence ID of `YYMMDDNNN` (where NNN is a 3 digit sequence) to ensure no SID conflicts with embedded rules. |
 
-# Module documentation
+# Module Documentation
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -104,7 +105,6 @@ The embedded rules can be customized in these ways:
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.46.0 |
-| <a name="provider_template"></a> [template](#provider\_template) | n/a |
 
 ## Modules
 
@@ -126,9 +126,11 @@ The embedded rules can be customized in these ways:
 | [aws_networkfirewall_logging_configuration.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/networkfirewall_logging_configuration) | resource |
 | [aws_networkfirewall_rule_group.cxone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/networkfirewall_rule_group) | resource |
 | [aws_route_table.firewall](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table) | resource |
+| [aws_route_table.igw](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table) | resource |
 | [aws_route_table.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table) | resource |
 | [aws_route_table.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table) | resource |
 | [aws_route_table_association.firewall](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association) | resource |
+| [aws_route_table_association.igw](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association) | resource |
 | [aws_route_table_association.pod](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association) | resource |
 | [aws_route_table_association.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association) | resource |
 | [aws_route_table_association.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association) | resource |
@@ -144,7 +146,6 @@ The embedded rules can be customized in these ways:
 | [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones) | data source |
 | [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
-| [template_file.default_suricata_rules](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
 
 ## Inputs
 
@@ -157,17 +158,19 @@ The embedded rules can be customized in these ways:
 | <a name="input_deployment_id"></a> [deployment\_id](#input\_deployment\_id) | The deployment id for the VPC which is used to name resources | `string` | n/a | yes |
 | <a name="input_enable_firewall"></a> [enable\_firewall](#input\_enable\_firewall) | Enables the use of the [AWS Network Firewall](https://docs.aws.amazon.com/network-firewall/latest/developerguide/what-is-aws-network-firewall.html) to protect the private and pod subnets | `bool` | `true` | no |
 | <a name="input_include_sca_rules"></a> [include\_sca\_rules](#input\_include\_sca\_rules) | Enables inclusion of AWS Network Firewall rules used in SCA scanning. These rules may be overly permissive when not using SCA, so they are optional. These rules allow connectivity to various public package manager repositories like [Maven Central](https://mvnrepository.com/repos/central) and [npm](https://docs.npmjs.com/). | `bool` | `true` | no |
-| <a name="input_interface_vpc_endpoints"></a> [interface\_vpc\_endpoints](#input\_interface\_vpc\_endpoints) | A list of AWS services to create [VPC Private Endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html) for. These endpoints are used for communication direct to AWS services without requiring connectivity and are useful for private EKS clusters. | `list(string)` | <pre>[<br>  "ec2",<br>  "ec2messages",<br>  "ssm",<br>  "ssmmessages",<br>  "ecr.api",<br>  "ecr.dkr",<br>  "kms",<br>  "logs",<br>  "sts",<br>  "elasticloadbalancing",<br>  "autoscaling"<br>]</pre> | no |
-| <a name="input_managed_rule_groups"></a> [managed\_rule\_groups](#input\_managed\_rule\_groups) | The AWS Network Firewall [managed rule groups](https://docs.aws.amazon.com/network-firewall/latest/developerguide/aws-managed-rule-groups-list.html) to include in the firewall policy. Must be strict order groups. | `list(string)` | <pre>[<br>  "AbusedLegitMalwareDomainsStrictOrder",<br>  "MalwareDomainsStrictOrder",<br>  "AbusedLegitBotNetCommandAndControlDomainsStrictOrder",<br>  "BotNetCommandAndControlDomainsStrictOrder",<br>  "ThreatSignaturesBotnetStrictOrder",<br>  "ThreatSignaturesBotnetWebStrictOrder",<br>  "ThreatSignaturesBotnetWindowsStrictOrder",<br>  "ThreatSignaturesIOCStrictOrder",<br>  "ThreatSignaturesDoSStrictOrder",<br>  "ThreatSignaturesEmergingEventsStrictOrder",<br>  "ThreatSignaturesExploitsStrictOrder",<br>  "ThreatSignaturesMalwareStrictOrder",<br>  "ThreatSignaturesMalwareCoinminingStrictOrder",<br>  "ThreatSignaturesMalwareMobileStrictOrder",<br>  "ThreatSignaturesMalwareWebStrictOrder",<br>  "ThreatSignaturesScannersStrictOrder",<br>  "ThreatSignaturesSuspectStrictOrder",<br>  "ThreatSignaturesWebAttacksStrictOrder"<br>]</pre> | no |
+| <a name="input_interface_vpc_endpoints"></a> [interface\_vpc\_endpoints](#input\_interface\_vpc\_endpoints) | A list of AWS services to create [VPC Private Endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html) for. These endpoints are used for communication direct to AWS services without requiring connectivity and are useful for private EKS clusters. | `list(string)` | <pre>[<br/>  "ec2",<br/>  "ec2messages",<br/>  "ssm",<br/>  "ssmmessages",<br/>  "ecr.api",<br/>  "ecr.dkr",<br/>  "kms",<br/>  "logs",<br/>  "sts",<br/>  "elasticloadbalancing",<br/>  "autoscaling"<br/>]</pre> | no |
+| <a name="input_managed_rule_groups"></a> [managed\_rule\_groups](#input\_managed\_rule\_groups) | The AWS Network Firewall [managed rule groups](https://docs.aws.amazon.com/network-firewall/latest/developerguide/aws-managed-rule-groups-list.html) to include in the firewall policy. Must be strict order groups. | `list(string)` | <pre>[<br/>  "AbusedLegitMalwareDomainsStrictOrder",<br/>  "MalwareDomainsStrictOrder",<br/>  "AbusedLegitBotNetCommandAndControlDomainsStrictOrder",<br/>  "BotNetCommandAndControlDomainsStrictOrder",<br/>  "ThreatSignaturesBotnetStrictOrder",<br/>  "ThreatSignaturesBotnetWebStrictOrder",<br/>  "ThreatSignaturesBotnetWindowsStrictOrder",<br/>  "ThreatSignaturesIOCStrictOrder",<br/>  "ThreatSignaturesDoSStrictOrder",<br/>  "ThreatSignaturesEmergingEventsStrictOrder",<br/>  "ThreatSignaturesExploitsStrictOrder",<br/>  "ThreatSignaturesMalwareStrictOrder",<br/>  "ThreatSignaturesMalwareCoinminingStrictOrder",<br/>  "ThreatSignaturesMalwareMobileStrictOrder",<br/>  "ThreatSignaturesMalwareWebStrictOrder",<br/>  "ThreatSignaturesScannersStrictOrder",<br/>  "ThreatSignaturesSuspectStrictOrder",<br/>  "ThreatSignaturesWebAttacksStrictOrder"<br/>]</pre> | no |
 | <a name="input_primary_cidr_block"></a> [primary\_cidr\_block](#input\_primary\_cidr\_block) | The primary VPC CIDR block for the VPC. Must be at least a /19. | `string` | n/a | yes |
 | <a name="input_secondary_cidr_block"></a> [secondary\_cidr\_block](#input\_secondary\_cidr\_block) | The secondary VPC CIDR block for the EKS Pod [Custom Networking](https://aws.github.io/aws-eks-best-practices/networking/custom-networking/) configuration. Must be at least a /18. | `string` | `"100.64.0.0/18"` | no |
-| <a name="input_stateful_default_action"></a> [stateful\_default\_action](#input\_stateful\_default\_action) | The [default action](https://docs.aws.amazon.com/network-firewall/latest/developerguide/suricata-rule-evaluation-order.html#suricata-strict-rule-evaluation-order) for the AWS Network Firewall stateful rule group. Choose `aws:drop_established` or `aws:alert_established` | `string` | `"aws:drop_established"` | no |
+| <a name="input_stateful_default_actions"></a> [stateful\_default\_actions](#input\_stateful\_default\_actions) | The [default action](https://docs.aws.amazon.com/network-firewall/latest/developerguide/suricata-rule-evaluation-order.html#suricata-strict-rule-evaluation-order) for the AWS Network Firewall stateful rule group. Choose `aws:drop_established` or `aws:alert_established` | `list(string)` | <pre>[<br/>  "aws:drop_established",<br/>  "aws:alert_established"<br/>]</pre> | no |
 | <a name="input_suricata_rules"></a> [suricata\_rules](#input\_suricata\_rules) | The [suricata rules](https://docs.aws.amazon.com/network-firewall/latest/developerguide/suricata-examples.html) to use for the AWS Network Firewall. When provided, this variable completely overrides the embedded rules. Use this to bring your own rules. If you only need to provide some additional rules in addition to the bundled rules, then use `additional_suricata_rules` instead of `suricata_rules`. | `string` | `null` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| <a name="output_ENIConfig"></a> [ENIConfig](#output\_ENIConfig) | List of map of pod subnets including `subnet_id` and `availability_zone`. Useful for creating ENIConfigs for [EKS Custom Networking](https://docs.aws.amazon.com/eks/latest/userguide/cni-custom-network.html). |
+| <a name="output_azs"></a> [azs](#output\_azs) | The Availability Zones deployed into |
 | <a name="output_database_subnets"></a> [database\_subnets](#output\_database\_subnets) | List of database subnet IDs in the VPC |
 | <a name="output_firewall_subnets"></a> [firewall\_subnets](#output\_firewall\_subnets) | List of firewall subnet IDs in the VPC |
 | <a name="output_pod_subnet_info"></a> [pod\_subnet\_info](#output\_pod\_subnet\_info) | List of map of pod subnets including `subnet_id` and `availability_zone`. Useful for creating ENIConfigs for [EKS Custom Networking](https://docs.aws.amazon.com/eks/latest/userguide/cni-custom-network.html). |
@@ -176,3 +179,4 @@ The embedded rules can be customized in these ways:
 | <a name="output_public_subnets"></a> [public\_subnets](#output\_public\_subnets) | List of public subnet IDs in the VPC |
 | <a name="output_vpc_cidr_blocks"></a> [vpc\_cidr\_blocks](#output\_vpc\_cidr\_blocks) | The VPC CIDR blocks of the VPC |
 | <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | The id of the VPC |
+<!-- END_TF_DOCS -->

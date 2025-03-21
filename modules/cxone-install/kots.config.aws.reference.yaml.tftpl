@@ -80,6 +80,11 @@ spec:
     enable_sca_local_flow_for_global_inventory:
       value: "1"
 
+    # Enable local MOR. 
+    # Should alwasy be "1" unless advised by Cx
+    sca_expose_local_mor:
+      value: "1"
+
     # Enables using a dedicated node group just for SCA components. 
     # If enabled, the node group must exists with the correct labels and taint.
     # bool - Valid values are "0" (false) and "1" true
@@ -100,6 +105,9 @@ spec:
     core_configuration_encryption_key:
       value: ${core_configuration_encryption_key}
 
+    dast_scan_manager_encryption_hex_key:
+      value: ${dast_scan_manager_encryption_hex_key}
+
     sca_client_secret:
       value: ${sca_client_secret}
 
@@ -117,6 +125,9 @@ spec:
 
     integrations_repos_manager_gitlab_tenant_key:
       value: ${integrations_repos_manager_gitlab_tenant_key}
+
+    integrations_webhook_encryption_key:
+      value: ${integrations_webhook_encryption_key}
 
     #--------------------------------------------------------------------------
     # SCA Global Inventory & Elasticsearch
@@ -153,7 +164,9 @@ spec:
     configuration_s3_bucket_name:
       value: ${deployment_id}-configuration-${bucket_name_suffix} 
     cxone_s3_bucket_name:
-      value: ${deployment_id}-cxone-${bucket_name_suffix}  
+      value: ${deployment_id}-cxone-${bucket_name_suffix}
+    dast_s3_bucket_name:
+      value: ${deployment_id}-dast-${bucket_name_suffix}
     engine_logs_s3_bucket_name:
       value: ${deployment_id}-engine-logs-${bucket_name_suffix}
     export_s3_bucket_name:
@@ -220,14 +233,15 @@ spec:
       value: "${object_storage_secret_key}"
 
     # Configures secure connections to s3. Can be "1" (true/enabled) or "0" (false/disabled)
-    # Recommended: "1"
+    # Recommended: "0" when using minio gateway. "1" when using direct S3 access.
     object_storage_secure:
-      value: "1"
+      value: "${object_storage_secure}"
 
     # The SCA Host Type Settting valid values are 'ExeLocalServer' and 'S3' - controls 
     # wether SCA uses AWS SDK or Minio Client.
+    # Recommended: "ExeLocalServer" when using minio gateway. "S3" when using direct S3 access.
     sca_host_type_setting:
-      value: "S3"
+      value: "${sca_host_type_setting}"
 
     #--------------------------------------------------------------------------
     # Database Settings
@@ -311,17 +325,18 @@ spec:
     external_redis_port:
       value: "${redis_port}"
     
-    external_redis_password: {}
+    external_redis_password:
+      value: "${redis_auth_token}"
 
-    # Must be "0"
+    # Redis TLS support is preliminary
     external_redis_tls_enabled:
-      value: "0"
+      value: "${external_redis_tls_enabled}"
 
     external_redis_cluster_mode_enabled:
       value: "1"
 
     external_redis_tls_skipverify:
-      value: "0"
+      value: "${external_redis_tls_skipverify}"
 
     #--------------------------------------------------------------------------
     # SMTP Settings
@@ -348,11 +363,15 @@ spec:
     smtp_port:
       value: "${smtp_port}"
 
-    # Enables TLS connections to the SMTP server. When enabled, SMTP server must
+    # Enables StartTLS connections to the SMTP server. When enabled, SMTP server must
     # be configured with a TLS certificate from a well known Certificate Authority.
     # Valid values are "0" (false/disabled) and "1" (true/enabled)
     smtp_tls_enabled:
-      value: "1"
+      value: "0"
+
+    # Enables Implicit TLS connections to the SMTP server. This is preferred over StartTls(smtp_tls_enabled).
+    smtp_ssl_enabled:
+      value: "0"
 
     # The username and password that Checkmarx One will use to authenticate to 
     # the SMTP server with, when smtp_auth_enabled = "1". Use "0" for no 
@@ -396,7 +415,7 @@ spec:
     #   internal: a load balancer that only has private ip addresses. Recommend when deploying CxOne privately.
     # Reference https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html#load-balancer-scheme
     network_load_balancer_scheme:
-      value: internet-facing
+      value: ${network_load_balancer_scheme}
 
     # SSL Policy Name to be applied to the AWS Network Load Balancer. Reference https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies.
     network_load_balancer_ssl_negotiation_policy:
@@ -426,11 +445,11 @@ spec:
     
     # Enables addition of user provided certificates to application trust stores.
     internal_ca:
-      value: "0"
+      value: ${internal_ca}
 
     # The base 64 encoded pem file containing certificates to add to trust stores.
     internal_ca_cert:
-      value: ""
+      value: ${internal_ca_cert}
 
     #--------------------------------------------------------------------------
     # Opentelemetry Configuration
@@ -457,8 +476,8 @@ spec:
     
     # Enables the use of embedded or external elasticsearch for Camunda. 
     # Only embedded_elastic is supported at this time.
-    #camunda_search_type:
-    #  value: embedded_elastic
+    camunda_search_type:
+      value: embedded_elastic
 
     #--------------------------------------------------------------------------
     # Advanced Options Configuration
@@ -469,7 +488,7 @@ spec:
     # It is for advanced users. Please use with caution.
 
     advanced_options:
-      value: "0"
+      value: "1"
 
     # Specify your advanced configuration options here. These will be
     # passed directly to the AST Helm install and upgrade commands. You must
@@ -477,27 +496,52 @@ spec:
 
     # In this example, zeebe is scaled to 4 instances (default is to use ms_replica_count)
 
-    #config_values:
-    #  value: |
-    #    core:
-    #      feature_flag:
-    #        splitio:
-    #          apiKey: ""
-    #          userKey: ""
-    #        localhostMode: true
-    #        flags:
-    #          PENDO_ENABLED: "off"
-    #          GAINSIGHT_ENABLED: "off"
-    #          
-    #        
-    #    apisec:
-    #      enabled: false
-    #    microengines:
-    #      enabled: false
-    #    camunda-platform:
-    #      zeebe:
-    #        clusterSize: 4
-    #        partitionCount: 4
-    #        replicationFactor: 4
-    #      zeebeGateway:
-    #        replicas: 4
+    config_values:
+      value: |
+        ${advanced_config}
+   
+
+    # config_values:
+    #   value: |
+    #     global:      
+    #       isFedrampCluster: true
+    #     sca:
+    #       isFedrampCluster: true
+    #       imageRegistry: "XXXX.dkr.ecr.us-west-2.amazonaws.com" # change for current env
+    #       featureFlagsStrategy: "Checkmarx"
+    #       featureFlagsApiKey: ""
+    #       featureFlagsServiceUri: "http://flags:26500"
+    #       isDependencyResolutionEnabled: "true"
+    #     core:        
+    #       ast_access_management:
+    #         resources:
+    #           requests:
+    #             cpu: "2"
+    #             memory: "4000Mi"
+    #           limits:
+    #             cpu: ""
+    #             memory: "4000Mi"
+    #       repostore:
+    #         resources:
+    #           requests:
+    #             cpu: "6500m"
+    #             memory: "14000Mi"
+    #           limits:
+    #             cpu: ""
+    #             memory: "14000Mi"
+    #       feature_flag:
+    #         splitio:
+    #           apiKey: ""
+    #           userKey: ""
+    #         localhostMode: true     
+    #     apisec:
+    #       enabled: false
+    #     microengines:
+    #       enabled: false
+    #     camunda-platform:
+    #       zeebe:
+    #         clusterSize: 4
+    #         partitionCount: 4
+    #         replicationFactor: 4
+    #       zeebeGateway:
+    #         replicas: 4

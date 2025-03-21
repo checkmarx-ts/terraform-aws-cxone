@@ -10,6 +10,17 @@ resource "random_password" "core_configuration_encryption_key" {
   min_numeric      = 0
 }
 
+resource "random_password" "dast_scan_manager_encryption_hex_key" {
+  count            = var.dast_scan_manager_encryption_hex_key == null ? 1 : 0
+  length           = 32
+  special          = true
+  override_special = "abcdef0123456789"
+  min_special      = 32
+  min_upper        = 0
+  min_lower        = 0
+  min_numeric      = 0
+}
+
 resource "random_password" "sca_client_secret" {
   count       = var.sca_client_secret == null ? 1 : 0
   length      = 16
@@ -66,3 +77,14 @@ resource "random_password" "integrations_repos_manager_gitlab_tenant_key" {
   min_lower   = 1
   min_numeric = 1
 }
+resource "random_password" "integrations_webhook_encryption_key" {
+  count       = var.integrations_webhook_encryption_key == null ? 1 : 0
+  length      = 16
+  special     = false
+  min_special = 0
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+}
+
+
