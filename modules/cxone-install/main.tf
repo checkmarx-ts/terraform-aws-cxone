@@ -38,6 +38,8 @@ resource "local_file" "kots_config" {
     object_storage_url        = var.object_storage_endpoint
     object_storage_access_key = var.object_storage_access_key
     object_storage_secret_key = var.object_storage_secret_key
+    object_storage_secure     = var.object_storage_access_key == "ast" ? 0 : 1
+    sca_host_type_setting     = var.object_storage_access_key == "ast" ? "ExeLocalServer" : "S3"
 
     # RDS
     postgres_host      = var.postgres_host

@@ -80,6 +80,11 @@ spec:
     enable_sca_local_flow_for_global_inventory:
       value: "1"
 
+    # Enable local MOR. 
+    # Should alwasy be "1" unless advised by Cx
+    sca_expose_local_mor:
+      value: "1"
+
     # Enables using a dedicated node group just for SCA components. 
     # If enabled, the node group must exists with the correct labels and taint.
     # bool - Valid values are "0" (false) and "1" true
@@ -228,14 +233,15 @@ spec:
       value: "${object_storage_secret_key}"
 
     # Configures secure connections to s3. Can be "1" (true/enabled) or "0" (false/disabled)
-    # Recommended: "1"
+    # Recommended: "0" when using minio gateway. "1" when using direct S3 access.
     object_storage_secure:
-      value: "1"
+      value: "${object_storage_secure}"
 
     # The SCA Host Type Settting valid values are 'ExeLocalServer' and 'S3' - controls 
     # wether SCA uses AWS SDK or Minio Client.
+    # Recommended: "ExeLocalServer" when using minio gateway. "S3" when using direct S3 access.
     sca_host_type_setting:
-      value: "S3"
+      value: "${sca_host_type_setting}"
 
     #--------------------------------------------------------------------------
     # Database Settings
