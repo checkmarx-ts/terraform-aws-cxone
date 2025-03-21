@@ -14,7 +14,7 @@ locals {
     # Configure squid to allow traffic from specific CIDRs
     cat <<EOF >> /etc/squid/squid.conf
 
-acl cxone_networkA src ${module.vpc.vpc_cidr_blocks}
+acl cxone_networkA src ${module.vpc.vpc_cidr_blocks[0]}
 http_access allow cxone_networkA
 
 EOF
