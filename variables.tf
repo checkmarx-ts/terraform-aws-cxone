@@ -233,15 +233,17 @@ variable "eks_node_groups" {
     name           = "ast-app"
     min_size       = 3
     desired_size   = 3
-    max_size       = 9
-    instance_types = ["c5.4xlarge"]
+    max_size       = 30
+    instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+    capacity_type  = "ON_DEMAND"
     },
     {
       name           = "sast-engine"
       min_size       = 0
       desired_size   = 0
-      max_size       = 100
-      instance_types = ["m5.2xlarge"]
+      max_size       = 50
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
       labels = {
         "sast-engine" = "true"
       }
@@ -257,8 +259,9 @@ variable "eks_node_groups" {
       name           = "sast-engine-large"
       min_size       = 0
       desired_size   = 0
-      max_size       = 100
-      instance_types = ["m5.4xlarge"]
+      max_size       = 50
+      capacity_type  = "ON_DEMAND"
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
       labels = {
         "sast-engine-large" = "true"
       }
@@ -274,8 +277,8 @@ variable "eks_node_groups" {
       name           = "sast-engine-extra-large"
       min_size       = 0
       desired_size   = 0
-      max_size       = 100
-      instance_types = ["r5.2xlarge"]
+      max_size       = 50
+      instance_types = ["r6iz.2xlarge"]
       labels = {
         "sast-engine-extra-large" = "true"
       }
@@ -291,8 +294,8 @@ variable "eks_node_groups" {
       name           = "sast-engine-xxl"
       min_size       = 0
       desired_size   = 0
-      max_size       = 100
-      instance_types = ["r5.4xlarge"]
+      max_size       = 50
+      instance_types = ["r6iz.4xlarge"]
       labels = {
         "sast-engine-xxl" = "true"
       }
@@ -305,17 +308,46 @@ variable "eks_node_groups" {
       }
     },
     {
-      name           = "kics-engine"
-      min_size       = 1
-      desired_size   = 1
-      max_size       = 100
-      instance_types = ["c5.2xlarge"]
+      name           = "sast-engine-xxxl"
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 50
+      instance_types = ["r6iz.4xlarge"]
       labels = {
-        "kics-engine" = "true"
+        "sast-engine-xxxl" = "true"
       }
       taints = {
         dedicated = {
-          key    = "kics-engine"
+          key    = "sast-engine-xxxl"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    },
+    {
+      name           = "kics-engine"
+      min_size       = 1
+      desired_size   = 1
+      max_size       = 20
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
+      labels = {
+        "kics-engine" = "true"
+      }
+    },
+    {
+      name           = "zeebe"
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 5
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
+      labels = {
+        "zeebe" = "true"
+      }
+      taints = {
+        dedicated = {
+          key    = "zeebe"
           value  = "true"
           effect = "NO_SCHEDULE"
         }
@@ -325,8 +357,9 @@ variable "eks_node_groups" {
       name           = "repostore"
       min_size       = 1
       desired_size   = 1
-      max_size       = 100
-      instance_types = ["m5.2xlarge"]
+      max_size       = 10
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
       labels = {
         "repostore" = "true"
       }
@@ -339,11 +372,30 @@ variable "eks_node_groups" {
       }
     },
     {
+      name           = "minio-gateway"
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 10
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
+      labels = {
+        "minio-gateway" = "true"
+      }
+      taints = {
+        dedicated = {
+          key    = "minio-gateway"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    },
+    {
       name           = "sca-source-resolver"
       min_size       = 1
       desired_size   = 1
-      max_size       = 100
-      instance_types = ["m5.2xlarge"]
+      max_size       = 10
+      instance_types = ["m7i.4xlarge", "m6a.4xlarge", "m6i.4xlarge"]
+      capacity_type  = "ON_DEMAND"
       labels = {
         "service" = "sca-source-resolver"
       }

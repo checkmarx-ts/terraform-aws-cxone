@@ -31,7 +31,7 @@ variable "create_s3_endpoint" {
 }
 
 variable "enable_firewall" {
-  description = "Enables the use of the [AWS Network Firewall](https://docs.aws.amazon.com/network-firewall/latest/developerguide/what-is-aws-network-firewall.html) to protect the private and pod subnets"
+  description = "Enables the use of the [AWS Network Firewall](https://docs.aws.amazon.com/network-firewall/latest/developerguide/what-is-aws-network-firewall.html) with opionated rules to protect the private and pod subnets"
   type        = bool
   default     = true
 }
