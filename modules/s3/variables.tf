@@ -44,6 +44,12 @@ variable "block_public_policy" {
   description = "Controls s3 module block_public_policy"
 }
 
+variable "attach_public_policy" {
+  default     = true
+  type        = bool
+  description = "Controls s3 module public policy creation"
+}
+
 variable "ignore_public_acls" {
   default     = true
   type        = bool

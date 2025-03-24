@@ -165,6 +165,7 @@ module "s3_bucket" {
   ignore_public_acls                    = var.ignore_public_acls
   restrict_public_buckets               = var.restrict_public_buckets
   attach_deny_insecure_transport_policy = var.attach_deny_insecure_transport_policy
+  attach_public_policy                  = var.attach_public_policy
 }
 
 
