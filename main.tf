@@ -112,9 +112,15 @@ module "iam" {
 
 
 module "s3" {
-  source             = "./modules/s3"
-  deployment_id      = var.deployment_id
-  s3_allowed_origins = ["https://${var.subdomain}${var.domain}"]
+  source                                = "./modules/s3"
+  deployment_id                         = var.deployment_id
+  s3_allowed_origins                    = ["https://${var.subdomain}${var.domain}"]
+  control_object_ownership              = true
+  block_public_acls                     = true
+  block_public_policy                   = true
+  ignore_public_acls                    = true
+  restrict_public_buckets               = true
+  attach_deny_insecure_transport_policy = true
 }
 
 

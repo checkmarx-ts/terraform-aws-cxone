@@ -153,14 +153,18 @@ module "s3_bucket" {
     {
       allowed_headers = ["*"]
       allowed_methods = ["GET", "PUT", "POST", "HEAD"]
-      allowed_origins = var.s3_allowed_origins
+      allowed_origins = concat([], var.s3_allowed_origins)
+      expose_headers  = ["Date"]
+      max_age_seconds = 600
     }
   ]
 
-  control_object_ownership              = true
-  block_public_acls                     = true
-  block_public_policy                   = true
-  ignore_public_acls                    = true
-  restrict_public_buckets               = true
-  attach_deny_insecure_transport_policy = true
+  control_object_ownership              = var.control_object_ownership
+  block_public_acls                     = var.block_public_acls
+  block_public_policy                   = var.block_public_policy
+  ignore_public_acls                    = var.ignore_public_acls
+  restrict_public_buckets               = var.restrict_public_buckets
+  attach_deny_insecure_transport_policy = var.attach_deny_insecure_transport_policy
 }
+
+

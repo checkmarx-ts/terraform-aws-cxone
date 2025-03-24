@@ -25,3 +25,39 @@ variable "s3_allowed_origins" {
   type        = list(string)
   description = "The list of allowed origins for Cross Origin Request Sharing (CORS)"
 }
+
+variable "control_object_ownership" {
+  default     = true
+  type        = bool
+  description = "Controls s3 module control_object_ownership"
+}
+
+variable "block_public_acls" {
+  default     = true
+  type        = bool
+  description = "Controls s3 module block_public_acls"
+}
+
+variable "block_public_policy" {
+  default     = true
+  type        = bool
+  description = "Controls s3 module block_public_policy"
+}
+
+variable "ignore_public_acls" {
+  default     = true
+  type        = bool
+  description = "Controls s3 module ignore_public_acls"
+}
+
+variable "restrict_public_buckets" {
+  default     = true
+  type        = bool
+  description = "Controls s3 module restrict_public_buckets"
+}
+
+variable "attach_deny_insecure_transport_policy" {
+  default     = true
+  type        = bool
+  description = "Controls s3 module attach_deny_insecure_transport_policy"
+}
