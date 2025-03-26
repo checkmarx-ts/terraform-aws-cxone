@@ -2,26 +2,18 @@
 locals {
   cluster_proxy_user_data_default = <<-EOT
     #!/bin/bash
-    set -xe
 
-    # Update system
-    apt-get update -y
-    apt-get upgrade -y
-
-    # Install Squid
-    apt-get install -y squid
-
-    # Configure squid to allow traffic from specific CIDRs
-    cat <<EOF >> /etc/squid/squid.conf
+    sudo apt-get update -y
+    sudo apt-get upgrade -y
+    sudo apt-get install -y squid
+    sudo cat <<EOF >> /etc/squid/squid.conf
 
 acl cxone_networkA src ${module.vpc.vpc_cidr_blocks[0]}
 http_access allow cxone_networkA
 
 EOF
 
-    # Restart squid
-    systemctl restart squid
-    systemctl enable squid
+    sudo systemctl restart squid
   EOT
 }
 
@@ -36,9 +28,10 @@ module "cluster_proxy_security_group" {
   vpc_id      = module.vpc.vpc_id
 
   ingress_cidr_blocks = module.vpc.vpc_cidr_blocks
-  ingress_rules       = ["http-80-tcp", "https-443-tcp", "all-icmp", "ssh-tcp"]
+  ingress_rules       = ["ssh-tcp", "3128-tcp"]
   egress_rules        = ["all-all"]
 
+  egress_ipv6_cidr_blocks = []
 }
 
 module "cluster_proxy_ec2_instance" {

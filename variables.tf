@@ -226,7 +226,7 @@ variable "eks_node_groups" {
   default = [{
     name           = "ast-app"
     min_size       = 3
-    desired_size   = 3
+    desired_size   = 6
     max_size       = 9
     instance_types = ["c5.4xlarge"]
     },

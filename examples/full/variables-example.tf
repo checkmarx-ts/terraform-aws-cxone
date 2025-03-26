@@ -177,7 +177,7 @@ variable "cluster_proxy_user_data" {
 variable "cluster_proxy_port" {
   description = "The port used for the cluster proxy instance."
   type        = string
-  default     = "xxxx"
+  default     = "3128"
 }
 
 #******************************************************************************

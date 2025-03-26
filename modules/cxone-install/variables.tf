@@ -422,11 +422,11 @@ variable "cluster_proxy_user_data" {
 variable "cluster_proxy_ip" {
   description = "The ip address for the cluster proxy instance."
   type        = string
-  default     = "10.x.x.x/x"
+  default     = "10.x.x.x"
 }
 
 variable "cluster_proxy_port" {
   description = "The port used for the cluster proxy instance."
   type        = string
-  default     = "xxxx"
+  default     = "3128"
 }
