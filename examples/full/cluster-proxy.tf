@@ -28,9 +28,17 @@ module "cluster_proxy_security_group" {
   vpc_id      = module.vpc.vpc_id
 
   ingress_cidr_blocks = module.vpc.vpc_cidr_blocks
-  ingress_rules       = ["ssh-tcp", "3128-tcp"]
+  ingress_rules       = ["ssh-tcp"]
+  ingress_with_cidr_blocks = [
+    {
+      from_port   = 3128
+      to_port     = 3128
+      protocol    = "tcp"
+      description = "Allow Squid Proxy Traffic"
+      cidr_blocks = module.vpc.vpc_cidr_blocks
+    }
+  ]
   egress_rules        = ["all-all"]
-
   egress_ipv6_cidr_blocks = []
 }
 
