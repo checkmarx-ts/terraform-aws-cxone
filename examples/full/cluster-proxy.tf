@@ -35,7 +35,7 @@ module "cluster_proxy_security_group" {
       to_port     = 3128
       protocol    = "tcp"
       description = "Allow Squid Proxy Traffic"
-      cidr_blocks = module.vpc.vpc_cidr_blocks
+      cidr_blocks = module.vpc.vpc_cidr_blocks[0]
     }
   ]
   egress_rules        = ["all-all"]
