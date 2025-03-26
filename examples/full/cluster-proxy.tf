@@ -1,22 +1,19 @@
 
 locals {
-  cluster_proxy_user_data_default = <<-EOT
+  cluster_proxy_user_data = <<-EOT
     #!/bin/bash
+    set -xe
 
     sudo apt-get update -y
     sudo apt-get upgrade -y
     sudo apt-get install -y squid
-    sudo cat <<EOF >> /etc/squid/squid.conf
 
-acl cxone_networkA src ${module.vpc.vpc_cidr_blocks[0]}
-http_access allow cxone_networkA
-
-EOF
+    echo "acl cxone_networkA src ${module.vpc.vpc_cidr_blocks[0]}" | sudo tee -a /etc/squid/squid.conf
+    echo "http_access allow cxone_networkA" | sudo tee -a /etc/squid/squid.conf
 
     sudo systemctl restart squid
   EOT
 }
-
 
 module "cluster_proxy_security_group" {
   source  = "terraform-aws-modules/security-group/aws"
@@ -54,7 +51,7 @@ module "cluster_proxy_ec2_instance" {
   vpc_security_group_ids      = [module.cluster_proxy_security_group[0].security_group_id]
   subnet_id                   = module.vpc.public_subnets[0]
   create_eip                  = true
-  user_data                   = var.cluster_proxy_user_data != null ? var.cluster_proxy_user_data : local.cluster_proxy_user_data_default
+  user_data                   = local.cluster_proxy_user_data
 
   create_iam_instance_profile = true
   iam_role_description        = "IAM role for cluster proxy EC2 instance"
