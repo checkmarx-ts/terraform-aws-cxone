@@ -8,8 +8,12 @@ locals {
     sudo apt-get upgrade -y
     sudo apt-get install -y squid
 
-    echo "acl cxone_networkA src ${module.vpc.vpc_cidr_blocks[0]}" | sudo tee -a /etc/squid/squid.conf
-    echo "http_access allow cxone_networkA" | sudo tee -a /etc/squid/squid.conf
+    cat <<EOF > /etc/squid/squid.conf
+    acl cxone_networkA src ${module.vpc.vpc_cidr_blocks[0]}
+    http_access allow cxone_networkA
+    http_access deny all
+    http_port 3128
+    EOF
 
     sudo systemctl restart squid
   EOT
