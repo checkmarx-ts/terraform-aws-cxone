@@ -199,3 +199,9 @@ variable "password_override" {
   type        = string
   default     = null
 }
+
+variable "password_override_special" {
+  description = "Characters that are used to override the allowed special characters for generated passwords."
+  type        = string
+  default     = "!-_"
+}
