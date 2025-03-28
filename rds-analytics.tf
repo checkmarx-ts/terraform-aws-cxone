@@ -89,7 +89,7 @@ module "rds-analytics" {
   enabled_cloudwatch_logs_exports       = ["postgresql"]
   security_group_rules = {
     ingress_from_vpc = {
-      cidr_blocks = data.aws_vpc.main.cidr_block_associations[*].cidr_block
+      cidr_blocks = var.vpc_private_cidrs
     }
   }
   serverlessv2_scaling_configuration = var.analytics_db_instance_class == "db.serverless" ? var.analytics_db_serverlessv2_scaling_configuration : {}

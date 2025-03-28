@@ -128,6 +128,7 @@ module "checkmarx-one" {
   deployment_id      = var.deployment_id
   ec2_key_name       = var.ec2_key_name
   vpc_id             = module.vpc.vpc_id
+  vpc_private_cidrs  = module.vpc.vpc_cidr_blocks
   kms_key_arn        = aws_kms_key.main.arn
   s3_allowed_origins = [var.fqdn, "https://${var.fqdn}"]
 

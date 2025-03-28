@@ -75,7 +75,7 @@ module "elasticsearch_security_group" {
   name                = "${var.deployment_id}-elastisearch"
   description         = "Elasticsearch security group for Checkmarx One deployment named ${var.deployment_id}"
   vpc_id              = var.vpc_id
-  ingress_cidr_blocks = data.aws_vpc.main.cidr_block_associations[*].cidr_block
+  ingress_cidr_blocks = var.vpc_private_cidrs
   ingress_rules       = ["elasticsearch-rest-tcp", "elasticsearch-java-tcp"]
 }
 

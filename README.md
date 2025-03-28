@@ -166,6 +166,7 @@ This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/
 | <a name="input_s3_retention_period"></a> [s3\_retention\_period](#input\_s3\_retention\_period) | The retention period, in days, to retain s3 objects. | `string` | `"90"` | no |
 | <a name="input_vpc_cni_version"></a> [vpc\_cni\_version](#input\_vpc\_cni\_version) | The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html. | `string` | `"v1.19.2-eksbuild.5"` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The id of the vpc deploying into. | `string` | n/a | yes |
+| <a name="input_vpc_private_cidrs"></a> [vpc\_private\_cidrs](#input\_vpc\_private\_cidrs) | The private CIDR ranges to configure for VPC internal security group communication. | `list(string)` | n/a | yes |
 
 ## Outputs
 
