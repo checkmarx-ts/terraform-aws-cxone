@@ -95,7 +95,7 @@ module "rds" {
   enabled_cloudwatch_logs_exports       = ["postgresql"]
   security_group_rules = {
     ingress_from_vpc = {
-      cidr_blocks = data.aws_vpc.main.cidr_block_associations[*].cidr_block
+      cidr_blocks = var.vpc_private_cidrs
     }
   }
   serverlessv2_scaling_configuration = var.db_instance_class == "db.serverless" ? var.db_serverlessv2_scaling_configuration : {}
@@ -170,7 +170,7 @@ module "rds_proxy_sg" {
     {
       description = "Private subnet PostgreSQL access"
       rule        = "postgresql-tcp"
-      cidr_blocks = data.aws_vpc.main.cidr_block # Todo: check this for support for secondary vpc cidr.
+      cidr_blocks = data.aws_vpc.main.cidr_block
     }
   ]
 
@@ -178,7 +178,7 @@ module "rds_proxy_sg" {
     {
       description = "Database subnet PostgreSQL access"
       rule        = "postgresql-tcp"
-      cidr_blocks = data.aws_vpc.main.cidr_block # Todo: check this for support for secondary vpc cidr.
+      cidr_blocks = data.aws_vpc.main.cidr_block
     },
   ]
 }

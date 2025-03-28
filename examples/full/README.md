@@ -12,6 +12,13 @@ The `kots.$DEPLOYMENT_ID.yaml` file is also automatically generated and can be r
 
 Run these commands to bootstrap your cluster using the generated files.
 
+You will need the following tools:
+
+* [Terraform 1.8](https://www.terraform.io)
+* [kubectl 1.30](https://kubernetes.io/docs/tasks/tools/#kubectl)
+* [kots 1.124.6](https://docs.replicated.com/reference/kots-cli-getting-started)
+* [helm 3.17.2](https://helm.sh/docs/intro/install/)
+
 Update your kubectl context:
 
 ```sh
@@ -233,6 +240,7 @@ kubectl logs $POD_NAME -n ast --all-containers=true
 | <a name="input_object_storage_endpoint"></a> [object\_storage\_endpoint](#input\_object\_storage\_endpoint) | The S3 endpoint to use to access buckets | `string` | n/a | yes |
 | <a name="input_object_storage_secret_key"></a> [object\_storage\_secret\_key](#input\_object\_storage\_secret\_key) | The S3 secret key to use to access buckets | `string` | n/a | yes |
 | <a name="input_password_override"></a> [password\_override](#input\_password\_override) | A password value that will be used to override all other generated passwords. Only use this for testing purposes. | `string` | `null` | no |
+| <a name="input_password_override_special"></a> [password\_override\_special](#input\_password\_override\_special) | Characters that are used to override the allowed special characters for generated passwords. | `string` | `"!-_"` | no |
 | <a name="input_primary_cidr_block"></a> [primary\_cidr\_block](#input\_primary\_cidr\_block) | The primary VPC CIDR block for the VPC. Must be at least a /19. | `string` | n/a | yes |
 | <a name="input_route_53_hosted_zone_id"></a> [route\_53\_hosted\_zone\_id](#input\_route\_53\_hosted\_zone\_id) | The hosted zone id for route 53 in which to create dns and certificates. | `string` | n/a | yes |
 | <a name="input_s3_retention_period"></a> [s3\_retention\_period](#input\_s3\_retention\_period) | The retention period, in days, to retain s3 objects. | `string` | `"90"` | no |

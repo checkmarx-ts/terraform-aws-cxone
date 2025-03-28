@@ -48,7 +48,7 @@ resource "aws_kms_key" "main" {
 resource "random_password" "elasticsearch" {
   length           = 32
   special          = false
-  override_special = "!-_"
+  override_special = var.password_override_special
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -58,7 +58,7 @@ resource "random_password" "elasticsearch" {
 resource "random_password" "db" {
   length           = 32
   special          = false
-  override_special = "-_"
+  override_special = var.password_override_special
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -68,7 +68,7 @@ resource "random_password" "db" {
 resource "random_password" "analytics_db" {
   length           = 32
   special          = false
-  override_special = "-_"
+  override_special = var.password_override_special
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -78,7 +78,7 @@ resource "random_password" "analytics_db" {
 resource "random_password" "kots_admin" {
   length           = 14
   special          = false
-  override_special = "-_"
+  override_special = var.password_override_special
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -88,7 +88,7 @@ resource "random_password" "kots_admin" {
 resource "random_password" "cxone_admin" {
   length           = 14
   special          = false
-  override_special = "-_"
+  override_special = var.password_override_special
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -98,7 +98,7 @@ resource "random_password" "cxone_admin" {
 resource "random_password" "redis_auth" {
   length           = 16
   special          = false
-  override_special = "-_"
+  override_special = var.password_override_special
   min_special      = 1
   min_upper        = 1
   min_lower        = 1
@@ -128,6 +128,7 @@ module "checkmarx-one" {
   deployment_id      = var.deployment_id
   ec2_key_name       = var.ec2_key_name
   vpc_id             = module.vpc.vpc_id
+  vpc_private_cidrs  = module.vpc.vpc_cidr_blocks
   kms_key_arn        = aws_kms_key.main.arn
   s3_allowed_origins = [var.fqdn, "https://${var.fqdn}"]
 

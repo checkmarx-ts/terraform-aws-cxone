@@ -22,6 +22,11 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "vpc_private_cidrs" {
+  description = "The private CIDR ranges to configure for VPC internal security group communication."
+  type        = list(string)
+}
+
 
 #******************************************************************************
 #   S3 Configuration

@@ -121,6 +121,21 @@ install-cluster-autoscaler:
 	--set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${cluster_autoscaler_iam_role_arn}" \
 	--set autoDiscovery.clusterName=$${EKS_CLUSTER_NAME}
 
+.PHONY: install-cluster-autoscaler-from-airgap
+install-cluster-autoscaler-from-airgap:
+	helm repo add autoscaler https://kubernetes.github.io/autoscaler; \
+	helm repo update autoscaler; \
+	helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
+	--version 9.37.0 \
+	-n kube-system \
+	--set awsRegion=$${DEPLOY_REGION} \
+	--set image.repository="$${KOTS_REGISTRY}/cluster-autoscaler-fips@sha256" \
+	--set image.tag="0337a6c5a54a3bf2b8b7f907463f8fa2b2001c88fc948636a08c66ed1e2b8b64" \
+	--set rbac.serviceAccount.create=true \
+	--set rbac.serviceAccount.name=cluster-autoscaler \
+	--set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="arn:aws:iam::149138294564:role/cluster-autoscaler-bos" \
+	--set autoDiscovery.clusterName=$${EKS_CLUSTER_NAME}
+
 
 .PHONY: uninstall-cluster-autoscaler
 uninstall-cluster-autoscaler:
@@ -160,6 +175,27 @@ install-load-balancer-controller:
 	--set enableShield=false \
 	--set enableWaf=false \
 	--set enableWaafv2=false
+
+
+.PHONY: install-load-balancer-controller-from-airgap
+install-load-balancer-controller-from-airgap:
+	helm repo add eks https://aws.github.io/eks-charts; \
+	helm repo update eks; \
+	helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
+	--version 1.7.1 \
+	-n kube-system \
+	--set image.repository="$${KOTS_REGISTRY}/aws-load-balancer-controller-fips@sha256" \
+	--set image.tag="a7052943011fdf36416ce72e3eb9529f5795786092135fbe191cfe92d61d14dc" \
+	--set vpcId=${vpc_id} \
+	--set region=$${DEPLOY_REGION} \
+	--set serviceAccount.create=true \
+	--set serviceAccount.name=aws-load-balancer-controller \
+	--set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="arn:aws:iam::149138294564:role/load_balancer_controller-bos" \
+	--set clusterName=$${EKS_CLUSTER_NAME} \
+	--set enableShield=false \
+	--set enableWaf=false \
+	--set enableWaafv2=false
+
 
 
 .PHONY: uninstall-load-balancer-controller
