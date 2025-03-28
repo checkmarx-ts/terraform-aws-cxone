@@ -40,7 +40,6 @@ This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/
 | <a name="module_rds-proxy-analytics"></a> [rds-proxy-analytics](#module\_rds-proxy-analytics) | terraform-aws-modules/rds-proxy/aws | 3.1.0 |
 | <a name="module_rds_proxy_sg"></a> [rds\_proxy\_sg](#module\_rds\_proxy\_sg) | terraform-aws-modules/security-group/aws | 5.1.2 |
 | <a name="module_s3_bucket"></a> [s3\_bucket](#module\_s3\_bucket) | terraform-aws-modules/s3-bucket/aws | 4.1.2 |
-| <a name="module_vpc_cni_irsa"></a> [vpc\_cni\_irsa](#module\_vpc\_cni\_irsa) | terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks | 5.48.0 |
 
 ## Resources
 
