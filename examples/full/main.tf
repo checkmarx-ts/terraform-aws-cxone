@@ -293,7 +293,7 @@ module "checkmarx-one-install" {
   kots_registry_username                = var.kots_registry_username
   kots_registry_password                = var.kots_registry_password
   cluster_proxy_enabled                 = var.cluster_proxy_enabled
-  cluster_proxy_ip                      = module.cluster_proxy_ec2_instance[0].private_ip
+  cluster_proxy_ip                      = var.cluster_proxy_enabled == true ? module.cluster_proxy_ec2_instance[0].private_ip : ""
   cluster_proxy_port                    = var.cluster_proxy_port
 }
 
