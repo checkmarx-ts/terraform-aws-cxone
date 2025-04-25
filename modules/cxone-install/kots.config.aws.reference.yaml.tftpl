@@ -222,7 +222,7 @@ spec:
     # The s3 endpoint, with scheme (protocol, aka http/https)
     # Example value: https://s3.us-west-2.amazonaws.com
     object_storage_schemeUrl:
-      value: https://${object_storage_url}
+      value: ${object_storage_url_with_scheme}
 
     # An AWS IAM user, with access key, and secret key, must be created out of band
     # so that the credentials can be configured here. The user must have access to 

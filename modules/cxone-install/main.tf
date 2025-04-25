@@ -33,13 +33,14 @@ resource "local_file" "kots_config" {
     sca_prod_environment = var.sca_prod_environment
 
     # S3 buckets
-    bucket_name_suffix        = var.bucket_suffix
-    deployment_id             = var.deployment_id
-    object_storage_url        = var.object_storage_endpoint
-    object_storage_access_key = var.object_storage_access_key
-    object_storage_secret_key = var.object_storage_secret_key
-    object_storage_secure     = var.object_storage_access_key == "ast" ? 0 : 1
-    sca_host_type_setting     = var.object_storage_access_key == "ast" ? "ExeLocalServer" : "S3"
+    bucket_name_suffix             = var.bucket_suffix
+    deployment_id                  = var.deployment_id
+    object_storage_url             = var.object_storage_access_key == "ast" ? "" : var.object_storage_endpoint
+    object_storage_url_with_scheme = var.object_storage_access_key == "ast" ? "" : "https://${var.object_storage_endpoint}"
+    object_storage_access_key      = var.object_storage_access_key
+    object_storage_secret_key      = var.object_storage_secret_key
+    object_storage_secure          = var.object_storage_access_key == "ast" ? 0 : 1
+    sca_host_type_setting          = var.object_storage_access_key == "ast" ? "ExeLocalServer" : "S3"
 
     # RDS
     postgres_host      = var.postgres_host

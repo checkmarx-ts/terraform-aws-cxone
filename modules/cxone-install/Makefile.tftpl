@@ -52,7 +52,7 @@ kots-upgrade-from-airgap:
 
 .PHONY: kots-get-config
 kots-get-config:
-	kubectl kots get config -n $${NAMESPACE} --appslug ast --decrypt
+	kubectl kots get config -n $${NAMESPACE} --appslug ast --decrypt --current
 
 
 .PHONY: kots-stage-config
@@ -67,7 +67,7 @@ kots-deploy-config:
 
 .PHONY: kots-download-files
 kots-download-files:
-	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite
+	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite --current
 
 
 .PHONY: kots-upload-files
@@ -83,7 +83,7 @@ update-config:
 .PHONY: stage-kustomizations
 stage-kustomizations:
 	rm -rf ./ast
-	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite
+	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite --current
 	rsync -av --progress --checksum --include="*/" --include="*.yaml" --exclude="*" kustomizations/ ast
 	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast
 
@@ -91,7 +91,7 @@ stage-kustomizations:
 .PHONY: deploy-kustomizations
 deploy-kustomizations:
 	rm -rf ./ast
-	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite
+	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite --current
 	rsync -av --progress --checksum --include="*/" --include="*.yaml" --exclude="*" kustomizations/ ast
 	kubectl kots upload --namespace $${NAMESPACE} --deploy --slug ast ./ast	
 
@@ -240,6 +240,16 @@ apply-storageclass-config:
 .PHONY: install-metrics-server
 install-metrics-server:
 	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+
+.PHONY: install-metrics-server-from-airgap
+install-metrics-server-from-airgap:
+	helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/; \
+	helm repo update metrics-server; \
+	helm upgrade --install metrics-server metrics-server/metrics-server \
+	-n kube-system \
+	--set image.repository="$${KOTS_REGISTRY}/metrics-server-fips@sha256" \
+	--set image.tag="336b1c5f06733aa7476162585655a6183e2b0b7aa4c597e2adcff0016c9d9883" 
 
 
 .PHONY: clean-kots

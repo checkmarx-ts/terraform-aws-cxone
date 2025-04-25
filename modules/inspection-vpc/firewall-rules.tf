@@ -210,6 +210,7 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"us-west1-docker.p
 
 # External DNS
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"k8s.gcr.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240910003; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"registry.k8s.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:250404001; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"us-west1-docker.pkg.dev"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240911001; rev:1;)
 
 
@@ -239,8 +240,10 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"uploads.sca.check
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"microservice-scanresults-prod-storage-1an26shc41yi3.s3.amazonaws.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240420061; rev:1;)
 
 
-# SCA EU Region
+# SCA EU Regions
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eu.iam.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420058; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eu-2.iam.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:250421000; rev:1;)
+
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eu.api-sca.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420059; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"uploads.eu.sca.checkmarx.net"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240611001; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"microservice-scanresults-prodeu-storage-1c25a060x93rl.s3.amazonaws.com"; startswith; nocase; endswith; msg:"SCA NA region result sync bucket"; flow:to_server, established; sid:240611002; rev:1;)
