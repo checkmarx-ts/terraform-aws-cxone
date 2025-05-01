@@ -1,6 +1,6 @@
 # terraform-aws-cxone
 
-This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/product/application-security-platform/) on [AWS](https://aws.amazon.com) using [Terraform](https://www.terraform.io). Checkmarx One has everything you need to embed AppSec in every stage of the SDLC, provide an excellent developer experience, integrate with the technologies you use, and build a successful AppSec program.
+This repo contains a module for deploying [Checkmarx One](https://checkmarx.com/product/application-security-platform/) on [AWS](https://aws.amazon.com) using [Terraform](https://www.terraform.io). Checkmarx One has everything you need to embed AppSec in every stage of the SDLC, provide an excellent developer experience, integrate with the technologies you use, and build a successful AppSec program. 
 
 
 # Module Documentation
