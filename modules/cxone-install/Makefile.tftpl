@@ -40,6 +40,10 @@ kots-install-from-airgap:
 	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --config-values '$${KOTS_CONFIG_FILE}' \
 	--airgap --airgap-bundle '$${AIRGAP_BUNDLE}' --kotsadm-registry $${KOTS_REGISTRY} --registry-username $${REGISTRY_USERNAME} --registry-password '$${REGISTRY_PASSWORD}' --disable-image-push --skip-preflights
 
+.PHONY: kots-stage
+kots-stage:
+	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --app-version-label $${CXONE_VERSION} --skip-preflights --no-port-forward
+
 .PHONY: kots-stage-from-airgap
 kots-stage-from-airgap:
 	kubectl kots install ast/$${RELEASE_CHANNEL} -n $${NAMESPACE} --license-file '$${LICENSE_FILE}' --shared-password '$${KOTS_PASSWORD}' --no-port-forward \
@@ -242,7 +246,7 @@ uninstall-karpenter:
 
 .PHONY: view-firewall-logs
 view-firewall-logs:
-	aws logs filter-log-events --start-time 1713475743 --log-group-name /aws/vendedlogs/$${DEPLOYMENT_ID}-aws-nfw-alert | jq -r ' .events[].message' |  jq ' (.event.timestamp + " " + .event.alert.action + ": " + .event.src_ip + ":" + (.event.src_port|tostring) + " -> " + .event.proto + "/" + .event.app_proto + " "  + .event.dest_ip + ":" + (.event.dest_port|tostring) + " " + .event.tls.sni + .event.http.hostname) + " " + .event.http.http_user_agent + " " + .event.http.http_method + " " + .event.http.url'
+	aws logs filter-log-events --start-time $$( [ "$$(uname)" = "Darwin" ] && echo $$(( $$(date -v-2H +%s) * 1000 )) || date -d '2 hours ago' +%s%3N ) --log-group-name /aws/vendedlogs/$${DEPLOYMENT_ID}-aws-nfw-alert | jq -r ' .events[].message' |  jq ' (.event.timestamp + " " + .event.alert.action + ": " + .event.src_ip + ":" + (.event.src_port|tostring) + " -> " + .event.proto + "/" + .event.app_proto + " "  + .event.dest_ip + ":" + (.event.dest_port|tostring) + " " + .event.tls.sni + .event.http.hostname) + " " + .event.http.http_user_agent + " " + .event.http.http_method + " " + .event.http.url'
 
 
 .PHONY: apply-storageclass-config
