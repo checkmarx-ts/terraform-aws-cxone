@@ -41,6 +41,7 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"lscr.io"; startsw
 
 # Gradle
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"services.gradle.org"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240910036; rev:1;)
+pass http $HOME_NET any -> $EXTERNAL_NET 80 (http.host; content:"services.gradle.org"; startswith; endswith; msg:"Gradle"; flow:to_server, established; sid:250522001; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"plugins.gradle.org"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240910037; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"jcenter.bintray.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240910038; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"repo.spring.io"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240910040; rev:1;)
