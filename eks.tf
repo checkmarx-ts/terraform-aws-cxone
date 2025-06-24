@@ -205,6 +205,14 @@ module "eks" {
       type        = "ingress"
       self        = true
     }
+    ingress_alb = {
+      description = "Allow ingress to traefik pods"
+      protocol    = "tcp"
+      from_port   = 8443
+      to_port     = 8443
+      type        = "ingress"
+      cidr_blocks = var.vpc_private_cidrs
+    }
   }
 
   enable_irsa = true

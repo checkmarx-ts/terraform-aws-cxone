@@ -333,6 +333,13 @@ variable "network_load_balancer_scheme" {
   }
 }
 
+variable "target_group_arn" {
+  type        = string
+  description = "The ARN for the target group of an externally managed load balancer."
+  default     = null
+}
+
+
 #******************************************************************************
 #  Internal Certificate Authorities
 #******************************************************************************

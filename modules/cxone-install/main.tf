@@ -136,6 +136,15 @@ resource "local_file" "karpenter_configuration" {
   filename = "karpenter.${var.deployment_id}.yaml"
 }
 
+resource "local_file" "target_group_binding" {
+  content = templatefile("${path.module}/apply-target-group-binding.sh.tftpl", {
+    availability_zones = jsonencode(var.availability_zones)
+    targetGroupARN     = var.target_group_arn
+    namespace          = var.cxone_namespace
+  })
+  filename = "apply-target-group-binding.${var.deployment_id}.sh"
+}
+
 resource "local_file" "storage_class" {
   content = templatefile("${path.module}/apply-storageclass-config.sh.tftpl", {
     deployment_id           = var.deployment_id

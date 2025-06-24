@@ -77,7 +77,7 @@ kots-upgrade-from-airgap:
 
 # Stages an upgrade from an airgap bundle
 .PHONY: kots-stage-upgrade-from-airgap
-kots-upgrade-from-airgap:
+kots-stage-upgrade-from-airgap:
 	kubectl kots upstream upgrade ast -n $${NAMESPACE} \
 	--airgap-bundle '$${AIRGAP_BUNDLE}' \
 	--kotsadm-registry $${KOTS_REGISTRY} \
@@ -117,8 +117,8 @@ kots-upload-files:
 
 # Uploads and deploys the local kots files
 .PHONY: kots-deploy-files
-kots-upload-files:
-	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast
+kots-deploy-files:
+	kubectl kots upload --namespace $${NAMESPACE} --slug ast ./ast --deploy
 
 
 # Syncs kustomizations into the kots files and reuploads them to stage a sequence
@@ -291,6 +291,12 @@ view-firewall-logs:
 .PHONY: apply-storageclass-config
 apply-storageclass-config:
 	./apply-storageclass-config.$${DEPLOYMENT_ID}.sh
+
+
+# Applys the target group binding to the EKS cluster
+.PHONY: apply-target-group-binding
+apply-target-group-binding:
+	./apply-target-group-binding.$${DEPLOYMENT_ID}.sh
 
 
 # Installs metrics server using an online install

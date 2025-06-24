@@ -121,6 +121,112 @@ module "acm" {
 }
 
 
+locals {
+  traefik_service_port          = 8443
+  traefik_health_check_response = "404"
+  alb_ingress_blocks            = ["0.0.0.0/0"]
+  alb_egress_blocks             = ["0.0.0.0/0"]
+}
+
+
+resource "aws_security_group" "alb" {
+  count       = var.create_alb == true ? 1 : 0
+  name        = "${var.deployment_id}-alb"
+  description = "Allow TLS inbound traffic"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description = "TLS from Users"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = local.alb_ingress_blocks
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = local.alb_egress_blocks
+  }
+
+  tags = {
+    Name = "${var.deployment_id}-alb"
+  }
+}
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# CREATE THE ALB
+# ----------------------------------------------------------------------------------------------------------------------
+resource "aws_lb" "lb" {
+  count              = var.create_alb == true ? 1 : 0
+  name               = "${var.deployment_id}-main"
+  subnets            = module.vpc.public_subnets
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb[0].id]
+  internal           = false
+
+  # Preserve host header must be enabled for CxOne as traefik is listening for the host
+  preserve_host_header = true
+
+}
+
+resource "aws_lb_target_group" "traefik_pods" {
+  count       = var.create_alb == true ? 1 : 0
+  name        = "${var.deployment_id}-traefik"
+  port        = local.traefik_service_port
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/"
+    matcher             = "404"
+    protocol            = "HTTP"
+    healthy_threshold   = 5
+    unhealthy_threshold = 2
+  }
+}
+
+resource "aws_lb_listener" "https" {
+  count             = var.create_alb == true ? 1 : 0
+  load_balancer_arn = aws_lb.lb[0].arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-Res-2021-06"
+  certificate_arn   = var.acm_certificate_arn != null ? var.acm_certificate_arn : module.acm[0].acm_certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.traefik_pods[0].arn
+  }
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# CREATE THE DNS
+# ----------------------------------------------------------------------------------------------------------------------
+resource "aws_route53_record" "www" {
+  count   = var.create_alb == true ? 1 : 0
+  zone_id = var.route_53_hosted_zone_id
+  name    = var.fqdn
+  type    = "CNAME"
+  ttl     = "300"
+  records = [aws_lb.lb[0].dns_name]
+}
+
+
+output "alb_target_group_arn" {
+  value = var.create_alb == true ? aws_lb_target_group.traefik_pods[0].arn : null
+}
+
+variable "create_alb" {
+  default     = false
+  type        = bool
+  description = "Creates the externally managed ALB"
+}
+
+
 module "checkmarx-one" {
   source = "../../"
 
@@ -165,6 +271,7 @@ module "checkmarx-one" {
   eks_public_endpoint_enabled              = var.eks_public_endpoint_enabled
   eks_cluster_endpoint_public_access_cidrs = var.eks_cluster_endpoint_public_access_cidrs
   enable_cluster_creator_admin_permissions = var.enable_cluster_creator_admin_permissions
+  eks_administrator_principals             = var.eks_administrator_principals
   launch_template_tags                     = var.launch_template_tags
   eks_node_groups                          = var.eks_node_groups
 
@@ -296,6 +403,7 @@ module "checkmarx-one-install" {
   kots_registry                         = var.kots_registry
   kots_registry_username                = var.kots_registry_username
   kots_registry_password                = var.kots_registry_password
+  target_group_arn                      = var.create_alb == true ? aws_lb_target_group.traefik_pods[0].arn : ""
 }
 
 terraform {

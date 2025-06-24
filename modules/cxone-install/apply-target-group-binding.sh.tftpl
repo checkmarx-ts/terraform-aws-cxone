@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# Ensure required variables are set
+namespace="${namespace}"
+targetGroupARN="${targetGroupARN}"
+
+# Only apply if targetGroupARN is set and not empty/null
+if [[ -n "$targetGroupARN" ]]; then
+  cat <<EOF | kubectl apply -f -
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: ast-platform-traefik
+  namespace: $${namespace}
+spec:
+  serviceRef:
+    name: ast-platform-traefik
+    port: 443
+  targetType: ip
+  targetGroupARN: $${targetGroupARN}
+EOF
+else
+  echo "Skipping TargetGroupBinding creation: targetGroupARN is not set."
+fi
