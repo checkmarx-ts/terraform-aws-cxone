@@ -10,7 +10,7 @@ output "vpc_cidr_blocks" {
 
 output "public_subnets" {
   description = "List of public subnet IDs in the VPC"
-  value       = [aws_subnet.public.id]
+  value       = [for s in aws_subnet.public : s.id]
 }
 
 output "firewall_subnets" {

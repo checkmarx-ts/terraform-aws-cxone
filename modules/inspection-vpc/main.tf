@@ -24,16 +24,17 @@ locals {
   #   var.primary_cidr_block value. The primary_cidr_block must be at least a /19.
   primary_cidr_size = split("/", var.primary_cidr_block)[1]
   subnet_cidrs = cidrsubnets(var.primary_cidr_block,
-    (27 - local.primary_cidr_size), # Public Subnet
+    (27 - local.primary_cidr_size), # Public Subnet 1
+    (27 - local.primary_cidr_size), # Public Subnet 2
     (28 - local.primary_cidr_size), # Firewall Subnet
     (21 - local.primary_cidr_size), # Private Subnet 1
     (21 - local.primary_cidr_size), # Private Subnet 2
     (22 - local.primary_cidr_size), # Database Subnet 1
   (22 - local.primary_cidr_size))   # Database Subnet 2
-  public_subnet_cidr    = slice(local.subnet_cidrs, 0, 1)[0]
-  firewall_subnet_cidr  = slice(local.subnet_cidrs, 1, 2)[0]
-  private_subnet_cidrs  = slice(local.subnet_cidrs, 2, 4)
-  database_subnet_cidrs = slice(local.subnet_cidrs, 4, 6)
+  public_subnet_cidrs   = slice(local.subnet_cidrs, 0, 2)
+  firewall_subnet_cidr  = slice(local.subnet_cidrs, 2, 3)[0]
+  private_subnet_cidrs  = slice(local.subnet_cidrs, 3, 5)
+  database_subnet_cidrs = slice(local.subnet_cidrs, 5, 7)
 
   # Calculate 2 /19s for the secondary cidr to use for pod custom networking. The secondary_cidr_block must be at least a /18.
   secondary_cidr_size = split("/", var.secondary_cidr_block)[1]
@@ -57,11 +58,12 @@ resource "aws_vpc_ipv4_cidr_block_association" "secondary_cidr_block" {
 }
 
 resource "aws_subnet" "public" {
+  for_each          = { for idx, az in local.azs : az => idx }
   vpc_id            = aws_vpc.main.id
-  cidr_block        = local.public_subnet_cidr
-  availability_zone = local.azs[0]
+  cidr_block        = local.public_subnet_cidrs[each.value]
+  availability_zone = each.key
   tags = {
-    Name                                         = "${var.deployment_id} - public subnet ${local.azs[0]}"
+    Name                                         = "${var.deployment_id} - public subnet ${each.key}"
     "kubernetes.io/cluster/${var.deployment_id}" = "shared"
     "kubernetes.io/role/elb"                     = "1"
     "karpenter.sh/discovery"                     = "${var.deployment_id}"
@@ -128,7 +130,7 @@ resource "aws_eip" "nat" {
 
 resource "aws_nat_gateway" "public" {
   allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public.id
+  subnet_id     = aws_subnet.public[local.azs[0]].id
   tags          = { Name = "NAT Gateway - ${var.deployment_id}" }
   depends_on    = [aws_internet_gateway.igw]
 }
@@ -142,9 +144,9 @@ resource "aws_route_table" "igw" {
   tags   = { "Name" = "${var.deployment_id}-igw" }
 
   dynamic "route" {
-    for_each = var.enable_firewall ? ["apply"] : []
+    for_each = { for idx, az in local.azs : az => idx if var.enable_firewall }
     content {
-      cidr_block      = local.public_subnet_cidr
+      cidr_block      = local.public_subnet_cidrs[route.value]
       vpc_endpoint_id = [for ss in aws_networkfirewall_firewall.main[0].firewall_status[0].sync_states : ss.attachment[0].endpoint_id][0]
     }
   }
@@ -196,7 +198,8 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
+  for_each       = { for idx, az in local.azs : az => idx }
+  subnet_id      = aws_subnet.public[each.key].id
   route_table_id = aws_route_table.public.id
 }
 
