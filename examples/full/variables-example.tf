@@ -122,6 +122,12 @@ variable "bastion_host_enabled" {
   default     = false
 }
 
+variable "windows_bastion_host_enabled" {
+  description = "Controls deployment of a windows bastion host to the VPC."
+  type        = bool
+  default     = false
+}
+
 variable "bastion_host_instance_type" {
   description = "The ec2 instance type for the bastion host."
   type        = string
