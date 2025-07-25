@@ -114,32 +114,32 @@ variable "eks_create_karpenter" {
 
 variable "eks_version" {
   type        = string
-  description = "The version of the EKS Cluster (e.g. 1.27)"
-  default     = "1.30"
+  description = "The version of the EKS Cluster (e.g. 1.32)"
+  default     = "1.32"
 }
 
 variable "coredns_version" {
   type        = string
   description = "The version of the EKS Core DNS Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-coredns.html."
-  default     = "v1.11.4-eksbuild.2"
+  default     = "v1.11.4-eksbuild.14"
 }
 
 variable "kube_proxy_version" {
   type        = string
   description = "The version of the EKS Kube Proxy Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-kube-proxy.html#kube-proxy-versions."
-  default     = "v1.30.9-eksbuild.3"
+  default     = "v1.32.6-eksbuild.2"
 }
 
 variable "vpc_cni_version" {
   type        = string
   description = "The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html."
-  default     = "v1.19.2-eksbuild.5"
+  default     = "v1.19.6-eksbuild.7"
 }
 
 variable "aws_ebs_csi_driver_version" {
   type        = string
   description = "The version of the EKS EBS CSI Addon. Reference https://github.com/kubernetes-sigs/aws-ebs-csi-driver/?tab=readme-ov-file#compatibility."
-  default     = "v1.39.0-eksbuild.1"
+  default     = "v1.45.0-eksbuild.2"
 }
 
 variable "eks_private_endpoint_enabled" {

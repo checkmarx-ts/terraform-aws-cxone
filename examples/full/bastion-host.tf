@@ -96,7 +96,7 @@ locals {
 module "bastion_security_group" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 4.0"
-  count   = var.windows_bastion_host_enabled ? 1 : 0
+  count   = (var.windows_bastion_host_enabled || var.bastion_host_enabled) ? 1 : 0
 
   name        = "Bastion host for deployment ${var.deployment_id}"
   description = "Security group for bastion host for deployment ${var.deployment_id}"

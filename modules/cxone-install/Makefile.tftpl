@@ -158,7 +158,7 @@ install-cluster-autoscaler:
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler; \
 	helm repo update autoscaler; \
 	helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
-	--version 9.37.0 \
+	--version 9.46.6 \
 	-n kube-system \
 	--set awsRegion=$${DEPLOY_REGION} \
 	--set rbac.serviceAccount.create=true \
@@ -173,7 +173,7 @@ install-cluster-autoscaler-from-airgap:
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler; \
 	helm repo update autoscaler; \
 	helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
-	--version 9.37.0 \
+	--version 9.46.6 \
 	-n kube-system \
 	--set awsRegion=$${DEPLOY_REGION} \
 	--set image.repository="$${KOTS_REGISTRY}/cluster-autoscaler-fips@sha256" \
