@@ -4,7 +4,7 @@
 data "aws_region" "current" {}
 data "aws_partition" "current" {}
 resource "aws_iam_policy" "external-dns-policy" {
-  name        = "${var.deployment_id}-external-dns-${data.aws_region.current.name}"
+  name        = "${var.deployment_id}-external-dns-${data.aws_region.current.region}"
   description = "external dns Policy for ${var.deployment_id}"
   policy      = <<EOF
 {

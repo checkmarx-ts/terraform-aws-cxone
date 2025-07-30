@@ -452,14 +452,14 @@ module "checkmarx-one-install" {
   kots_admin_password = random_password.kotsadm_password.result
 
   deployment_id             = var.deployment_id
-  region                    = data.aws_region.current.name
+  region                    = data.aws_region.current.region
   admin_email               = var.cxone_admin_email
   admin_password            = var.cxone_admin_password
   fqdn                      = "${var.subdomain}${var.domain}"
   acm_certificate_arn       = module.acm.acm_certificate_arn
   bucket_suffix             = module.s3.s3_bucket_name_suffix
   ms_replica_count          = "1"
-  object_storage_endpoint   = "s3.${data.aws_region.current.name}.amazonaws.com"
+  object_storage_endpoint   = "s3.${data.aws_region.current.region}.amazonaws.com"
   object_storage_access_key = var.object_storage_access_key
   object_storage_secret_key = var.object_storage_secret_key
   postgres_host             = module.rds.cluster_endpoint

@@ -4,7 +4,7 @@
 data "aws_region" "current" {}
 data "aws_partition" "current" {}
 resource "aws_iam_policy" "aws_load_balancer_controller" {
-  name        = "${var.deployment_id}-eks-aws-load-balancer-controller-${data.aws_region.current.name}"
+  name        = "${var.deployment_id}-eks-aws-load-balancer-controller-${data.aws_region.current.region}"
   description = "EKS Cluster AWS Load Balancer Controller Policy for ${var.deployment_id}"
   policy      = <<EOF
 {
@@ -301,6 +301,6 @@ resource "helm_release" "aws-load-balancer-controller" {
   }
   set {
     name  = "region"
-    value = data.aws_region.current.name
+    value = data.aws_region.current.region
   }
 }

@@ -151,7 +151,7 @@ data "aws_region" "current" {}
 resource "local_file" "kots_config" {
   content = templatefile("./kots.config.tftpl", {
     ast_tenant_name = var.ast_tenant_name
-    aws_region      = data.aws_region.current.name
+    aws_region      = data.aws_region.current.region
 
     # S3 buckets
     engine_logs_bucket          = module.s3.engine_logs_bucket_id
