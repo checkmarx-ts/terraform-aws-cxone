@@ -1,11 +1,13 @@
 locals {
   fargate_profiles = {
     karpenter = {
+      subnet_ids = var.eks_enable_custom_networking ? var.eks_pod_subnets : null
       selectors = [
         { namespace = "karpenter" }
       ]
     }
     kube-system = {
+      subnet_ids = var.eks_enable_custom_networking ? var.eks_pod_subnets : null
       selectors = [
         { namespace = "kube-system" }
       ]
@@ -87,6 +89,25 @@ locals {
     lifecycle = {
       ignore_changes = ["desired_capacity"]
     }
+    vpc_security_group_ids          = var.eks_node_additional_security_group_ids
+    use_name_prefix                 = false
+    iam_role_use_name_prefix        = false
+    launch_template_use_name_prefix = false
+    launch_template_tags            = var.launch_template_tags
+    cluster_name                    = var.deployment_id
+    cluster_version                 = var.eks_version
+    subnet_ids                      = var.eks_subnets
+    create_iam_role                 = false
+    iam_role_arn                    = module.eks_node_iam_role.iam_role_arn
+    key_name                        = var.ec2_key_name
+    post_bootstrap_user_data        = var.eks_post_bootstrap_user_data
+    pre_bootstrap_user_data         = var.eks_pre_bootstrap_user_data
+    metadata_options = {
+      http_endpoint               = "enabled"
+      http_tokens                 = "required"
+      instance_metadata_tags      = "disabled"
+      http_put_response_hop_limit = "2"
+    }
   } }
 
   admin_access_entries = { for entry in var.eks_administrator_principals : entry.name => {
@@ -150,22 +171,22 @@ resource "aws_iam_policy" "s3_bucket_access" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.8.5" #"20.23.0" #
+  version = "21.0.4" #"20.23.0" #
   create  = var.eks_create
 
-  cluster_name    = var.deployment_id
-  cluster_version = var.eks_version
+  name               = var.deployment_id
+  kubernetes_version = var.eks_version
 
-  cluster_enabled_log_types = ["audit", "api", "authenticator", "scheduler"]
+  enabled_log_types = ["audit", "api", "authenticator", "scheduler"]
 
-  cluster_endpoint_private_access = var.eks_private_endpoint_enabled
-  cluster_endpoint_public_access  = var.eks_public_endpoint_enabled
+  endpoint_private_access = var.eks_private_endpoint_enabled
+  endpoint_public_access  = var.eks_public_endpoint_enabled
 
   vpc_id     = var.vpc_id
   subnet_ids = var.eks_subnets
 
-  create_cluster_primary_security_group_tags = false
-  create_cluster_security_group              = true
+  create_primary_security_group_tags = false
+  create_security_group              = true
   #cluster_security_group_id     = var.cluster_security_group_id
 
   create_node_security_group = true
@@ -227,7 +248,7 @@ module "eks" {
     "karpenter.sh/discovery" = var.deployment_id
   }
 
-  cluster_addons = {
+  addons = {
     coredns = {
       addon_version        = var.coredns_version
       configuration_values = var.eks_enable_fargate ? local.core_dns_fargate_configuration_values : null
@@ -237,7 +258,7 @@ module "eks" {
     }
     vpc-cni = {
       addon_version  = var.vpc_cni_version
-      before_compute = var.eks_enable_custom_networking
+      before_compute = true
       configuration_values = jsonencode({
         env = {
           AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = tostring(var.eks_enable_custom_networking)
@@ -253,38 +274,15 @@ module "eks" {
     }
   }
   create_kms_key = false
-  cluster_encryption_config = {
+  encryption_config = {
     "resources"      = ["secrets"]
     provider_key_arn = var.kms_key_arn
   }
-  eks_managed_node_group_defaults = {
-    vpc_security_group_ids          = var.eks_node_additional_security_group_ids
-    use_name_prefix                 = false
-    iam_role_use_name_prefix        = false
-    launch_template_use_name_prefix = false
-    launch_template_tags            = var.launch_template_tags
-    cluster_name                    = var.deployment_id
-    cluster_version                 = var.eks_version
-    subnet_ids                      = var.eks_subnets
-    create_iam_role                 = false
-    iam_role_arn                    = module.eks_node_iam_role.iam_role_arn
-    key_name                        = var.ec2_key_name
-    post_bootstrap_user_data        = var.eks_post_bootstrap_user_data
-    pre_bootstrap_user_data         = var.eks_pre_bootstrap_user_data
-    metadata_options = {
-      http_endpoint               = "enabled"
-      http_tokens                 = "required"
-      instance_metadata_tags      = "disabled"
-      http_put_response_hop_limit = "2"
-    }
-  }
 
-  cluster_security_group_additional_rules = var.eks_cluster_security_group_additional_rules
-  eks_managed_node_groups                 = local.eks_nodegroups
 
-  fargate_profile_defaults = {
-    subnet_ids = var.eks_enable_custom_networking ? var.eks_pod_subnets : null
-  }
+  security_group_additional_rules = var.eks_cluster_security_group_additional_rules
+  eks_managed_node_groups         = local.eks_nodegroups
+
   fargate_profiles = var.eks_enable_fargate ? local.fargate_profiles : {}
 }
 

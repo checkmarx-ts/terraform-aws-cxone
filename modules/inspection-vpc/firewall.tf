@@ -51,7 +51,7 @@ resource "aws_networkfirewall_firewall_policy" "main" {
       for_each = { for idx, rg in var.managed_rule_groups : rg => idx if var.create_managed_rule_groups }
       content {
         priority     = stateful_rule_group_reference.value + 2
-        resource_arn = "arn:${data.aws_partition.current.id}:network-firewall:${data.aws_region.current.name}:aws-managed:stateful-rulegroup/${stateful_rule_group_reference.key}"
+        resource_arn = "arn:${data.aws_partition.current.id}:network-firewall:${data.aws_region.current.region}:aws-managed:stateful-rulegroup/${stateful_rule_group_reference.key}"
       }
     }
 

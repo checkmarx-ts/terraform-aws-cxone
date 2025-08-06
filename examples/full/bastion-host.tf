@@ -124,7 +124,7 @@ data "aws_ami" "amazon_linux_23" {
 
 module "ec2_instance" {
   source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "5.8.0"
+  version = "6.0.2"
   count   = var.bastion_host_enabled ? 1 : 0
 
   name                        = "${var.deployment_id}-bastion"
@@ -145,16 +145,15 @@ module "ec2_instance" {
     AdministratorAccess          = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AdministratorAccess"
   }
 
-  ebs_block_device = [
-    {
-      device_name = "/dev/xvda"
-      volume_type = "gp3"
-      volume_size = var.bastion_host_volume_size
-      encrypted   = true
-      kms_key_id  = aws_kms_key.main.arn
+  root_block_device = {
+    delete_on_termination = true
+    encrypted             = true
+    iops                  = 3000
+    throughput            = 125
+    size                  = var.bastion_host_volume_size
+    kms_key_id            = aws_kms_key.main.arn
+  }
 
-    }
-  ]
 
   tags = {
     Terraform   = "true"
@@ -194,7 +193,7 @@ data "aws_ami" "windows_2022_base" {
 
 module "windows_bastion" {
   source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "5.8.0"
+  version = "6.0.2"
   count   = var.windows_bastion_host_enabled ? 1 : 0
 
   name                        = "${var.deployment_id}-windows-bastion"
@@ -215,13 +214,12 @@ module "windows_bastion" {
     AdministratorAccess          = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AdministratorAccess"
   }
 
-  ebs_block_device = [
-    {
-      device_name = "/dev/xvda"
-      volume_type = "gp3"
-      volume_size = var.bastion_host_volume_size
-      encrypted   = true
-      kms_key_id  = aws_kms_key.main.arn
-    }
-  ]
+  root_block_device = {
+    delete_on_termination = true
+    encrypted             = true
+    iops                  = 3000
+    throughput            = 125
+    size                  = var.bastion_host_volume_size
+    kms_key_id            = aws_kms_key.main.arn
+  }
 }

@@ -55,7 +55,7 @@ resource "aws_db_parameter_group" "main" {
 
 module "rds" {
   source  = "terraform-aws-modules/rds-aurora/aws"
-  version = "9.10.0"
+  version = "9.15.0"
   create  = var.db_create
 
   name                                  = "${var.deployment_id}-main"
@@ -117,7 +117,7 @@ resource "aws_db_subnet_group" "main" {
 
 module "rds-proxy" {
   source  = "terraform-aws-modules/rds-proxy/aws"
-  version = "3.1.0"
+  version = "3.2.1"
   create  = var.db_create && var.db_create_rds_proxy
 
   name                   = var.deployment_id
