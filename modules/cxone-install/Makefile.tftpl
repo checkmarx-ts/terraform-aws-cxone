@@ -148,9 +148,25 @@ kots-admin-console:
 # Restart all AST services (ignores kots services which are commonly installed in same namespace)
 .PHONY: rollout-restart
 rollout-restart:
-	kubectl get statefulset -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart statefulset {}
+	kubectl rollout restart statefulset ast-platform-rabbitmq -n $${NAMESPACE}
+	kubectl rollout status statefulset ast-platform-rabbitmq -n $${NAMESPACE}
+	kubectl rollout restart statefulset ast-platform-elasticsearch-master -n $${NAMESPACE}
+	kubectl rollout status statefulset ast-platform-elasticsearch-master -n $${NAMESPACE}
+	kubectl rollout restart statefulset ast-platform-zeebe -n $${NAMESPACE}
+	kubectl rollout status statefulset ast-platform-zeebe -n $${NAMESPACE}
+	kubectl rollout restart statefulset ast-platform-cxiam -n $${NAMESPACE}
+	kubectl rollout status statefulset ast-platform-cxiam -n $${NAMESPACE}
 	kubectl get deploy -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart deploy {}
-	
+
+.PHONY: create-kubesystem-airgap-regcred
+create-kubesystem-airgap-regcred:
+	kubectl get secret airgap-regcred -n kube-system >/dev/null 2>&1 || \
+	kubectl create secret docker-registry airgap-regcred \
+	--docker-server=$${KOTS_REGISTRY} \
+	--docker-username=$${REGISTRY_USERNAME} \
+	--docker-password=$${REGISTRY_PASSWORD} \
+	--namespace=kube-system
+
 
 # Installs the cluster autoscaler using an online install
 .PHONY: install-cluster-autoscaler
@@ -181,7 +197,8 @@ install-cluster-autoscaler-from-airgap:
 	--set rbac.serviceAccount.create=true \
 	--set rbac.serviceAccount.name=cluster-autoscaler \
 	--set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${cluster_autoscaler_iam_role_arn}" \
-	--set autoDiscovery.clusterName=$${EKS_CLUSTER_NAME}
+	--set autoDiscovery.clusterName=$${EKS_CLUSTER_NAME} \
+	--set image.pullSecrets[0]=airgap-regcred
 
 
 # Uninstalls cluster autoscaler
@@ -246,7 +263,8 @@ install-load-balancer-controller-from-airgap:
 	--set clusterName=$${EKS_CLUSTER_NAME} \
 	--set enableShield=false \
 	--set enableWaf=false \
-	--set enableWaafv2=false
+	--set enableWaafv2=false \
+	--set imagePullSecrets[0].name=airgap-regcred
 
 
 # Uninstalls the load balancer controller
@@ -313,7 +331,8 @@ install-metrics-server-from-airgap:
 	helm upgrade --install metrics-server metrics-server/metrics-server \
 	-n kube-system \
 	--set image.repository="$${KOTS_REGISTRY}/metrics-server-fips@sha256" \
-	--set image.tag="336b1c5f06733aa7476162585655a6183e2b0b7aa4c597e2adcff0016c9d9883" 
+	--set image.tag="336b1c5f06733aa7476162585655a6183e2b0b7aa4c597e2adcff0016c9d9883" \
+	--set imagePullSecrets[0].name=airgap-regcred
 
 
 # Cleans kots resources from the namespace
