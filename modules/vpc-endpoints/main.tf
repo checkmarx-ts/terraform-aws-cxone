@@ -3,7 +3,7 @@ data "aws_region" "current" {}
 resource "aws_vpc_endpoint" "ec2" {
   count              = var.create_ec2_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.ec2"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.ec2"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -18,7 +18,7 @@ resource "aws_vpc_endpoint" "ec2" {
 resource "aws_vpc_endpoint" "ecr_api" {
   count              = var.create_ecr_api_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.ecr.api"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.ecr.api"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -34,7 +34,7 @@ resource "aws_vpc_endpoint" "ecr_api" {
 resource "aws_vpc_endpoint" "ecr_dkr" {
   count              = var.create_ecr_dkr_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.ecr.dkr"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.ecr.dkr"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -48,7 +48,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
 resource "aws_vpc_endpoint" "ssm" {
   count              = var.create_ssm_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.ssm"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.ssm"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -62,7 +62,7 @@ resource "aws_vpc_endpoint" "ssm" {
 resource "aws_vpc_endpoint" "ssmmessages" {
   count              = var.create_ssmmessages_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.ssmmessages"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.ssmmessages"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -76,7 +76,7 @@ resource "aws_vpc_endpoint" "ssmmessages" {
 resource "aws_vpc_endpoint" "ec2messages" {
   count              = var.create_ec2messages_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.ec2messages"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.ec2messages"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -90,7 +90,7 @@ resource "aws_vpc_endpoint" "ec2messages" {
 resource "aws_vpc_endpoint" "kms" {
   count              = var.create_kms_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.kms"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.kms"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -104,7 +104,7 @@ resource "aws_vpc_endpoint" "kms" {
 resource "aws_vpc_endpoint" "logs" {
   count              = var.create_logs_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.logs"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.logs"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -118,7 +118,7 @@ resource "aws_vpc_endpoint" "logs" {
 resource "aws_vpc_endpoint" "sts" {
   count              = var.create_sts_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.sts"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.sts"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -132,7 +132,7 @@ resource "aws_vpc_endpoint" "sts" {
 resource "aws_vpc_endpoint" "elasticloadbalancing" {
   count              = var.create_elasticloadbalancing_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.elasticloadbalancing"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.elasticloadbalancing"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -147,7 +147,7 @@ resource "aws_vpc_endpoint" "elasticloadbalancing" {
 resource "aws_vpc_endpoint" "autoscaling" {
   count              = var.create_autoscaling_endpoint ? 1 : 0
   vpc_id             = var.vpc_id
-  service_name       = "com.amazonaws.${data.aws_region.current.region}.autoscaling"
+  service_name       = "com.amazonaws.${data.aws_region.current.name}.autoscaling"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.subnets
   security_group_ids = var.security_group_ids
@@ -161,7 +161,7 @@ resource "aws_vpc_endpoint" "autoscaling" {
 resource "aws_vpc_endpoint" "s3" {
   count             = var.create_s3_endpoint ? 1 : 0
   vpc_id            = var.vpc_id
-  service_name      = "com.amazonaws.${data.aws_region.current.region}.s3"
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
   vpc_endpoint_type = "Gateway"
   tags = {
     Name = "${var.deployment_id}-s3"
