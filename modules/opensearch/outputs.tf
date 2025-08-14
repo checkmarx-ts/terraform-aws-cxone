@@ -1,7 +1,7 @@
 output "arn" {
-  value = aws_elasticsearch_domain.es.arn
+  value = aws_opensearch_domain.es.arn
 }
 
 output "endpoint" {
-  value = aws_elasticsearch_domain.es.endpoint
+  value = aws_opensearch_domain.es.endpoint
 }
