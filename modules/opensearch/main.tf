@@ -4,14 +4,20 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 data "aws_partition" "current" {}
 
-resource "aws_elasticsearch_domain" "es" {
-  domain_name           = var.deployment_id
-  elasticsearch_version = "7.10"
+
+resource "aws_opensearch_domain" "es" {
+  domain_name    = var.deployment_id
+  engine_version = var.engine_version
 
   cluster_config {
-    instance_type          = var.instance_type
-    instance_count         = var.instance_count
-    zone_awareness_enabled = true
+    instance_type                 = var.instance_type
+    dedicated_master_enabled      = var.enable_dedicated_master_nodes
+    dedicated_master_count        = var.dedicated_master_count
+    dedicated_master_type         = var.dedicated_master_type
+    instance_count                = var.instance_count
+    multi_az_with_standby_enabled = false
+    zone_awareness_enabled        = true
+
     zone_awareness_config {
       availability_zone_count = min(length(var.subnet_ids), var.instance_count)
     }
@@ -22,16 +28,12 @@ resource "aws_elasticsearch_domain" "es" {
     security_group_ids = var.security_group_ids
   }
 
-  snapshot_options {
-    automated_snapshot_start_hour = 06
-  }
-
   ebs_options {
     ebs_enabled = true
     volume_type = "gp3"
     volume_size = var.volume_size
-    throughput  = 125
-    iops        = 3000
+    throughput  = var.ebs_throughput
+    iops        = var.ebs_iops
   }
 
   domain_endpoint_options {
@@ -54,8 +56,9 @@ resource "aws_elasticsearch_domain" "es" {
   advanced_security_options {
     enabled                        = true
     internal_user_database_enabled = true
+    anonymous_auth_enabled         = false
     master_user_options {
-      master_user_name     = "ast"
+      master_user_name     = var.username
       master_user_password = var.password
     }
   }
