@@ -377,7 +377,7 @@ spec:
     # the SMTP server with, when smtp_auth_enabled = "1". Use "0" for no 
     # authentication (which your SMTP server must allow).
     smtp_auth_enabled:
-      value: "1"
+      value: "${smtp_auth_enabled}"
     smtp_user:
       value: ${smtp_user}
     smtp_password:

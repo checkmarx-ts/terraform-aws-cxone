@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+
+# deploy-kustomizations.sh deploys kustomization overlays onto the CxOne kots application, waits for them to be deployed, and restarts the feature flag service.
+
+
+log() {
+  local level="$1"; shift
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] [$level] $*"
+}
+
+start_time=$(date +%s)
+
+APP_SLUG="${APP_SLUG:-ast}"
+NAMESPACE="${NAMESPACE:-ast}"
+KUSTOMIZATIONS_DIR="${KUSTOMIZATIONS_DIR:-kustomizations}"
+
+#trap 'log ERROR "Script failed at line $LINENO"; exit 1' ERR
+
+deploy_kustomizations() {
+  local source_folder="./${KUSTOMIZATIONS_DIR}/overlays/downstreams/this-cluster"
+  local dest_folder="./${APP_SLUG}/overlays/downstreams/this-cluster"
+
+  log INFO "Downloading current KOTS manifests..."
+  rm -rf ./"$APP_SLUG"
+  kubectl kots download --namespace "$NAMESPACE" --slug "$APP_SLUG" --decrypt-password-values --overwrite --current
+
+
+  log INFO "Showing diff between local kustomizations and current KOTS deployment..."
+  comm -12 \
+    <(cd "$source_folder" && find . -type f | sort) \
+    <(cd "$dest_folder" && find . -type f | sort) |
+  while read -r file; do
+    diff -u "$dest_folder/$file" "$source_folder/$file" || true
+  done
+
+  log INFO "Syncing local kustomizations into downloaded directory..."
+  rsync -av --progress --checksum --include="*/" --include="*.yaml" --exclude="*" "${KUSTOMIZATIONS_DIR}/" "$APP_SLUG"
+
+  log INFO "Uploading updated manifests via KOTS..."
+  kubectl kots upload --namespace "$NAMESPACE" --deploy --slug "$APP_SLUG" "./$APP_SLUG"
+}
+
+helm_wait_until_deployed() {
+  local interval="${1:-10}"
+  local timeout="${2:-300}"
+  local elapsed=0
+
+  log INFO "Waiting for all Helm releases in '$NAMESPACE' to be in 'deployed' status..."
+  while true; do
+    local non_deployed
+    non_deployed=$(helm ls -a -n "$NAMESPACE" -o json | jq -r '.[] | select(.status != "deployed") | "\(.name): \(.status)"')
+
+    if [[ -z "$non_deployed" ]]; then
+      log INFO "All Helm releases deployed successfully."
+      return 0
+    fi
+
+    echo "$non_deployed"
+    if (( elapsed >= timeout )); then
+      log ERROR "Timeout waiting for Helm releases to deploy."
+      return 2
+    fi
+
+    sleep "$interval"
+    ((elapsed+=interval))
+  done
+}
+
+get_kots_max_sequence() {
+  local source_filter="${1:-}"
+  if [[ -n "$source_filter" ]]; then
+    kubectl kots get versions "$APP_SLUG" -n "$NAMESPACE" -o json |
+      jq --arg src "$source_filter" '[.[] | select(.source == $src) | .sequence] | max'
+  else
+    kubectl kots get versions "$APP_SLUG" -n "$NAMESPACE" -o json |
+      jq '[.[].sequence] | max'
+  fi
+}
+
+wait_for_kotsadm_sequence() {
+  local sequence="$1"
+  local timeout_seconds=900
+  local sleep_between_checks=15
+  local elapsed=0
+
+  log INFO "Waiting for KOTS sequence $sequence to reach deployed or failed status..."
+  while true; do
+    local status
+    status=$(kubectl kots get versions "$APP_SLUG" -n "$NAMESPACE" -o json | \
+      jq -r --argjson seq "$sequence" '.[] | select(.sequence == $seq) | .status')
+
+    case "$status" in
+      deployed)
+        log INFO "KOTS sequence $sequence deployed successfully."
+        break
+        ;;
+      failed)
+        log ERROR "KOTS sequence $sequence failed to deploy."
+        exit 1
+        ;;
+      *)
+        if (( elapsed >= timeout_seconds )); then
+          log ERROR "Timeout waiting for KOTS sequence $sequence to complete."
+          exit 1
+        fi
+        sleep "$sleep_between_checks"
+        ((elapsed+=sleep_between_checks))
+        ;;
+    esac
+  done
+}
+
+wait_for_rollout() {
+  local deployment="$1"
+  local namespace="$2"
+  local timeout="${3:-180}"  # default 3 minutes
+
+  log INFO "Waiting for rollout of deployment '$deployment' in namespace '$namespace'..."
+
+  if ! kubectl rollout status deployment/"$deployment" -n "$namespace" --timeout="${timeout}s"; then
+    log ERROR "Rollout of deployment '$deployment' failed or timed out after ${timeout}s."
+    exit 1
+  fi
+
+  log INFO "✅ Rollout of '$deployment' completed successfully."
+}
+
+
+### === Main Flow ===
+log INFO "Starting KOTS deployment for app '$APP_SLUG' in namespace '$NAMESPACE'..."
+deploy_kustomizations
+
+# Wait a moment for the new sequence
+sleep 10
+
+KOTS_SEQUENCE_ID=$(get_kots_max_sequence "KOTS Upload")
+log INFO "Latest KOTS sequence is: $KOTS_SEQUENCE_ID"
+wait_for_kotsadm_sequence "$KOTS_SEQUENCE_ID"
+
+helm_wait_until_deployed
+
+log INFO "Sleeping 60s to allow operator to sync..."
+sleep 60
+
+log INFO "Restarting feature flags deployment..."
+kubectl rollout restart deployment/ast-core-feature-flag -n "$NAMESPACE"
+wait_for_rollout ast-core-feature-flag "$NAMESPACE"
+
+end_time=$(date +%s)
+duration=$((end_time - start_time))
+log INFO "✅ KOTS deployment complete in $duration seconds."

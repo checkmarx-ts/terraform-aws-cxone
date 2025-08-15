@@ -133,10 +133,7 @@ stage-kustomizations:
 # Syncs kustomizations into the kots files and reuploads them and deploys
 .PHONY: deploy-kustomizations
 deploy-kustomizations:
-	rm -rf ./ast
-	kubectl kots download --namespace $${NAMESPACE} --slug ast --decrypt-password-values --overwrite --current
-	rsync -av --progress --checksum --include="*/" --include="*.yaml" --exclude="*" kustomizations/ ast
-	kubectl kots upload --namespace $${NAMESPACE} --deploy --slug ast ./ast	
+	./deploy-kustomizations.sh
 
 
 # Establishes connection to kots admin console via port forward
@@ -158,6 +155,8 @@ rollout-restart:
 	kubectl rollout status statefulset ast-platform-cxiam -n $${NAMESPACE}
 	kubectl get deploy -n $${NAMESPACE} | grep -i ast | awk '{print $$1}' | xargs -I {} kubectl -n $${NAMESPACE} rollout restart deploy {}
 
+
+# Creates a secret for image pulling of EKS extra images in kube-system namespace (used for airgap installs)
 .PHONY: create-kubesystem-airgap-regcred
 create-kubesystem-airgap-regcred:
 	kubectl get secret airgap-regcred -n kube-system >/dev/null 2>&1 || \
@@ -211,9 +210,10 @@ uninstall-cluster-autoscaler:
 .PHONY: install-external-dns
 install-external-dns:
 	helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/; \
+	helm repo update external-dns; \
 	helm upgrade --install external-dns external-dns/external-dns \
 	-n kube-system \
-	--version 1.11.0 \
+	--version 1.17.0 \
 	--set serviceAccount.create=true \
 	--set serviceAccount.name=external-dns \
 	--set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${external_dns_iam_role_arn}" \

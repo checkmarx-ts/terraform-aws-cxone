@@ -67,12 +67,13 @@ resource "local_file" "kots_config" {
     external_redis_tls_enabled    = var.redis_tls_enabled ? "1" : "0"
     redis_auth_token              = var.redis_auth_token
 
-    # SMTP
-    smtp_host        = var.smtp_host
-    smtp_port        = var.smtp_port
-    smtp_user        = var.smtp_user
-    smtp_password    = var.smtp_password
-    smtp_from_sender = var.smtp_from_sender
+    # SMTP    
+    smtp_host         = var.smtp_host
+    smtp_port         = var.smtp_port
+    smtp_auth_enabled = var.smtp_password == null || trimspace(var.smtp_password) == "" ? "0" : "1"
+    smtp_user         = var.smtp_user
+    smtp_password     = var.smtp_password
+    smtp_from_sender  = var.smtp_from_sender
 
     # Elasticsearch
     elasticsearch_host     = var.elasticsearch_host
@@ -135,6 +136,12 @@ resource "local_file" "karpenter_configuration" {
   })
   filename = "karpenter.${var.deployment_id}.yaml"
 }
+
+resource "local_file" "deploy_kustomizations" {
+  content  = file("${path.module}/deploy-kustomizations.sh.tftpl")
+  filename = "deploy-kustomizations.sh"
+}
+
 
 resource "local_file" "target_group_binding" {
   content = templatefile("${path.module}/apply-target-group-binding.sh.tftpl", {
