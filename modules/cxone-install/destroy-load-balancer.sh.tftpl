@@ -22,9 +22,9 @@ sleep 10
 
 # Clean up security groups
 # Node SG names take the form of either tag name like <deployment_id>-node or SG name like eks-node-<deployment_id>-sg
-NODE_SG_ID=$(aws ec2 describe-security-groups --filters Name=tag:Name,Values=${DEPLOYMENT_ID}-node --query "SecurityGroups[*].GroupId" --output text | tr "\t" "\n")
+NODE_SG_ID=$(aws ec2 describe-security-groups --filters Name=tag:Name,Values=$${DEPLOYMENT_ID}-node --query "SecurityGroups[*].GroupId" --output text | tr "\t" "\n")
 if [ -z "${NODE_SG_ID}" ]; then
-  NODE_SG_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=eks-node-${DEPLOYMENT_ID}-sg --query "SecurityGroups[*].GroupId" --output text | tr "\t" "\n")
+  NODE_SG_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=eks-node-$${DEPLOYMENT_ID}-sg --query "SecurityGroups[*].GroupId" --output text | tr "\t" "\n")
 fi
 
 aws ec2 revoke-security-group-ingress --group-id $${NODE_SG_ID} --ip-permissions "`aws ec2 describe-security-groups --output json --group-ids $${NODE_SG_ID} --query "SecurityGroups[0].IpPermissions"`"
