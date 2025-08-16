@@ -87,3 +87,20 @@ variable "engine_version" {
   type    = string
   default = "OpenSearch_2.19"
 }
+
+variable "log_publishing_options" {
+  description = "Keyed by log type → {cloudwatch_log_group_arn, enabled?}"
+  type = map(object({
+    cloudwatch_log_group_arn = string
+    enabled                  = optional(bool, true)
+  }))
+  default = {}
+  # Enforce valid keys
+  validation {
+    condition = alltrue([
+      for k in keys(var.log_publishing_options) :
+      contains(["INDEX_SLOW_LOGS","SEARCH_SLOW_LOGS","ES_APPLICATION_LOGS","AUDIT_LOGS"], k)
+    ])
+    error_message = "Keys must be one of: INDEX_SLOW_LOGS, SEARCH_SLOW_LOGS, ES_APPLICATION_LOGS, AUDIT_LOGS."
+  }
+}

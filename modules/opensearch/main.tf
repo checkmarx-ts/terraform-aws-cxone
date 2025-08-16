@@ -78,6 +78,16 @@ resource "aws_opensearch_domain" "es" {
 }
 CONFIG
 
+  dynamic "log_publishing_options" {
+    for_each = var.log_publishing_options
+    iterator = lpo
+    content {
+      log_type                 = lpo.key
+      cloudwatch_log_group_arn = lpo.value.cloudwatch_log_group_arn
+      enabled                  = try(lpo.value.enabled, true)
+    }
+  }
+
   tags = {
     Domain = var.deployment_id
   }
