@@ -192,40 +192,16 @@ module "eks" {
   create_node_security_group = true
   #node_security_group_id     = module.eks_nodes_security_group.security_group_id
 
-
   node_security_group_additional_rules = {
-    ingress_self_http80 = {
-      description = "Node to node ingress http/80"
+    ingress_self_well_known = {
+      description = "Node to node ingress on well known ports"
       protocol    = "tcp"
-      from_port   = 80
-      to_port     = 80
+      from_port   = 1
+      to_port     = 1024
       type        = "ingress"
       self        = true
     }
-    ingress_self_regosync = {
-      description = "Node to node ingress http/81 (regosync service)"
-      protocol    = "tcp"
-      from_port   = 81
-      to_port     = 81
-      type        = "ingress"
-      self        = true
-    }
-    ingress_self_feedback_kics = {
-      description = "Node to node ingress http/86-88 (feedback-mfe, kics, sast results service)"
-      protocol    = "tcp"
-      from_port   = 86
-      to_port     = 89
-      type        = "ingress"
-      self        = true
-    }
-    ingress_self_sast_audit_queries = {
-      description = "Node to node ingress http/777-778 (sast audit queries service)"
-      protocol    = "tcp"
-      from_port   = 777
-      to_port     = 778
-      type        = "ingress"
-      self        = true
-    }
+    
     ingress_alb = {
       description = "Allow ingress to traefik pods"
       protocol    = "tcp"
@@ -265,6 +241,11 @@ module "eks" {
           ENI_CONFIG_LABEL_DEF               = var.eks_enable_custom_networking ? "topology.kubernetes.io/zone" : ""
           AWS_VPC_K8S_CNI_EXTERNALSNAT       = var.eks_enable_externalsnat ? "true" : "false"
         }
+        # EniConfig = {
+        #   create = false
+        #   region = data.aws_region.current.name
+        #   subnets = { for id in var.eks_pod_subnets : id => { id = id } }
+        # }
       })
     }
     aws-ebs-csi-driver = {

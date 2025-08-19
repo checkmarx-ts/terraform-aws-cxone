@@ -406,42 +406,6 @@ module "checkmarx-one-install" {
   target_group_arn                      = var.create_alb == true ? aws_lb_target_group.traefik_pods[0].arn : ""
 }
 
-terraform {
-  required_providers {
-    helm = {
-      source  = "registry.terraform.io/hashicorp/helm"
-      version = "~> 2.13.0"
-    }
-    kubernetes = {
-      source  = "registry.terraform.io/hashicorp/kubernetes"
-      version = "~> 2.30.0"
-    }
-  }
-}
-
-provider "kubernetes" {
-  host                   = module.checkmarx-one.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.checkmarx-one.cluster_certificate_authority_data)
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    args        = ["eks", "get-token", "--cluster-name", module.checkmarx-one.cluster_name]
-    command     = "aws"
-  }
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = module.checkmarx-one.cluster_endpoint
-    cluster_ca_certificate = base64decode(module.checkmarx-one.cluster_certificate_authority_data)
-    exec {
-      api_version = "client.authentication.k8s.io/v1beta1"
-      args        = ["eks", "get-token", "--cluster-name", module.checkmarx-one.cluster_name]
-      command     = "aws"
-    }
-  }
-}
-
-
 output "cxone1" {
   value = module.checkmarx-one.eks
 }

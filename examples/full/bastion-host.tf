@@ -34,6 +34,16 @@ locals {
     tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm -f eksctl_$PLATFORM.tar.gz
     sudo mv /tmp/eksctl /usr/local/bin
 
+    # Install yq
+    YQ_VERSION=$(curl -s https://api.github.com/repos/mikefarah/yq/releases/latest \
+      | grep -Po '"tag_name": "\K.*?(?=")' )
+
+    # Download the Linux AMD64 binary and install it
+    sudo wget -O /usr/local/bin/yq \
+      "https://github.com/mikefarah/yq/releases/download/$${YQ_VERSION}/yq_linux_amd64" \
+      && sudo chmod +x /usr/local/bin/yq
+
+
     # Install k9s
     curl -sLO "https://github.com/derailed/k9s/releases/download/v0.32.5/k9s_linux_amd64.rpm"
     sudo dnf install k9s_linux_amd64.rpm
