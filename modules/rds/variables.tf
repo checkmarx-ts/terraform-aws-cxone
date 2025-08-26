@@ -116,3 +116,8 @@ variable "monitoring_role_arn" {
   default     = null
 
 }
+
+variable "cloudwatch_log_group_retention_in_days" {
+  type    = number
+  default = 90
+}

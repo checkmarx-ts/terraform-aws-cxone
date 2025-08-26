@@ -171,3 +171,13 @@ variable "eks_pre_bootstrap_user_data" {
   description = "User data to insert before bootstrapping script."
   default     = ""
 }
+
+variable "cluster_enabled_log_types" {
+  type    = list(string)
+  default = ["audit", "api", "authenticator", "scheduler"]
+}
+
+variable "cloudwatch_log_group_retention_in_days" {
+  type    = number
+  default = 90
+}

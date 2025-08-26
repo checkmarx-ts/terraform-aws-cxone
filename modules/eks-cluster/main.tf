@@ -9,6 +9,7 @@ resource "aws_eks_access_entry" "node" {
   type          = "EC2_LINUX"
 }
 
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.28.0"
@@ -19,7 +20,9 @@ module "eks" {
   iam_role_arn    = var.cluster_iam_role_arn
   create_iam_role = false
 
-  cluster_enabled_log_types = ["audit", "api", "authenticator", "scheduler"]
+  cluster_enabled_log_types              = var.cluster_enabled_log_types
+  cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
+
 
   cluster_endpoint_private_access = var.enable_private_endpoint
   cluster_endpoint_public_access  = var.enable_public_endpoint

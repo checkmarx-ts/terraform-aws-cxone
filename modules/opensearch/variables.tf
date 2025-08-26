@@ -69,18 +69,18 @@ variable "dedicated_master_type" {
 
 variable "ebs_throughput" {
   type    = number
-  default = 125  
+  default = 125
 }
 
 variable "ebs_iops" {
   type    = number
-  default = 3000  
+  default = 3000
 }
 
 variable "username" {
-  type = string
+  type        = string
   description = "The username for the OpenSearch master user."
-  default = "ast"  
+  default     = "ast"
 }
 
 variable "engine_version" {
@@ -99,8 +99,9 @@ variable "log_publishing_options" {
   validation {
     condition = alltrue([
       for k in keys(var.log_publishing_options) :
-      contains(["INDEX_SLOW_LOGS","SEARCH_SLOW_LOGS","ES_APPLICATION_LOGS","AUDIT_LOGS"], k)
+      contains(["INDEX_SLOW_LOGS", "SEARCH_SLOW_LOGS", "ES_APPLICATION_LOGS", "AUDIT_LOGS"], k)
     ])
     error_message = "Keys must be one of: INDEX_SLOW_LOGS, SEARCH_SLOW_LOGS, ES_APPLICATION_LOGS, AUDIT_LOGS."
   }
 }
+

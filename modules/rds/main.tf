@@ -12,6 +12,7 @@ module "rds-aurora" {
   monitoring_role_arn         = var.monitoring_role_arn
   cluster_monitoring_interval = var.cluster_monitoring_interval
 
+  cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
 
   vpc_id                 = var.vpc_id
   create_db_subnet_group = false
