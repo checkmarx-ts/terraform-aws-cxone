@@ -134,8 +134,26 @@ variable "cloudwatch_log_group_skip_destroy" {
   default     = false
 }
 
+variable "create_cloudwatch_log_group" {
+  description = "Enable manual creation of cloudwatch log groups"
+  type        = bool
+  default     = true
+}
+
 variable "cloudwatch_log_group_kms_key_id" {
   type    = string
   default = null
 }
+
+variable "cloudwatch_log_group_class" {
+  type    = string
+  default = "STANDARD"
+
+  validation {
+    condition     = contains(["STANDARD", "INFREQUENT_ACCESS"], var.cloudwatch_log_group_class)
+    error_message = "cloudwatch_log_group_class must be one of: STANDARD or INFREQUENT_ACCESS."
+  }
+}
+
+
 
