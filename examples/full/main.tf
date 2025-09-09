@@ -249,8 +249,15 @@ module "checkmarx-one" {
   eks_create_external_dns_irsa             = var.eks_create_external_dns_irsa
   eks_create_load_balancer_controller_irsa = var.eks_create_load_balancer_controller_irsa
   eks_create_karpenter                     = var.eks_create_karpenter
+  eks_ami_id                               = var.eks_ami_id
+  eks_ami_type                             = var.eks_ami_type
+  eks_ami_release_version                  = var.eks_ami_release_version
+  eks_bootstrap_extra_args                 = var.eks_bootstrap_extra_args
+  eks_enable_bootstrap_user_data           = var.eks_enable_bootstrap_user_data
   eks_pre_bootstrap_user_data              = var.eks_pre_bootstrap_user_data
   eks_post_bootstrap_user_data             = var.eks_post_bootstrap_user_data
+  eks_cloudinit_pre_nodeadm                = var.eks_cloudinit_pre_nodeadm
+  eks_cloudinit_post_nodeadm               = var.eks_cloudinit_post_nodeadm
   eks_cluster_security_group_additional_rules = {
     egress_nodes_ephemeral_ports_tcp = {
       description = "Ingress from VPC (management hosts)"

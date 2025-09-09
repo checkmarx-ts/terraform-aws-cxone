@@ -166,6 +166,36 @@ variable "eks_node_additional_security_group_ids" {
   default     = []
 }
 
+variable "eks_ami_id" {
+  description = "The AMI from which to launch the instance. If not supplied, EKS will use its own default image"
+  type        = string
+  default     = ""
+}
+
+variable "eks_ami_type" {
+  description = "Type of Amazon Machine Image (AMI) associated with the EKS Node Group. See the [AWS documentation](https://docs.aws.amazon.com/eks/latest/APIReference/API_Nodegroup.html#AmazonEKS-Type-Nodegroup-amiType) for valid values"
+  type        = string
+  default     = "AL2023_x86_64_STANDARD"
+}
+
+variable "eks_ami_release_version" {
+  description = "The AMI version. Defaults to latest AMI release version for the given Kubernetes version and AMI type."
+  type        = string
+  default     = null
+}
+
+variable "eks_bootstrap_extra_args" {
+  description = "Additional arguments passed to the bootstrap script. When `ami_type` = `BOTTLEROCKET_*`; these are additional [settings](https://github.com/bottlerocket-os/bottlerocket#settings) that are provided to the Bottlerocket user data"
+  type        = string
+  default     = null
+}
+
+variable "eks_enable_bootstrap_user_data" {
+  type        = bool
+  description = "Enables the user data bootstrap script for EKS nodes."
+  default     = false
+}
+
 variable "eks_post_bootstrap_user_data" {
   type        = string
   description = "User data to insert after bootstrapping script."
@@ -176,6 +206,30 @@ variable "eks_pre_bootstrap_user_data" {
   type        = string
   description = "User data to insert before bootstrapping script."
   default     = ""
+}
+
+variable "eks_cloudinit_pre_nodeadm" {
+  description = "Array of cloud-init document parts that are created before the nodeadm document part"
+  type = list(object({
+    content      = string
+    content_type = optional(string)
+    filename     = optional(string)
+    merge_type   = optional(string)
+  }))
+  default  = []
+  nullable = false
+}
+
+variable "eks_cloudinit_post_nodeadm" {
+  description = "Array of cloud-init document parts that are created after the nodeadm document part"
+  type = list(object({
+    content      = string
+    content_type = optional(string)
+    filename     = optional(string)
+    merge_type   = optional(string)
+  }))
+  default  = []
+  nullable = false
 }
 
 variable "aws_cloudwatch_observability_version" {

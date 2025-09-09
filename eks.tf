@@ -100,8 +100,16 @@ locals {
     create_iam_role                 = false
     iam_role_arn                    = module.eks_node_iam_role.iam_role_arn
     key_name                        = var.ec2_key_name
+    enable_bootstrap_user_data      = var.eks_enable_bootstrap_user_data
     post_bootstrap_user_data        = var.eks_post_bootstrap_user_data
     pre_bootstrap_user_data         = var.eks_pre_bootstrap_user_data
+    cloudinit_pre_nodeadm           = var.eks_cloudinit_pre_nodeadm
+    cloudinit_post_nodeadm          = var.eks_cloudinit_post_nodeadm
+    ami_id                          = var.eks_ami_id
+    ami_type                        = var.eks_ami_type
+    ami_release_version             = var.eks_ami_release_version
+    bootstrap_extra_args            = var.eks_bootstrap_extra_args
+
     metadata_options = {
       http_endpoint               = "enabled"
       http_tokens                 = "required"
@@ -201,7 +209,7 @@ module "eks" {
       type        = "ingress"
       self        = true
     }
-    
+
     ingress_alb = {
       description = "Allow ingress to traefik pods"
       protocol    = "tcp"
@@ -210,6 +218,7 @@ module "eks" {
       type        = "ingress"
       cidr_blocks = var.vpc_private_cidrs
     }
+
   }
 
   enable_irsa = true
