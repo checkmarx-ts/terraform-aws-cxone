@@ -759,6 +759,11 @@ variable "es_create" {
   default     = true
 }
 
+variable "es_engine_version" {
+  type    = string
+  default = "OpenSearch_2.19"
+}
+
 variable "es_subnets" {
   description = "The subnets to deploy Elasticsearch into."
   type        = list(string)
@@ -777,7 +782,7 @@ variable "es_dedicated_master_count" {
 }
 
 variable "es_dedicated_master_type" {
-  default     = "m7g.large.elasticsearch"
+  default     = "m7g.large.search"
   type        = string
   description = "The instance type of the master nodes."
 }
@@ -785,7 +790,7 @@ variable "es_dedicated_master_type" {
 variable "es_instance_type" {
   type        = string
   description = "The instance type for elasticsearch nodes."
-  default     = "r6g.large.elasticsearch"
+  default     = "r7g.large.search"
 }
 
 variable "es_instance_count" {
@@ -798,6 +803,24 @@ variable "es_volume_size" {
   type        = number
   description = "The size of volumes for nodes in elasticsearch cluster"
   default     = 100
+}
+
+variable "es_ebs_volume_type" {
+  type        = string
+  description = "The volume type for nodes in elasticsearch cluster"
+  default     = "gp3"
+}
+
+variable "es_ebs_throughput" {
+  type        = number
+  description = "The throughput volumes for nodes in elasticsearch cluster"
+  default     = 125
+}
+
+variable "es_ebs_iops" {
+  type        = number
+  description = "The IOPS for volumes for nodes in elasticsearch cluster"
+  default     = 3000
 }
 
 variable "es_tls_security_policy" {
