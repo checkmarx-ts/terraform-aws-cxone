@@ -34,7 +34,7 @@ variable "enable_public_endpoint" {
 variable "eks_cluster_version" {
   description = "EKS Kubernetes version to be used"
   type        = string
-  default     = "1.30"
+  default     = "1.32"
   nullable    = false
 }
 
@@ -132,38 +132,38 @@ variable "self_managed_node_groups" {
     autoscaling_group_tags = optional(map(string), {})
     labels                 = optional(map(string), {})
     taints                 = optional(map(object({ key = string, value = string, effect = string })), {})
-    mixed_instances_policy = optional(map(object({})), {})
   }))
+  default = []
 }
 
 variable "coredns_version" {
   type        = string
-  description = "The version of the EKS Core DNS Addon."
-  default     = "v1.11.4-eksbuild.2"
+  description = "The version of the EKS Core DNS Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-coredns.html."
+  default     = "v1.11.4-eksbuild.14"
 }
 
 variable "kube_proxy_version" {
   type        = string
-  description = "The version of the EKS Kube Proxy Addon."
-  default     = "v1.30.9-eksbuild.3"
+  description = "The version of the EKS Kube Proxy Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-kube-proxy.html#kube-proxy-versions."
+  default     = "v1.32.6-eksbuild.2"
 }
 
 variable "vpc_cni_version" {
   type        = string
-  description = "The version of the EKS VPC CNI Addon."
-  default     = "v1.19.3-eksbuild.1"
+  description = "The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html."
+  default     = "v1.19.6-eksbuild.7"
 }
 
 variable "aws_ebs_csi_driver_version" {
   type        = string
-  description = "The version of the EKS EBS CSI Addon."
-  default     = "v1.40.0-eksbuild.1"
+  description = "The version of the EKS EBS CSI Addon. Reference https://github.com/kubernetes-sigs/aws-ebs-csi-driver/?tab=readme-ov-file#compatibility."
+  default     = "v1.45.0-eksbuild.2"
 }
 
 variable "aws_eks_pod_identity_agent_driver_version" {
   type        = string
   description = "The version of the EKS Pod Identity Agent Addon."
-  default     = "v1.3.5-eksbuild.2"
+  default     = "v1.3.8-eksbuild.2"
 }
 
 variable "eks_pre_bootstrap_user_data" {

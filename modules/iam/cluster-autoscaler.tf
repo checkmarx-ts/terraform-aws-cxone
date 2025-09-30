@@ -37,6 +37,7 @@ module "cluster_autoscaler_pod_identity" {
   attach_cluster_autoscaler_policy = true
   cluster_autoscaler_cluster_names = [var.eks_cluster_name]
   permissions_boundary_arn         = var.cluster_autoscaler_role_permissions_boundary_policy_arn
+  policy_name_prefix               = var.deployment_id
 }
 
 # Pod Identity Association is always created, even if the role was pre-existing.

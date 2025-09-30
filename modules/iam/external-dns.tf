@@ -51,6 +51,7 @@ module "external_dns_pod_identity" {
   attach_external_dns_policy    = true
   external_dns_hosted_zone_arns = var.external_dns_hosted_zone_arns
   permissions_boundary_arn      = var.external_dns_role_permissions_boundary_policy_arn
+  policy_name_prefix            = var.deployment_id
 }
 
 # Pod Identity Association is always created, even if the role was pre-existing.

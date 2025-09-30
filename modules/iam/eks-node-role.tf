@@ -26,6 +26,10 @@ output "eks_nodes_iam_role_arn" {
   value = var.node_role_arn == null ? aws_iam_role.eks_nodes[0].arn : var.node_role_arn
 }
 
+output "eks_nodes_iam_instance_profile_arn" {
+  value = var.node_role_arn == null ? aws_iam_instance_profile.eks_nodes[0].arn : var.node_role_arn
+}
+
 output "eks_nodes_iam_role_name" {
   value = local.node_role_name
 }

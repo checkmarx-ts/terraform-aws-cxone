@@ -121,7 +121,6 @@ module "eks" {
     labels                 = node_group.labels
     taints                 = node_group.taints
     autoscaling_group_tags = node_group.autoscaling_group_tags
-    mixed_instances_policy = node_group.mixed_instances_policy
     tags = {
       Name = "${var.deployment_id}-${node_group.name}"
     }

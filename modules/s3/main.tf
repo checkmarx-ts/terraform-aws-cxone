@@ -20,6 +20,10 @@ locals {
       name        = "configuration"
       enable_cors = false
     }
+    containers_security = {
+      name        = "containers-security"
+      enable_cors = true
+    }
     cxone = {
       name        = "cxone"
       enable_cors = false
