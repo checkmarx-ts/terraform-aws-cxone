@@ -54,6 +54,10 @@ spec:
     ENABLE_TLS:
       value: "0"
 
+    # Enables KEDA configurations for autoscaling. Should be enabled in 3.42+.
+    enable_keda_configuration:
+      value: "${enable_keda_configuration}"
+
     #--------------------------------------------------------------------------
     #  CxOne Components Configuration
     #--------------------------------------------------------------------------

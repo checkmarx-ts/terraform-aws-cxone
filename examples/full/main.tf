@@ -371,6 +371,7 @@ module "checkmarx-one-install" {
   acm_certificate_arn                   = var.acm_certificate_arn != null ? var.acm_certificate_arn : module.acm[0].acm_certificate_arn
   bucket_suffix                         = module.checkmarx-one.s3_bucket_name_suffix
   ms_replica_count                      = var.ms_replica_count
+  enable_keda_configuration             = var.enable_keda_configuration
   object_storage_endpoint               = "s3.${data.aws_region.current.region}.amazonaws.com"
   object_storage_access_key             = var.object_storage_access_key
   object_storage_secret_key             = var.object_storage_secret_key

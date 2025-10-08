@@ -75,6 +75,12 @@ variable "ms_replica_count" {
   default     = 3
 }
 
+variable "enable_keda_configuration" {
+  type        = bool
+  description = "Enable KEDA configuration for scaling microservices"
+  default     = true
+}
+
 variable "cluster_autoscaler_iam_role_arn" {
   type     = string
   nullable = true

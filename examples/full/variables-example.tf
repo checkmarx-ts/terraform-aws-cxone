@@ -25,6 +25,12 @@ variable "ms_replica_count" {
   default     = 3
 }
 
+variable "enable_keda_configuration" {
+  type        = bool
+  description = "Enable KEDA configuration for scaling microservices"
+  default     = true
+}
+
 variable "network_load_balancer_scheme" {
   description = "The load balancer scheme."
   type        = string

@@ -26,7 +26,8 @@ resource "local_file" "kots_config" {
     admin_password  = var.admin_password
     advanced_config = indent(8, var.kots_advanced_config)
 
-    ms_replica_count = var.ms_replica_count
+    ms_replica_count          = var.ms_replica_count
+    enable_keda_configuration = var.enable_keda_configuration ? "1" : "0"
 
     fqdn                 = var.fqdn
     nlb_tls_acm_arn      = var.acm_certificate_arn

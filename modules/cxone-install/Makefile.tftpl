@@ -167,6 +167,26 @@ create-kubesystem-airgap-regcred:
 	--namespace=kube-system
 
 
+.PHONY: install-keda
+install-keda:
+	helm repo add kedacore https://kedacore.github.io/charts; \
+	helm repo update; \
+	helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --version 2.17.2
+ 
+ 
+.PHONY: install-keda-from-airgap
+install-keda-from-airgap:
+	helm repo add kedacore https://kedacore.github.io/charts; \
+	helm repo update; \
+	helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --version 2.17.2 \
+	--set global.image.registry="$${KOTS_REGISTRY}" \
+	--set imagePullSecrets[0].name=airgap-regcred
+ 
+.PHONY: uninstall-keda
+uninstall-keda:
+	kubectl delete $$(kubectl get scaledobjects,scaledjobs -A -o jsonpath='{"-n "}{.items[*].metadata.namespace}{" "}{.items[*].kind}{"/"}{.items[*].metadata.name}{"\n"}'); \
+	helm uninstall keda -n keda
+
 # Installs the cluster autoscaler using an online install
 .PHONY: install-cluster-autoscaler
 install-cluster-autoscaler:

@@ -291,6 +291,24 @@ variable "eks_node_groups" {
     capacity_type  = "ON_DEMAND"
     },
     {
+      name           = "dast"
+      min_size       = 0
+      desired_size   = 0
+      max_size       = 10
+      instance_types = ["m7i.2xlarge", "m6a.2xlarge", "m6i.2xlarge"]
+      capacity_type  = "ON_DEMAND"
+      labels = {
+        "dast" = "true"
+      }
+      taints = {
+        dedicated = {
+          key    = "dast"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    },
+    {
       name           = "sast-engine"
       min_size       = 0
       desired_size   = 0
