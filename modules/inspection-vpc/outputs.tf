@@ -33,6 +33,11 @@ output "database_subnets" {
   value       = [for s in aws_subnet.database : s.id]
 }
 
+output "database_subnet_group_name" {
+  description = "The name of the database subnet group"
+  value       = aws_db_subnet_group.database.name
+}
+
 output "pod_subnet_info" {
   description = "List of map of pod subnets including `subnet_id` and `availability_zone`. Useful for creating ENIConfigs for [EKS Custom Networking](https://docs.aws.amazon.com/eks/latest/userguide/cni-custom-network.html)."
   value = [for s in aws_subnet.pod : {

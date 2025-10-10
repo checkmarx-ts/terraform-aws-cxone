@@ -99,6 +99,11 @@ resource "aws_subnet" "database" {
   tags              = { Name = "${var.deployment_id} - database subnet ${each.key}" }
 }
 
+resource "aws_db_subnet_group" "database" {
+  name       = "${var.deployment_id}-db"
+  subnet_ids = [for s in aws_subnet.database : s.id]
+}
+
 resource "aws_subnet" "pod" {
   for_each          = { for idx, az in local.azs : az => idx if var.secondary_cidr_block != null }
   vpc_id            = aws_vpc.main.id
@@ -245,3 +250,6 @@ resource "aws_route_table_association" "pod" {
   subnet_id      = aws_subnet.pod[each.key].id
   route_table_id = aws_route_table.private.id
 }
+
+
+

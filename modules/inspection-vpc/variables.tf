@@ -20,7 +20,7 @@ variable "secondary_cidr_block" {
 variable "interface_vpc_endpoints" {
   type        = list(string)
   description = "A list of AWS services to create [VPC Private Endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html) for. These endpoints are used for communication direct to AWS services without requiring connectivity and are useful for private EKS clusters."
-  default     = ["ec2", "ec2messages", "ssm", "ssmmessages", "ecr.api", "ecr.dkr", "kms", "logs", "sts", "elasticloadbalancing", "autoscaling"]
+  default     = ["ec2", "ec2messages", "ssm", "ssmmessages", "ecr.api", "ecr.dkr", "kms", "logs", "sts", "elasticloadbalancing", "autoscaling", "sqs", "eks", "eks-auth"]
 }
 
 variable "create_interface_endpoints" {

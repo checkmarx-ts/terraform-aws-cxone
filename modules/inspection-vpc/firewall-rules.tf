@@ -108,19 +108,19 @@ EOF
 # Allow access to s3 buckets for Checkmarx One. Buckets are typically created with a prefix of the deployment id which allows for regex matching
 # Example bucket name and suffix: scan-results-bos-ap-southeast-1-lab-19205
 # These rules are required when using minio gateway, and may be otherwise required depending on your object storage configuration and VPC private endpoint configuration.
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^${var.deployment_id}.*?\.s3\.dualstack\.${data.aws_region.current.region}\.amazonaws\.com$/i" msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420052; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^${var.deployment_id}.*?\.s3\.${data.aws_region.current.region}\.amazonaws\.com$/i" msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420053; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^${var.deployment_id}.*?\.s3\.dualstack\.${data.aws_region.current.name}\.amazonaws\.com$/i" msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420052; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^${var.deployment_id}.*?\.s3\.${data.aws_region.current.name}\.amazonaws\.com$/i" msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420053; rev:1;)
 
 
 # These URLs are randomly generated, and used to discover the correct s3 API signature version to use when communicating with S3 buckets.
 # They take three forms, where the long alphanumeric string is randomly generated. The buckets do not exist, but allow minio client
 # to attempt to connect to S3 to discover the s3 signature version to use in subsequent requests to the actual buckets
-#   1. probe-bucket-sign-vie4gezw1j6w.s3.dualstack.${data.aws_region.current.region}.amazonaws.com
-#   2. probe-bsign-jmcvig40f29rwikvncljjtvohv4i4h.s3.dualstack.${data.aws_region.current.region}.amazonaws.com
+#   1. probe-bucket-sign-vie4gezw1j6w.s3.dualstack.${data.aws_region.current.name}.amazonaws.com
+#   2. probe-bsign-jmcvig40f29rwikvncljjtvohv4i4h.s3.dualstack.${data.aws_region.current.name}.amazonaws.com
 #   3. s3.amazonaws.com/probe-bucket-sign-6n4nhxx1jt1j
 # These rules are required when using minio gateway, and may be otherwise required depending on your object storage configuration.
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^probe-bucket-sign-[A-z0-9]{12}\.s3\.dualstack\.${data.aws_region.current.region}\.amazonaws\.com$/i"; flow: to_server; msg:"Minio client s3 signature version determination"; sid:240420063;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^probe-bsign-[A-z0-9]{30}\.s3\.dualstack\.${data.aws_region.current.region}\.amazonaws\.com$/i"; flow: to_server; msg:"Minio client s3 signature version determination"; sid:240420064;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^probe-bucket-sign-[A-z0-9]{12}\.s3\.dualstack\.${data.aws_region.current.name}\.amazonaws\.com$/i"; flow: to_server; msg:"Minio client s3 signature version determination"; sid:240420063;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; pcre:"/^probe-bsign-[A-z0-9]{30}\.s3\.dualstack\.${data.aws_region.current.name}\.amazonaws\.com$/i"; flow: to_server; msg:"Minio client s3 signature version determination"; sid:240420064;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"s3.amazonaws.com"; startswith; nocase; endswith; msg:"Minio signature"; flow:to_server, established; sid:241015004; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"s3.dualstack.us-east-1.amazonaws.com"; startswith; nocase; endswith; msg:"Minio signature"; flow:to_server, established; sid:241015005; rev:1;)
 
@@ -132,25 +132,25 @@ EOF
 # Note that these are AWS Region Dependent
 # Reference https://docs.aws.amazon.com/eks/latest/userguide/private-clusters.html, https://eksctl.io/usage/eks-private-cluster/
 # These rules do not imply support for completely private clusters, but do help with private cluster deployments. 
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"ssm.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190000; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"ec2.${data.aws_region.current.region}.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190001; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eks.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190002; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.ecr.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190003; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"dkr.ecr.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190004; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"ssmmessages.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190005; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"ec2messages.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190006; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"sts.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190007; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"logs.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190008; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"ssm.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190000; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"ec2.${data.aws_region.current.name}.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190001; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"eks.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190002; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.ecr.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190003; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"dkr.ecr.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190004; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"ssmmessages.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190005; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"ec2messages.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190006; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"sts.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190007; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"logs.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190008; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"route53.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190009; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cloudformation.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190010; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"elasticloadbalancing.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190011; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"autoscaling.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190012; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"cloudformation.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190010; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"elasticloadbalancing.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190011; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"autoscaling.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24190012; rev:1;)
 
 
 # Karpenter
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"iam.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24250001; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"api.pricing.us-east-1.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24250002; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"sqs.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24240001; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"sqs.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:24240001; rev:1;)
 
 
 # Installation media for kube-system services pods like coredns, aws-node, ebs-csi-controller, ebs-csi-node, kube-proxy
@@ -189,12 +189,12 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"151742754352.dkr.
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"01004608.dkr.ecr.us-gov-west-1.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420028; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"602401143452.dkr.ecr.us-west-1.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420029; rev:1;)
 pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"602401143452.dkr.ecr.us-west-2.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420030; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"prod-${data.aws_region.current.region}-starport-layer-bucket.s3.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420031; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"prod-${data.aws_region.current.name}-starport-layer-bucket.s3.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420031; rev:1;)
 
 
 # Amazon Linux 2/2023 managed node group updates - region dependent
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"amazonlinux-2-repos-${data.aws_region.current.region}.s3.dualstack.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420032; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"al2023-repos-${data.aws_region.current.region}-de612dc2.s3.dualstack.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420033; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"amazonlinux-2-repos-${data.aws_region.current.name}.s3.dualstack.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420032; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"al2023-repos-${data.aws_region.current.name}-de612dc2.s3.dualstack.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420033; rev:1;)
 
 
 # AWS Load Balancer Controller & Karpenter - public.ecr.aws (metadata) redirects to cloudfront (download)
@@ -287,9 +287,9 @@ pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"jfrog-prod-euw1-s
 #pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"raw.githubusercontent.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240911012; rev:1;)
 
 
-# Checkmarx One Scans will upload source to scan-results bucket with url path patterns like "https://s3.${data.aws_region.current.region}.amazonaws.com/scan-results-0aa15147e5f3/source-code/....." 
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"s3.dualstack.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420054; rev:1;)
-pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"s3.${data.aws_region.current.region}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420055; rev:1;)
+# Checkmarx One Scans will upload source to scan-results bucket with url path patterns like "https://s3.${data.aws_region.current.name}.amazonaws.com/scan-results-0aa15147e5f3/source-code/....." 
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"s3.dualstack.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420054; rev:1;)
+pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:"s3.${data.aws_region.current.name}.amazonaws.com"; startswith; nocase; endswith; msg:"matching TLS allowlisted FQDNs"; flow:to_server, established; sid:240420055; rev:1;)
 
 
 # Allow NTP
