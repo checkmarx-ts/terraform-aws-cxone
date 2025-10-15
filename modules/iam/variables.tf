@@ -27,6 +27,12 @@ variable "administrator_iam_role_arn" {
   nullable    = false
 }
 
+variable "pod_identity_policy_name_prefix" {
+  description = "The prefix to use for the names of the IAM policies created for pod identities."
+  type        = string
+  default     = null
+}
+
 variable "eks_kms_key_arn" {
   description = "The ARN of the KMS key to use for cluster secrets encryption."
   type        = string

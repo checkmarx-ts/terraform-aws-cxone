@@ -38,7 +38,7 @@ module "ebs_csi_pod_identity" {
   attach_aws_ebs_csi_policy = true
   aws_ebs_csi_kms_arns      = [var.eks_kms_key_arn]
   permissions_boundary_arn  = var.ebs_csi_role_permissions_boundary_policy_arn
-  policy_name_prefix        = var.deployment_id
+  policy_name_prefix        = var.pod_identity_policy_name_prefix
 }
 
 # Pod Identity Association is always created, even if the role was pre-existing.

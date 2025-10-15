@@ -36,7 +36,7 @@ module "load_balancer_controller_pod_identity" {
   description                     = "Load balancer controller IAM Role for EKS Pod Identity Agent for the CxOne deployment ${var.deployment_id}"
   attach_aws_lb_controller_policy = true
   permissions_boundary_arn        = var.load_balancer_controller_role_permissions_boundary_policy_arn
-  policy_name_prefix              = var.deployment_id
+  policy_name_prefix              = var.pod_identity_policy_name_prefix
 }
 
 # Pod Identity Association is always created, even if the role was pre-existing.
