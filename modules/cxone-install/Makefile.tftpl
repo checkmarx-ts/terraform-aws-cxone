@@ -180,7 +180,7 @@ install-keda-from-airgap:
 	helm repo update; \
 	helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --version 2.17.2 \
 	--set global.image.registry="$${KOTS_REGISTRY}" \
-	--set imagePullSecrets[0].name=airgap-regcred
+	--set imagePullSecrets[0].name=airgap-regcred \
 	--set image.keda.repository="$${KOTS_REGISTRY}/keda-fips@sha256" \
 	--set image.keda.tag="8d9d6fcf04029c72e2716f64455e0e024268d0053faafd249cd7cde43978599a" \
 	--set image.metricsApiServer.repository="keda-metrics-apiserver-fips@sha256" \
