@@ -82,12 +82,6 @@ variable "eks_enable_custom_networking" {
   default     = false
 }
 
-variable "eks_enable_fargate" {
-  type        = bool
-  description = "Enables Fargate profiles for the karpenter and kube-system namespaces."
-  default     = false
-}
-
 variable "eks_create_cluster_autoscaler_irsa" {
   type        = bool
   description = "Enables creation of cluster autoscaler IAM role."
@@ -121,25 +115,31 @@ variable "eks_version" {
 variable "coredns_version" {
   type        = string
   description = "The version of the EKS Core DNS Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-coredns.html."
-  default     = "v1.11.4-eksbuild.14"
+  default     = "v1.11.4-eksbuild.24"
 }
 
 variable "kube_proxy_version" {
   type        = string
   description = "The version of the EKS Kube Proxy Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-kube-proxy.html#kube-proxy-versions."
-  default     = "v1.32.6-eksbuild.2"
+  default     = "v1.32.6-eksbuild.12"
 }
 
 variable "vpc_cni_version" {
   type        = string
   description = "The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html."
-  default     = "v1.19.6-eksbuild.7"
+  default     = "v1.20.4-eksbuild.2"
 }
 
 variable "aws_ebs_csi_driver_version" {
   type        = string
   description = "The version of the EKS EBS CSI Addon. Reference https://github.com/kubernetes-sigs/aws-ebs-csi-driver/?tab=readme-ov-file#compatibility."
-  default     = "v1.45.0-eksbuild.2"
+  default     = "v1.52.1-eksbuild.1"
+}
+
+variable "aws_eks_pod_identity_agent_driver_version" {
+  type        = string
+  description = "The version of the EKS Pod Identity Agent Addon."
+  default     = "v1.3.9-eksbuild.5"
 }
 
 variable "eks_private_endpoint_enabled" {

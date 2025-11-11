@@ -244,7 +244,6 @@ module "checkmarx-one" {
   create_node_s3_iam_role                  = var.create_node_s3_iam_role
   eks_pod_subnets                          = module.vpc.pod_subnets
   eks_enable_externalsnat                  = var.eks_enable_externalsnat
-  eks_enable_fargate                       = var.eks_enable_fargate
   eks_create_cluster_autoscaler_irsa       = var.eks_create_cluster_autoscaler_irsa
   eks_create_external_dns_irsa             = var.eks_create_external_dns_irsa
   eks_create_load_balancer_controller_irsa = var.eks_create_load_balancer_controller_irsa

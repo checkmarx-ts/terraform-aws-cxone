@@ -108,7 +108,6 @@ coredns_version                          = "v1.10.1-eksbuild.7"
 kube_proxy_version                       = "v1.28.8-eksbuild.2"
 vpc_cni_version                          = "v1.18.0-eksbuild.1"
 aws_ebs_csi_driver_version               = "v1.28.0-eksbuild.1"
-eks_enable_fargate                       = false # not yet working, do not enable
 eks_enable_externalsnat                  = false # leave false, unless working with external nat gateway
 eks_enable_custom_networking             = false
 eks_private_endpoint_enabled             = true

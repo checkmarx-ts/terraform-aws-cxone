@@ -1,65 +1,4 @@
 locals {
-  fargate_profiles = {
-    karpenter = {
-      subnet_ids = var.eks_enable_custom_networking ? var.eks_pod_subnets : null
-      selectors = [
-        { namespace = "karpenter" }
-      ]
-    }
-    kube-system = {
-      subnet_ids = var.eks_enable_custom_networking ? var.eks_pod_subnets : null
-      selectors = [
-        { namespace = "kube-system" }
-      ]
-    }
-  }
-  core_dns_fargate_configuration_values = jsonencode({
-    computeType = "Fargate"
-    # Ensure that we fully utilize the minimum amount of resources that are supplied by
-    # Fargate https://docs.aws.amazon.com/eks/latest/userguide/fargate-pod-configuration.html
-    # Fargate adds 256 MB to each pod's memory reservation for the required Kubernetes
-    # components (kubelet, kube-proxy, and containerd). Fargate rounds up to the following
-    # compute configuration that most closely matches the sum of vCPU and memory requests in
-    # order to ensure pods always have the resources that they need to run.
-    resources = {
-      limits = {
-        cpu = "0.25"
-        # We are targeting the smallest Task size of 512Mb, so we subtract 256Mb from the
-        # request/limit to ensure we can fit within that task
-        memory = "256M"
-      }
-      requests = {
-        cpu = "0.25"
-        # We are targeting the smallest Task size of 512Mb, so we subtract 256Mb from the
-        # request/limit to ensure we can fit within that task
-        memory = "256M"
-      }
-    }
-  })
-
-  # The EBS CSI Add On Controller pods can run on Fargate, but we must add a toleration to eks.amazonaws.com/compute-type=fargate
-  # in addition to the existing tolerations. Documentation for EBS CSI Driver configuration schema can be obtained from AWS CLI
-  # example: aws eks describe-addon-configuration --addon-name aws-ebs-csi-driver --addon-version v1.28.0-eksbuild.1 --query configurationSchema --output text
-  ebs_csi_fargate_configuration_values = jsonencode({
-    controller = {
-      batching = false
-      tolerations = [
-        {
-          key      = "CriticalAddonsOnly"
-          operator = "Exists"
-        },
-        {
-          effect            = "NoExecute"
-          operator          = "Exists"
-          tolerationSeconds = 300
-        },
-        {
-          key      = "eks.amazonaws.com/compute-type"
-          operator = "Equal"
-          value    = "fargate"
-          effect   = "NoSchedule"
-  }] } })
-
   eks_nodegroups = { for node_group in var.eks_node_groups : node_group.name => {
     name                 = "${var.deployment_id}-${node_group.name}"
     launch_template_name = "${var.deployment_id}-${node_group.name}"
@@ -234,9 +173,11 @@ module "eks" {
   }
 
   addons = {
+    eks-pod-identity-agent = {
+      addon_version = var.aws_eks_pod_identity_agent_driver_version
+    }
     coredns = {
-      addon_version        = var.coredns_version
-      configuration_values = var.eks_enable_fargate ? local.core_dns_fargate_configuration_values : null
+      addon_version = var.coredns_version
     }
     kube-proxy = {
       addon_version = var.kube_proxy_version
@@ -259,7 +200,6 @@ module "eks" {
     }
     aws-ebs-csi-driver = {
       addon_version            = var.aws_ebs_csi_driver_version
-      configuration_values     = var.eks_enable_fargate ? local.ebs_csi_fargate_configuration_values : null
       service_account_role_arn = var.eks_create ? module.ebs_csi_irsa[0].iam_role_arn : null
     }
   }
@@ -273,7 +213,6 @@ module "eks" {
   security_group_additional_rules = var.eks_cluster_security_group_additional_rules
   eks_managed_node_groups         = local.eks_nodegroups
 
-  fargate_profiles = var.eks_enable_fargate ? local.fargate_profiles : {}
 }
 
 resource "aws_eks_addon" "amzn_cloudwatch_observability" {
