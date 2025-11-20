@@ -166,6 +166,17 @@ create-kubesystem-airgap-regcred:
 	--docker-password=$${REGISTRY_PASSWORD} \
 	--namespace=kube-system
 
+# Creates a secret for image pulling of KEDA images in keda namespace (used for airgap installs)
+.PHONY: create-keda-airgap-regcred
+create-keda-airgap-regcred:
+	kubectl create namespace keda --dry-run=client -o yaml | kubectl apply -f -; \
+	kubectl get secret airgap-regcred -n keda >/dev/null 2>&1 || \
+	kubectl create secret docker-registry airgap-regcred \
+	--docker-server=$${KOTS_REGISTRY} \
+	--docker-username=$${REGISTRY_USERNAME} \
+	--docker-password=$${REGISTRY_PASSWORD} \
+	--namespace=keda
+
 
 .PHONY: install-keda
 install-keda:
@@ -175,7 +186,7 @@ install-keda:
  
  
 .PHONY: install-keda-from-airgap
-install-keda-from-airgap:
+install-keda-from-airgap: create-keda-airgap-regcred
 	helm repo add kedacore https://kedacore.github.io/charts; \
 	helm repo update; \
 	helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --version 2.17.2 \
