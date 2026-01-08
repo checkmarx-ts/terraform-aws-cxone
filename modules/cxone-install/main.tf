@@ -124,6 +124,8 @@ resource "local_file" "makefile" {
     tf_kots_registry                      = var.kots_registry
     tf_registry_username                  = var.kots_registry_username
     tf_registry_password                  = var.kots_registry_password
+    cost_allocation_tag_key               = var.cost_allocation_tag_key
+    cost_allocation_tag_value             = var.cost_allocation_tag_value
   })
   filename = "Makefile"
 }
@@ -160,7 +162,6 @@ resource "local_file" "storage_class" {
     availability_zones      = jsonencode(var.availability_zones)
     karpenter_iam_role_arn  = var.karpenter_iam_role_arn
     kmsKeyArn               = var.kms_key_arn
-
   })
   filename = "apply-storageclass-config.${var.deployment_id}.sh"
 }

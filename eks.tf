@@ -124,7 +124,7 @@ module "eks" {
   name               = var.deployment_id
   kubernetes_version = var.eks_version
 
-  enabled_log_types = ["audit", "api", "authenticator", "scheduler"]
+  enabled_log_types = var.eks_enabled_log_types
 
   endpoint_private_access = var.eks_private_endpoint_enabled
   endpoint_public_access  = var.eks_public_endpoint_enabled
@@ -201,6 +201,13 @@ module "eks" {
     aws-ebs-csi-driver = {
       addon_version            = var.aws_ebs_csi_driver_version
       service_account_role_arn = var.eks_create ? module.ebs_csi_irsa[0].iam_role_arn : null
+      configuration_values = jsonencode({
+        controller = {
+          extraVolumeTags = {
+            "${var.cost_allocation_tag_key}" = var.cost_allocation_tag_value != "" ? var.cost_allocation_tag_value : var.deployment_id
+          }
+        }
+      })
     }
   }
   create_kms_key = false

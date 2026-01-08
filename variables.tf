@@ -109,37 +109,37 @@ variable "eks_create_karpenter" {
 variable "eks_version" {
   type        = string
   description = "The version of the EKS Cluster (e.g. 1.32)"
-  default     = "1.32"
+  default     = "1.33"
 }
 
 variable "coredns_version" {
   type        = string
   description = "The version of the EKS Core DNS Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-coredns.html."
-  default     = "v1.11.4-eksbuild.24"
+  default     = "v1.12.4-eksbuild.1"
 }
 
 variable "kube_proxy_version" {
   type        = string
   description = "The version of the EKS Kube Proxy Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-kube-proxy.html#kube-proxy-versions."
-  default     = "v1.32.6-eksbuild.12"
+  default     = "v1.33.5-eksbuild.2"
 }
 
 variable "vpc_cni_version" {
   type        = string
   description = "The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html."
-  default     = "v1.20.4-eksbuild.2"
+  default     = "v1.21.1-eksbuild.1"
 }
 
 variable "aws_ebs_csi_driver_version" {
   type        = string
   description = "The version of the EKS EBS CSI Addon. Reference https://github.com/kubernetes-sigs/aws-ebs-csi-driver/?tab=readme-ov-file#compatibility."
-  default     = "v1.52.1-eksbuild.1"
+  default     = "v1.54.0-eksbuild.1"
 }
 
 variable "aws_eks_pod_identity_agent_driver_version" {
   type        = string
   description = "The version of the EKS Pod Identity Agent Addon."
-  default     = "v1.3.9-eksbuild.5"
+  default     = "v1.3.10-eksbuild.2"
 }
 
 variable "eks_private_endpoint_enabled" {
@@ -158,6 +158,24 @@ variable "eks_cluster_endpoint_public_access_cidrs" {
   type        = list(string)
   description = " List of CIDR blocks which can access the Amazon EKS public API server endpoint"
   default     = ["0.0.0.0/0"]
+}
+
+variable "eks_enabled_log_types" {
+  description = "List of the desired control plane logging to enable."
+  type        = list(string)
+  default     = ["audit", "api", "authenticator", "scheduler"]
+}
+
+variable "cost_allocation_tag_key" {
+  default     = "Project"
+  type        = string
+  description = "The tag key for cost allocation propogation. You must also add tags to all resources with Terraform provider config."
+}
+
+variable "cost_allocation_tag_value" {
+  default     = ""
+  type        = string
+  description = "The tag value for cost allocation. You must also add tags to all resources with Terraform provider config."
 }
 
 variable "eks_node_additional_security_group_ids" {

@@ -210,7 +210,7 @@ install-cluster-autoscaler:
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler; \
 	helm repo update autoscaler; \
 	helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
-	--version 9.46.6 \
+	--version 9.51.0 \
 	-n kube-system \
 	--set awsRegion=$${DEPLOY_REGION} \
 	--set rbac.serviceAccount.create=true \
@@ -225,7 +225,7 @@ install-cluster-autoscaler-from-airgap:
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler; \
 	helm repo update autoscaler; \
 	helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
-	--version 9.46.6 \
+	--version 9.51.0 \
 	-n kube-system \
 	--set awsRegion=$${DEPLOY_REGION} \
 	--set image.repository="$${KOTS_REGISTRY}/cluster-autoscaler-fips@sha256" \
@@ -279,7 +279,8 @@ install-load-balancer-controller:
 	--set clusterName=$${EKS_CLUSTER_NAME} \
 	--set enableShield=false \
 	--set enableWaf=false \
-	--set enableWaafv2=false
+	--set enableWaafv2=false \
+	--set-string defaultTags.${cost_allocation_tag_key}="${cost_allocation_tag_value}"
 
 
 # Installs the load balancer controller using the image from the airgap bundle via private registry

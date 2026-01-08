@@ -231,12 +231,14 @@ module "checkmarx-one" {
   source = "../../"
 
   # General Configuration
-  deployment_id      = var.deployment_id
-  ec2_key_name       = var.ec2_key_name
-  vpc_id             = module.vpc.vpc_id
-  vpc_private_cidrs  = module.vpc.vpc_cidr_blocks
-  kms_key_arn        = aws_kms_key.main.arn
-  s3_allowed_origins = [var.fqdn, "https://${var.fqdn}"]
+  deployment_id             = var.deployment_id
+  ec2_key_name              = var.ec2_key_name
+  vpc_id                    = module.vpc.vpc_id
+  vpc_private_cidrs         = module.vpc.vpc_cidr_blocks
+  kms_key_arn               = aws_kms_key.main.arn
+  s3_allowed_origins        = [var.fqdn, "https://${var.fqdn}"]
+  cost_allocation_tag_key   = var.cost_allocation_tag_key
+  cost_allocation_tag_value = var.cost_allocation_tag_value
 
   # EKS Configuration
   eks_create                               = var.eks_create
@@ -257,6 +259,7 @@ module "checkmarx-one" {
   eks_post_bootstrap_user_data             = var.eks_post_bootstrap_user_data
   eks_cloudinit_pre_nodeadm                = var.eks_cloudinit_pre_nodeadm
   eks_cloudinit_post_nodeadm               = var.eks_cloudinit_post_nodeadm
+  eks_enabled_log_types                    = var.eks_enabled_log_types
   eks_cluster_security_group_additional_rules = {
     egress_nodes_ephemeral_ports_tcp = {
       description = "Ingress from VPC (management hosts)"
@@ -411,6 +414,9 @@ module "checkmarx-one-install" {
   kots_registry_username                = var.kots_registry_username
   kots_registry_password                = var.kots_registry_password
   target_group_arn                      = var.create_alb == true ? aws_lb_target_group.traefik_pods[0].arn : ""
+  cost_allocation_tag_key               = var.cost_allocation_tag_key
+  cost_allocation_tag_value             = var.cost_allocation_tag_value
+
 }
 
 output "cxone1" {

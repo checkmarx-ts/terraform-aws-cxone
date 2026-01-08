@@ -415,3 +415,16 @@ variable "redis_auth_token" {
   type        = string
   default     = ""
 }
+
+
+variable "cost_allocation_tag_key" {
+  description = "The tag key to use for cost allocation."
+  type        = string
+  default     = "Project"
+}
+
+variable "cost_allocation_tag_value" {
+  description = "The tag value for cost allocation."
+  type        = string
+  default     = ""
+}
