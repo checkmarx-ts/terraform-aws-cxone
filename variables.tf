@@ -305,6 +305,7 @@ variable "eks_node_groups" {
     capacity_type   = optional(string, "ON_DEMAND")
     labels          = optional(map(string), {})
     taints          = optional(map(object({ key = string, value = string, effect = string })), {})
+    subnet_ids      = optional(list(string), null)
   }))
   default = [{
     name           = "ast-app"

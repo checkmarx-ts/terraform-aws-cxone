@@ -35,7 +35,7 @@ locals {
     launch_template_tags            = var.launch_template_tags
     cluster_name                    = var.deployment_id
     cluster_version                 = var.eks_version
-    subnet_ids                      = var.eks_subnets
+    subnet_ids                      = node_group.subnet_ids != null ? node_group.subnet_ids : var.eks_subnets
     create_iam_role                 = false
     iam_role_arn                    = module.eks_node_iam_role.iam_role_arn
     key_name                        = var.ec2_key_name
