@@ -1,6 +1,6 @@
 resource "aws_rds_cluster_parameter_group" "analytics" {
-  name        = "${var.deployment_id}-analytics-cluster"
-  family      = "aurora-postgresql13"
+  name_prefix = "${var.deployment_id}-analytics-cluster-"
+  family      = local.db_parameter_group_family
   description = "RDS cluster parameter group for ${var.deployment_id}"
 
   parameter {
@@ -19,8 +19,8 @@ resource "aws_rds_cluster_parameter_group" "analytics" {
 }
 
 resource "aws_db_parameter_group" "analytics" {
-  name   = "${var.deployment_id}-analytics-instance"
-  family = "aurora-postgresql13"
+  name_prefix = "${var.deployment_id}-analytics-instance-"
+  family      = local.db_parameter_group_family
 
   parameter {
     name  = "auto_explain.log_min_duration"
@@ -73,12 +73,14 @@ module "rds-analytics" {
   final_snapshot_identifier             = var.analytics_db_final_snapshot_identifier
   auto_minor_version_upgrade            = var.db_auto_minor_version_upgrade
   iam_database_authentication_enabled   = false
+  copy_tags_to_snapshot                 = true
   snapshot_identifier                   = var.analytics_db_snapshot_identifer
   monitoring_interval                   = var.db_monitoring_interval
   performance_insights_enabled          = var.db_performance_insights_enabled
   performance_insights_retention_period = var.db_performance_insights_retention_period
-  db_cluster_parameter_group_name       = aws_rds_cluster_parameter_group.analytics.name
-  db_parameter_group_name               = aws_db_parameter_group.analytics.name
+  db_cluster_parameter_group_name            = aws_rds_cluster_parameter_group.analytics.name
+  db_parameter_group_name                    = aws_db_parameter_group.analytics.name
+  db_cluster_db_instance_parameter_group_name = var.db_allow_major_version_upgrade ? aws_db_parameter_group.analytics.name : null
   master_username                       = "analytics"
   database_name                         = "analytics"
   master_password                       = var.analytics_db_master_user_password

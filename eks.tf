@@ -36,6 +36,7 @@ locals {
     cluster_name                    = var.deployment_id
     cluster_version                 = var.eks_version
     subnet_ids                      = node_group.subnet_ids != null ? node_group.subnet_ids : var.eks_subnets
+    timeouts                        = node_group.timeouts
     create_iam_role                 = false
     iam_role_arn                    = module.eks_node_iam_role.iam_role_arn
     key_name                        = var.ec2_key_name
@@ -44,9 +45,9 @@ locals {
     pre_bootstrap_user_data         = var.eks_pre_bootstrap_user_data
     cloudinit_pre_nodeadm           = var.eks_cloudinit_pre_nodeadm
     cloudinit_post_nodeadm          = var.eks_cloudinit_post_nodeadm
-    ami_id                          = var.eks_ami_id
-    ami_type                        = var.eks_ami_type
-    ami_release_version             = var.eks_ami_release_version
+    ami_id                          = node_group.eks_ami_id != null ? node_group.eks_ami_id : var.eks_ami_id
+    ami_type                        = node_group.eks_ami_type != null ? node_group.eks_ami_type : var.eks_ami_type
+    ami_release_version             = node_group.eks_ami_release_version != null ? node_group.eks_ami_release_version : var.eks_ami_release_version
     bootstrap_extra_args            = var.eks_bootstrap_extra_args
 
     metadata_options = {
@@ -68,57 +69,21 @@ locals {
       }
     }
   } }
-}
 
-module "eks_node_iam_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
-  version = "5.48.0"
-  trusted_role_services = [
-    "ec2.amazonaws.com"
-  ]
-  create_role       = true
-  role_name         = "${var.deployment_id}-eks-nodes"
-  role_requires_mfa = false
-  custom_role_policy_arns = [
-    "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKS_CNI_Policy",
-    "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
-    "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy",
-    "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
-    "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  ]
-}
-
-resource "aws_iam_role_policy_attachment" "s3_access" {
-  count      = var.create_node_s3_iam_role == true ? 1 : 0
-  role       = module.eks_node_iam_role.iam_role_name
-  policy_arn = aws_iam_policy.s3_bucket_access[0].arn
-}
-
-
-resource "aws_iam_policy" "s3_bucket_access" {
-  name  = "${var.deployment_id}-s3-access"
-  count = var.create_node_s3_iam_role == true ? 1 : 0
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Action" : [
-          "s3:*"
-        ],
-        "Effect" : "Allow",
-        "Resource" : [
-          "arn:${data.aws_partition.current.partition}:s3:::${var.deployment_id}*",
-          "arn:${data.aws_partition.current.partition}:s3:::${var.deployment_id}*/*"
-        ]
+  # One ASG tag per taint entry so cluster-autoscaler node templates match nodes (taints map keys must be unique per group).
+  cluster_autoscaler_nodegroup_taints = merge([
+    for ng in var.eks_node_groups : {
+      for taint_label, t in coalesce(ng.taints, {}) : "${ng.name}__${taint_label}" => {
+        node_group_name = ng.name
+        taint           = t
       }
-    ]
-  })
+    }
+  ]...)
 }
-
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "21.0.4" #"20.23.0" #
+  version = "21.15.1" #"20.23.0" #
   create  = var.eks_create
 
   name               = var.deployment_id
@@ -174,7 +139,8 @@ module "eks" {
 
   addons = {
     eks-pod-identity-agent = {
-      addon_version = var.aws_eks_pod_identity_agent_driver_version
+      addon_version  = var.aws_eks_pod_identity_agent_driver_version
+      before_compute = true
     }
     coredns = {
       addon_version = var.coredns_version
@@ -185,6 +151,10 @@ module "eks" {
     vpc-cni = {
       addon_version  = var.vpc_cni_version
       before_compute = true
+      pod_identity_association = [{
+        role_arn        = module.vpc_cni_pod_identity.iam_role_arn
+        service_account = "aws-node"
+      }]
       configuration_values = jsonencode({
         env = {
           AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = tostring(var.eks_enable_custom_networking)
@@ -199,8 +169,11 @@ module "eks" {
       })
     }
     aws-ebs-csi-driver = {
-      addon_version            = var.aws_ebs_csi_driver_version
-      service_account_role_arn = var.eks_create ? module.ebs_csi_irsa[0].iam_role_arn : null
+      addon_version = var.aws_ebs_csi_driver_version
+      pod_identity_association = [{
+        role_arn        = module.ebs_csi_pod_identity.iam_role_arn
+        service_account = "ebs-csi-controller-sa"
+      }]
       configuration_values = jsonencode({
         controller = {
           extraVolumeTags = {
@@ -231,6 +204,13 @@ resource "aws_eks_addon" "amzn_cloudwatch_observability" {
 }
 
 
+resource "aws_eks_addon" "metrics_server" {
+  count         = var.metrics_server_version != null ? 1 : 0
+  cluster_name  = module.eks.cluster_name
+  addon_name    = "metrics-server"
+  addon_version = var.metrics_server_version
+}
+
 resource "aws_autoscaling_group_tag" "cluster_autoscaler_label" {
   for_each               = { for node_group in var.eks_node_groups : node_group.name => node_group }
   depends_on             = [module.eks]
@@ -243,136 +223,49 @@ resource "aws_autoscaling_group_tag" "cluster_autoscaler_label" {
 }
 
 resource "aws_autoscaling_group_tag" "cluster_autoscaler_taint" {
-  for_each               = { for node_group in var.eks_node_groups : node_group.name => node_group if length(node_group.taints) > 0 }
+  for_each               = local.cluster_autoscaler_nodegroup_taints
   depends_on             = [module.eks]
-  autoscaling_group_name = module.eks.eks_managed_node_groups["${each.value.name}"].node_group_autoscaling_group_names[0]
+  autoscaling_group_name = module.eks.eks_managed_node_groups[each.value.node_group_name].node_group_autoscaling_group_names[0]
   tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${each.value.taints.dedicated.key}"
-    value               = "${each.value.taints.dedicated.value}:${each.value.taints.dedicated.effect}"
+    key                 = "k8s.io/cluster-autoscaler/node-template/taint/${each.value.taint.key}"
+    value               = "${each.value.taint.value}:${each.value.taint.effect}"
     propagate_at_launch = true
   }
 }
 
 
-module "ebs_csi_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.48.0"
-  count   = var.eks_create ? 1 : 0
-
-  role_name             = "ebs-csi-${var.deployment_id}"
-  role_description      = "IRSA role for EBS CSI Driver"
-  attach_ebs_csi_policy = true
-  ebs_csi_kms_cmk_ids   = [var.kms_key_arn]
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
-    }
-  }
-}
 
 
-module "cluster_autoscaler_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.48.0"
-  count   = var.eks_create && var.eks_create_cluster_autoscaler_irsa ? 1 : 0
+# data "aws_iam_role" "karpenter" {
+#   name       = "${var.deployment_id}-eks-nodes"
+#   depends_on = [module.eks]
+# }
 
-  role_name                        = "cluster-autoscaler-${var.deployment_id}"
-  role_description                 = "IRSA role for cluster autoscaler"
-  attach_cluster_autoscaler_policy = true
+# module "karpenter" {
+#   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
+#   version = "20.8.5"
+#   create  = var.eks_create && var.eks_create_karpenter
 
-  cluster_autoscaler_cluster_names = [module.eks.cluster_name]
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:cluster-autoscaler"]
-    }
-  }
-}
-
-
-module "external_dns_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.48.0"
-  count   = var.eks_create && var.eks_create_external_dns_irsa ? 1 : 0
-
-  role_name        = "external-dns-${var.deployment_id}"
-  role_description = "IRSA role for cluster external dns controller"
-  #external_dns_hosted_zone_arns = var.external_dns_hosted_zone_arns
-  # setting to false because we don't want to rely on exeternal policies
-  attach_external_dns_policy = true
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:external-dns"]
-    }
-  }
-}
-
-
-module "load_balancer_controller_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.48.0"
-  count   = var.eks_create && var.eks_create_load_balancer_controller_irsa ? 1 : 0
-
-  role_name                              = "load_balancer_controller-${var.deployment_id}"
-  role_description                       = "IRSA role for cluster load balancer controller"
-  attach_load_balancer_controller_policy = true
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
-    }
-  }
-}
-
-module "aws_cloudwatch_observability_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.48.0"
-  count   = var.eks_create && var.aws_cloudwatch_observability_version != null ? 1 : 0
-
-  role_name                              = "aws-cloudwatch-observability-${var.deployment_id}"
-  role_description                       = "IRSA role for AWS Cloudwatch Observability"
-  attach_cloudwatch_observability_policy = true
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["amazon-cloudwatch:cloudwatch-agent"]
-    }
-  }
-}
-
-
-data "aws_iam_role" "karpenter" {
-  name       = "${var.deployment_id}-eks-nodes"
-  depends_on = [module.eks]
-}
-
-module "karpenter" {
-  source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "20.8.5"
-  create  = var.eks_create && var.eks_create_karpenter
-
-  cluster_name                    = var.deployment_id
-  enable_irsa                     = true
-  irsa_oidc_provider_arn          = module.eks.oidc_provider_arn
-  irsa_namespace_service_accounts = ["kube-system:karpenter"]
-  create_iam_role                 = true
-  iam_role_name                   = "KarpenterController-${var.deployment_id}"
-  iam_role_description            = "IAM role for karpenter controller created by karpenter module"
-  create_node_iam_role            = false
-  node_iam_role_arn               = data.aws_iam_role.karpenter.arn
-  create_access_entry             = false
-  iam_policy_name                 = "KarpenterPolicy-${var.deployment_id}"
-  iam_policy_description          = "Karpenter controller IAM policy created by karpenter module"
-  iam_role_use_name_prefix        = false
-  node_iam_role_additional_policies = {
-    AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
-    AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-  }
-  enable_spot_termination = true
-  queue_name              = "${var.deployment_id}-node-termination-handler"
-}
+#   cluster_name                    = var.deployment_id
+#   enable_irsa                     = true
+#   irsa_oidc_provider_arn          = module.eks.oidc_provider_arn
+#   irsa_namespace_service_accounts = ["kube-system:karpenter"]
+#   create_iam_role                 = true
+#   iam_role_name                   = "KarpenterController-${var.deployment_id}"
+#   iam_role_description            = "IAM role for karpenter controller created by karpenter module"
+#   create_node_iam_role            = false
+#   node_iam_role_arn               = data.aws_iam_role.karpenter.arn
+#   create_access_entry             = false
+#   iam_policy_name                 = "KarpenterPolicy-${var.deployment_id}"
+#   iam_policy_description          = "Karpenter controller IAM policy created by karpenter module"
+#   iam_role_use_name_prefix        = false
+#   node_iam_role_additional_policies = {
+#     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+#     AmazonEBSCSIDriverPolicy     = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+#   }
+#   enable_spot_termination = true
+#   queue_name              = "${var.deployment_id}-node-termination-handler"
+# }
 
 
 
@@ -389,7 +282,7 @@ output "load_balancer_controller_iam_role_arn" {
 }
 
 output "karpenter_iam_role_arn" {
-  value = var.eks_create && var.eks_create_karpenter ? module.karpenter.iam_role_arn : ""
+  value = ""
 }
 
 output "cluster_endpoint" {
@@ -405,7 +298,7 @@ output "cluster_certificate_authority_data" {
 }
 
 output "nodegroup_iam_role_name" {
-  value = data.aws_iam_role.karpenter.name
+  value = ""
 }
 
 output "eks" {

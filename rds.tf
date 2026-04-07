@@ -1,6 +1,10 @@
+locals {
+  db_parameter_group_family = "aurora-postgresql${split(".", var.db_engine_version)[0]}"
+}
+
 resource "aws_rds_cluster_parameter_group" "main" {
-  name        = "${var.deployment_id}-main-cluster"
-  family      = "aurora-postgresql13"
+  name_prefix = "${var.deployment_id}-main-cluster-"
+  family      = local.db_parameter_group_family
   description = "RDS cluster parameter group for ${var.deployment_id}"
 
   parameter {
@@ -19,8 +23,8 @@ resource "aws_rds_cluster_parameter_group" "main" {
 }
 
 resource "aws_db_parameter_group" "main" {
-  name   = "${var.deployment_id}-main-instance"
-  family = "aurora-postgresql13"
+  name_prefix = "${var.deployment_id}-main-instance-"
+  family      = local.db_parameter_group_family
 
   parameter {
     name  = "auto_explain.log_min_duration"
@@ -70,6 +74,7 @@ module "rds" {
   autoscaling_target_cpu                = var.db_autoscaling_target_cpu
   autoscaling_scale_in_cooldown         = var.db_autoscaling_scale_in_cooldown
   autoscaling_scale_out_cooldown        = var.db_autoscaling_scale_out_cooldown
+  copy_tags_to_snapshot                 = true
   vpc_id                                = var.vpc_id
   kms_key_id                            = var.kms_key_arn
   db_subnet_group_name                  = aws_db_subnet_group.main.name
@@ -83,8 +88,9 @@ module "rds" {
   monitoring_interval                   = var.db_monitoring_interval
   performance_insights_enabled          = var.db_performance_insights_enabled
   performance_insights_retention_period = var.db_performance_insights_retention_period
-  db_cluster_parameter_group_name       = aws_rds_cluster_parameter_group.main.name
-  db_parameter_group_name               = aws_db_parameter_group.main.name
+  db_cluster_parameter_group_name            = aws_rds_cluster_parameter_group.main.name
+  db_parameter_group_name                    = aws_db_parameter_group.main.name
+  db_cluster_db_instance_parameter_group_name = var.db_allow_major_version_upgrade ? aws_db_parameter_group.main.name : null
   master_username                       = "ast"
   database_name                         = "ast"
   master_password                       = var.db_master_user_password

@@ -102,6 +102,14 @@ spec:
     sca_prod_environment:
       value: ${sca_prod_environment}
 
+    # Enables or disables the use of graviton instance types for the sast engine node groups
+    # Valid values are "0" (disabled) and "1" (enabled).
+    # Recommended value: "0" until advised by Checkmarx.
+    # When enabled, sast engines will be launched with node selectors with -arm64 appended to them e.g. sast-engine-arm64 or sast-engine-large-arm64.
+    # When enabling this configuration, your cluster must be configured with nodegroups with these labels. 
+    enable_graviton:
+      value: "${enable_graviton}"
+
 
     #--------------------------------------------------------------------------
     #  Keys
@@ -483,7 +491,21 @@ spec:
     # Enables the use of embedded or external elasticsearch for Camunda. 
     # Only embedded_elastic is supported at this time.
     camunda_search_type:
-      value: embedded_elastic
+      value: external_opensearch
+    
+    camunda_opensearch_aws:
+      value: "0"
+
+    camunda_opensearch_username:
+      value: ast
+    camunda_opensearch_password:
+      value: "${elasticsearch_password}"
+
+    camunda_opensearch_host:
+      value: ${elasticsearch_host}
+
+    camunda_opensearch_port:
+      value: "443"
 
     #--------------------------------------------------------------------------
     # Advanced Options Configuration

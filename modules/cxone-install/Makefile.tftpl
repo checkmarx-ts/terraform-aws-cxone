@@ -182,14 +182,38 @@ create-keda-airgap-regcred:
 install-keda:
 	helm repo add kedacore https://kedacore.github.io/charts; \
 	helm repo update; \
-	helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --version 2.17.2
+	helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --version 2.19.0 \
+	--set podSecurityContext.operator.runAsNonRoot=true \
+	--set podSecurityContext.operator.runAsUser=10101 \
+	--set podSecurityContext.operator.runAsGroup=10101 \
+	--set podSecurityContext.operator.fsGroup=10101 \
+	--set podSecurityContext.metricServer.runAsNonRoot=true \
+	--set podSecurityContext.metricServer.runAsUser=10101 \
+	--set podSecurityContext.metricServer.runAsGroup=10101 \
+	--set podSecurityContext.metricServer.fsGroup=10101 \
+	--set podSecurityContext.webhooks.runAsNonRoot=true \
+	--set podSecurityContext.webhooks.runAsUser=10101 \
+	--set podSecurityContext.webhooks.runAsGroup=10101 \
+	--set podSecurityContext.webhooks.fsGroup=10101
  
  
 .PHONY: install-keda-from-airgap
 install-keda-from-airgap: create-keda-airgap-regcred
 	helm repo add kedacore https://kedacore.github.io/charts; \
 	helm repo update; \
-	helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --version 2.17.2 \
+	helm upgrade --install keda kedacore/keda --namespace keda --create-namespace --version 2.17.0 \
+	--set podSecurityContext.operator.runAsNonRoot=true \
+	--set podSecurityContext.operator.runAsUser=10101 \
+	--set podSecurityContext.operator.runAsGroup=10101 \
+	--set podSecurityContext.operator.fsGroup=10101 \
+	--set podSecurityContext.metricServer.runAsNonRoot=true \
+	--set podSecurityContext.metricServer.runAsUser=10101 \
+	--set podSecurityContext.metricServer.runAsGroup=10101 \
+	--set podSecurityContext.metricServer.fsGroup=10101 \
+	--set podSecurityContext.webhooks.runAsNonRoot=true \
+	--set podSecurityContext.webhooks.runAsUser=10101 \
+	--set podSecurityContext.webhooks.runAsGroup=10101 \
+	--set podSecurityContext.webhooks.fsGroup=10101 \
 	--set global.image.registry="$${KOTS_REGISTRY}" \
 	--set imagePullSecrets[0].name=airgap-regcred \
 	--set image.keda.repository="keda-fips@sha256" \
@@ -210,8 +234,9 @@ install-cluster-autoscaler:
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler; \
 	helm repo update autoscaler; \
 	helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
-	--version 9.51.0 \
+	--version 9.53.0 \
 	-n kube-system \
+	--set image.tag="v1.33.3" \
 	--set awsRegion=$${DEPLOY_REGION} \
 	--set rbac.serviceAccount.create=true \
 	--set rbac.serviceAccount.name=cluster-autoscaler \
@@ -225,7 +250,7 @@ install-cluster-autoscaler-from-airgap:
 	helm repo add autoscaler https://kubernetes.github.io/autoscaler; \
 	helm repo update autoscaler; \
 	helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \
-	--version 9.51.0 \
+	--version 9.53.0 \
 	-n kube-system \
 	--set awsRegion=$${DEPLOY_REGION} \
 	--set image.repository="$${KOTS_REGISTRY}/cluster-autoscaler-fips@sha256" \
@@ -302,39 +327,14 @@ install-load-balancer-controller-from-airgap:
 	--set enableShield=false \
 	--set enableWaf=false \
 	--set enableWaafv2=false \
-	--set imagePullSecrets[0].name=airgap-regcred
+	--set imagePullSecrets[0].name=airgap-regcred \
+	--set-string defaultTags.${cost_allocation_tag_key}="${cost_allocation_tag_value}"
 
 
 # Uninstalls the load balancer controller
 .PHONY: uninstall-load-balancer-controller
 uninstall-load-balancer-controller:
 	helm uninstall aws-load-balancer-controller -n kube-system
-
-
-# Installs Karpenter using an online install
-.PHONY: install-karpenter
-install-karpenter:
-	helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter \
-	--version 1.0.1 \
-	-n kube-system \
-	--create-namespace \
-	--set serviceAccount.create=true \
-	--set serviceAccount.name=karpenter \
-	--set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="${karpenter_iam_role_arn}" \
-	--set settings.clusterName=$${EKS_CLUSTER_NAME} \
-	--set settings.featureGates.spotToSpotConsolidation=true \
-	--set settings.interruptionQueue=$${EKS_CLUSTER_NAME}-node-termination-handler \
-	--set controller.resources.requests.cpu=1 \
-	--set controller.resources.requests.memory=1Gi \
-	--set controller.resources.limits.cpu=1 \
-	--set controller.resources.limits.memory=1Gi
-	kubectl apply -f karpenter.$${DEPLOYMENT_ID}.yaml 
-
-
-# Uninstalls Karpenter
-.PHONY: uninstall-karpenter
-uninstall-karpenter:
-	helm uninstall karpenter -n kube-system
 
 
 # Displays single line view of last 2 hours of firewall logs. Only useful in lab environments using the inspection-vpc module.

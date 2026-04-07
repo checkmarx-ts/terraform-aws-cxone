@@ -109,31 +109,31 @@ variable "eks_create_karpenter" {
 variable "eks_version" {
   type        = string
   description = "The version of the EKS Cluster (e.g. 1.32)"
-  default     = "1.33"
+  default     = "1.34"
 }
 
 variable "coredns_version" {
   type        = string
   description = "The version of the EKS Core DNS Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-coredns.html."
-  default     = "v1.12.4-eksbuild.1"
+  default     = "v1.13.2-eksbuild.4"
 }
 
 variable "kube_proxy_version" {
   type        = string
   description = "The version of the EKS Kube Proxy Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-kube-proxy.html#kube-proxy-versions."
-  default     = "v1.33.5-eksbuild.2"
+  default     = "v1.34.5-eksbuild.2"
 }
 
 variable "vpc_cni_version" {
   type        = string
   description = "The version of the EKS VPC CNI Addon. Reference https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html."
-  default     = "v1.21.1-eksbuild.1"
+  default     = "v1.21.1-eksbuild.5"
 }
 
 variable "aws_ebs_csi_driver_version" {
   type        = string
   description = "The version of the EKS EBS CSI Addon. Reference https://github.com/kubernetes-sigs/aws-ebs-csi-driver/?tab=readme-ov-file#compatibility."
-  default     = "v1.54.0-eksbuild.1"
+  default     = "v1.57.1-eksbuild.1"
 }
 
 variable "aws_eks_pod_identity_agent_driver_version" {
@@ -262,6 +262,12 @@ variable "aws_cloudwatch_observability_version" {
   description = "The version of the AWS Cloudwatch Observability Addon. Specify a version to enable the addon, or leave blank to disable the addon."
 }
 
+variable "metrics_server_version" {
+  type        = string
+  description = "The version of the Metrics Server Addon. Specify a version to enable the addon, or leave blank to disable the addon."
+  default     = "v0.8.1-eksbuild.4"
+}
+
 variable "launch_template_tags" {
   type        = map(string)
   description = "Tags to associate with launch templates for node groups"
@@ -291,21 +297,28 @@ variable "ec2_key_name" {
 
 
 variable "eks_node_groups" {
+  description = <<-EOT
+    EKS managed node groups. Optional `eks_ami_id`, `eks_ami_type`, and `eks_ami_release_version` override the cluster-level `eks_ami_*` variables for that node group only (omit them to use cluster defaults). To use Graviton on specific groups, set `eks_ami_type = "AL2023_ARM_64_STANDARD"`, appropriate ARM instance types, and optionally `eks_ami_release_version`.
+  EOT
   type = list(object({
-    name            = string
-    min_size        = string
-    desired_size    = string
-    max_size        = string
-    volume_type     = optional(string, "gp3")
-    disk_size       = optional(number, 225)
-    disk_iops       = optional(number, 3000)
-    disk_throughput = optional(number, 125)
-    device_name     = optional(string, "/dev/xvda")
-    instance_types  = list(string)
-    capacity_type   = optional(string, "ON_DEMAND")
-    labels          = optional(map(string), {})
-    taints          = optional(map(object({ key = string, value = string, effect = string })), {})
-    subnet_ids      = optional(list(string), null)
+    name                    = string
+    min_size                = string
+    desired_size            = string
+    max_size                = string
+    volume_type             = optional(string, "gp3")
+    disk_size               = optional(number, 225)
+    disk_iops               = optional(number, 3000)
+    disk_throughput         = optional(number, 125)
+    device_name             = optional(string, "/dev/xvda")
+    instance_types          = list(string)
+    capacity_type           = optional(string, "ON_DEMAND")
+    labels                  = optional(map(string), {})
+    taints                  = optional(map(object({ key = string, value = string, effect = string })), {})
+    subnet_ids              = optional(list(string), null)
+    timeouts                = optional(object({ create = optional(string, "15m"), update = optional(string, "60m"), delete = optional(string, "60m") }), { create = "15m", update = "60m", delete = "60m" })
+    eks_ami_id              = optional(string, null)
+    eks_ami_type            = optional(string, null)
+    eks_ami_release_version = optional(string, null)
   }))
   default = [{
     name           = "ast-app"
@@ -493,9 +506,14 @@ variable "eks_node_groups" {
 #******************************************************************************
 
 variable "db_engine_version" {
-  description = "The aurora postgres engine version."
+  description = "The Aurora PostgreSQL engine version. Supported major versions: 13 (default), 17."
   type        = string
   default     = "13.8"
+
+  validation {
+    condition     = can(regex("^(13|17)\\.", var.db_engine_version))
+    error_message = "db_engine_version must be a PostgreSQL 13 or 17 version (e.g. \"13.20\" or \"17.4\")."
+  }
 }
 
 

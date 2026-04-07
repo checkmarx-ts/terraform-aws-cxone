@@ -81,6 +81,12 @@ variable "enable_keda_configuration" {
   default     = true
 }
 
+variable "enable_graviton" {
+  type        = bool
+  description = "Configures sast resource manager to launch engines with nodeSelectors with `-arm64` so they can be scheduled on graviton instances. Whene enabled your cluster must be configured to have sast engine nodegroups using graviton with the `-arm64` suffix in their labels e.g. sast-engine becomes sast-engine-arm64."
+  default     = false
+}
+
 variable "cluster_autoscaler_iam_role_arn" {
   type     = string
   nullable = true
@@ -92,11 +98,6 @@ variable "external_dns_iam_role_arn" {
 }
 
 variable "load_balancer_controller_iam_role_arn" {
-  type     = string
-  nullable = true
-}
-
-variable "karpenter_iam_role_arn" {
   type     = string
   nullable = true
 }

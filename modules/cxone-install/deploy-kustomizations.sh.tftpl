@@ -145,8 +145,14 @@ log INFO "Sleeping 60s to allow operator to sync..."
 sleep 60
 
 log INFO "Restarting feature flags deployment..."
-kubectl rollout restart deployment/ast-core-feature-flag -n "$NAMESPACE"
-wait_for_rollout ast-core-feature-flag "$NAMESPACE"
+# Feature flag was split from core into its own component in 3.54, so we need to check which deployment exists before restarting
+if kubectl get deployment/ast-feature-flag-feature-flag -n "$NAMESPACE" &>/dev/null; then
+  FF_DEPLOYMENT="ast-feature-flag-feature-flag"
+else
+  FF_DEPLOYMENT="ast-core-feature-flag"
+fi
+kubectl rollout restart deployment/"$FF_DEPLOYMENT" -n "$NAMESPACE"
+wait_for_rollout "$FF_DEPLOYMENT" "$NAMESPACE"
 
 end_time=$(date +%s)
 duration=$((end_time - start_time))

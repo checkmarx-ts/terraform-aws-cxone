@@ -249,7 +249,6 @@ module "checkmarx-one" {
   eks_create_cluster_autoscaler_irsa       = var.eks_create_cluster_autoscaler_irsa
   eks_create_external_dns_irsa             = var.eks_create_external_dns_irsa
   eks_create_load_balancer_controller_irsa = var.eks_create_load_balancer_controller_irsa
-  eks_create_karpenter                     = var.eks_create_karpenter
   eks_ami_id                               = var.eks_ami_id
   eks_ami_type                             = var.eks_ami_type
   eks_ami_release_version                  = var.eks_ami_release_version
@@ -276,6 +275,7 @@ module "checkmarx-one" {
   vpc_cni_version                          = var.vpc_cni_version
   aws_ebs_csi_driver_version               = var.aws_ebs_csi_driver_version
   aws_cloudwatch_observability_version     = var.aws_cloudwatch_observability_version
+  metrics_server_version                   = var.metrics_server_version
   eks_private_endpoint_enabled             = var.eks_private_endpoint_enabled
   eks_public_endpoint_enabled              = var.eks_public_endpoint_enabled
   eks_cluster_endpoint_public_access_cidrs = var.eks_cluster_endpoint_public_access_cidrs
@@ -374,6 +374,7 @@ module "checkmarx-one-install" {
   bucket_suffix                         = module.checkmarx-one.s3_bucket_name_suffix
   ms_replica_count                      = var.ms_replica_count
   enable_keda_configuration             = var.enable_keda_configuration
+  enable_graviton                       = var.enable_graviton
   object_storage_endpoint               = "s3.${data.aws_region.current.region}.amazonaws.com"
   object_storage_access_key             = var.object_storage_access_key
   object_storage_secret_key             = var.object_storage_secret_key
@@ -400,7 +401,6 @@ module "checkmarx-one-install" {
   cluster_autoscaler_iam_role_arn       = module.checkmarx-one.cluster_autoscaler_iam_role_arn
   load_balancer_controller_iam_role_arn = module.checkmarx-one.load_balancer_controller_iam_role_arn
   external_dns_iam_role_arn             = module.checkmarx-one.external_dns_iam_role_arn
-  karpenter_iam_role_arn                = module.checkmarx-one.karpenter_iam_role_arn
   cluster_endpoint                      = module.checkmarx-one.cluster_endpoint
   nodegroup_iam_role_name               = module.checkmarx-one.nodegroup_iam_role_name
   availability_zones                    = module.vpc.azs
