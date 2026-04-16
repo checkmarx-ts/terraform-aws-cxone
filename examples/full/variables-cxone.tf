@@ -50,6 +50,20 @@ variable "s3_retention_period" {
 #   nullable    = false
 # }
 
+variable "s3_server_side_encryption_configuration" {
+  description = "Server-side encryption configuration for S3 buckets. Override to match externally enforced encryption policies (e.g. cloud compliance tools) and prevent Terraform plan drift."
+  type        = any
+  default = {
+    rule = {
+      blocked_encryption_types = ["NONE"]
+      bucket_key_enabled       = false
+      apply_server_side_encryption_by_default = {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
+}
+
 #******************************************************************************
 #   EKS Configuration
 #******************************************************************************

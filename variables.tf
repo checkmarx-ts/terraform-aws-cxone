@@ -49,6 +49,8 @@ variable "s3_server_side_encryption_configuration" {
   type        = any
   default = {
     rule = {
+      blocked_encryption_types = ["NONE"]
+      bucket_key_enabled       = false
       apply_server_side_encryption_by_default = {
         sse_algorithm = "AES256"
       }

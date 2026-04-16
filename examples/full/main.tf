@@ -231,14 +231,15 @@ module "checkmarx-one" {
   source = "../../"
 
   # General Configuration
-  deployment_id             = var.deployment_id
-  ec2_key_name              = var.ec2_key_name
-  vpc_id                    = module.vpc.vpc_id
-  vpc_private_cidrs         = module.vpc.vpc_cidr_blocks
-  kms_key_arn               = aws_kms_key.main.arn
-  s3_allowed_origins        = [var.fqdn, "https://${var.fqdn}"]
-  cost_allocation_tag_key   = var.cost_allocation_tag_key
-  cost_allocation_tag_value = var.cost_allocation_tag_value
+  deployment_id                           = var.deployment_id
+  ec2_key_name                            = var.ec2_key_name
+  vpc_id                                  = module.vpc.vpc_id
+  vpc_private_cidrs                       = module.vpc.vpc_cidr_blocks
+  kms_key_arn                             = aws_kms_key.main.arn
+  s3_allowed_origins                      = [var.fqdn, "https://${var.fqdn}"]
+  s3_server_side_encryption_configuration = var.s3_server_side_encryption_configuration
+  cost_allocation_tag_key                 = var.cost_allocation_tag_key
+  cost_allocation_tag_value               = var.cost_allocation_tag_value
 
   # EKS Configuration
   eks_create                               = var.eks_create
