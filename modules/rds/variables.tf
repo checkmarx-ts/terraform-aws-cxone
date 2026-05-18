@@ -44,6 +44,48 @@ variable "db_instances" {
   }
 }
 
+variable "serverlessv2_scaling_configuration" {
+  description = "Serverless v2 min/max capacity units. Only applied when instance type is db.serverless."
+  type = object({
+    min_capacity = number
+    max_capacity = number
+  })
+  default = {
+    min_capacity = 0.5
+    max_capacity = 32
+  }
+}
+
+variable "allow_major_version_upgrade" {
+  description = "Enable major version upgrades. Required when changing engine_version to a new major version."
+  type        = bool
+  default     = false
+}
+
+variable "snapshot_identifier" {
+  description = "Snapshot identifier to restore the cluster from. If null, a fresh cluster is created."
+  type        = string
+  default     = null
+}
+
+variable "cluster_parameter_overrides" {
+  description = "Arbitrary cluster parameter group overrides merged over module defaults. apply_method defaults to \"immediate\"; use \"pending-reboot\" for static parameters like max_connections."
+  type = map(object({
+    value        = string
+    apply_method = optional(string, "immediate")
+  }))
+  default = {}
+}
+
+variable "instance_parameter_overrides" {
+  description = "Arbitrary instance parameter group overrides merged over module defaults. apply_method defaults to \"immediate\"."
+  type = map(object({
+    value        = string
+    apply_method = optional(string, "immediate")
+  }))
+  default = {}
+}
+
 variable "postgres_nodes" {
   description = "Configuration for the Aurora Postgres DB nodes"
   type = object({
@@ -63,7 +105,6 @@ variable "postgres_nodes" {
     count               = 1
     max_count           = 1
   }
-
 }
 
 variable "kms_key_arn" {
