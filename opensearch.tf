@@ -55,6 +55,7 @@ resource "aws_opensearch_domain" "es" {
     }
   }
 
+
   access_policies = data.aws_iam_policy_document.opensearch.json
 
 }
@@ -70,6 +71,12 @@ data "aws_iam_policy_document" "opensearch" {
 
     actions   = ["es:*"]
     resources = ["arn:${data.aws_partition.current.partition}:es:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:domain/${var.deployment_id}-os/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceVpc"
+      values   = [var.vpc_id]
+    }
   }
 }
 
