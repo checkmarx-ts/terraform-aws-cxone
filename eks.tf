@@ -91,8 +91,9 @@ module "eks" {
 
   enabled_log_types = var.eks_enabled_log_types
 
-  endpoint_private_access = var.eks_private_endpoint_enabled
-  endpoint_public_access  = var.eks_public_endpoint_enabled
+  endpoint_private_access      = var.eks_private_endpoint_enabled
+  endpoint_public_access       = var.eks_public_endpoint_enabled
+  endpoint_public_access_cidrs = var.eks_public_endpoint_remote_management_cidrs
 
   vpc_id     = var.vpc_id
   subnet_ids = var.eks_subnets
