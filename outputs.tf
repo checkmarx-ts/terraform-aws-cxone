@@ -2,6 +2,21 @@ output "bucket_suffix" {
   value = random_string.random_suffix.result
 }
 
+output "s3_bucket_names" {
+  description = "Names of all S3 buckets created for this deployment."
+  value       = [for k, v in module.s3_bucket : v.s3_bucket_id]
+}
+
+output "rds_cluster_identifier" {
+  description = "Aurora cluster identifier for the main (ast) database."
+  value       = var.db_create ? module.rds.cluster_id : null
+}
+
+output "rds_analytics_cluster_identifier" {
+  description = "Aurora cluster identifier for the analytics database."
+  value       = var.db_create ? module.rds-analytics.cluster_id : null
+}
+
 output "eks_cluster" {
   value = {
     cluster_arn                        = module.eks.cluster_arn
