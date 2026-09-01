@@ -945,3 +945,9 @@ variable "es_password" {
   sensitive   = true
 }
 
+variable "opensearch_log_retention_in_days" {
+  description = "The number of days to retain OpenSearch CloudWatch log groups."
+  type        = number
+  default     = 90
+}
+

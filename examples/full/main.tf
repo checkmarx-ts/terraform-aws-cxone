@@ -353,6 +353,7 @@ module "checkmarx-one" {
   es_volume_size                   = var.es_volume_size
   es_tls_security_policy           = var.es_tls_security_policy
   es_password                      = var.password_override != null ? var.password_override : random_password.elasticsearch.result
+  opensearch_log_retention_in_days = var.opensearch_log_retention_in_days
 }
 
 

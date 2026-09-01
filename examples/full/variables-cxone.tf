@@ -924,6 +924,12 @@ variable "es_username" {
   default     = "ast"
 }
 
+variable "opensearch_log_retention_in_days" {
+  description = "The number of days to retain OpenSearch CloudWatch log groups."
+  type        = number
+  default     = 90
+}
+
 # variable "es_password" {
 #   description = "The password for the elasticsearch user"
 #   type        = string
