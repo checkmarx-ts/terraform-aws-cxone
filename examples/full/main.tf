@@ -270,20 +270,20 @@ module "checkmarx-one" {
       cidr_blocks = module.vpc.vpc_cidr_blocks
     }
   }
-  eks_version                              = var.eks_version
-  coredns_version                          = var.coredns_version
-  kube_proxy_version                       = var.kube_proxy_version
-  vpc_cni_version                          = var.vpc_cni_version
-  aws_ebs_csi_driver_version               = var.aws_ebs_csi_driver_version
-  aws_cloudwatch_observability_version     = var.aws_cloudwatch_observability_version
-  metrics_server_version                   = var.metrics_server_version
-  eks_private_endpoint_enabled             = var.eks_private_endpoint_enabled
-  eks_public_endpoint_enabled              = var.eks_public_endpoint_enabled
-  eks_cluster_endpoint_public_access_cidrs = var.eks_cluster_endpoint_public_access_cidrs
-  enable_cluster_creator_admin_permissions = var.enable_cluster_creator_admin_permissions
-  eks_administrator_principals             = var.eks_administrator_principals
-  launch_template_tags                     = var.launch_template_tags
-  eks_node_groups                          = var.eks_node_groups
+  eks_version                                 = var.eks_version
+  coredns_version                             = var.coredns_version
+  kube_proxy_version                          = var.kube_proxy_version
+  vpc_cni_version                             = var.vpc_cni_version
+  aws_ebs_csi_driver_version                  = var.aws_ebs_csi_driver_version
+  aws_cloudwatch_observability_version        = var.aws_cloudwatch_observability_version
+  metrics_server_version                      = var.metrics_server_version
+  eks_private_endpoint_enabled                = var.eks_private_endpoint_enabled
+  eks_public_endpoint_enabled                 = var.eks_public_endpoint_enabled
+  eks_public_endpoint_remote_management_cidrs = var.eks_public_endpoint_remote_management_cidrs
+  enable_cluster_creator_admin_permissions    = var.enable_cluster_creator_admin_permissions
+  eks_administrator_principals                = var.eks_administrator_principals
+  launch_template_tags                        = var.launch_template_tags
+  eks_node_groups                             = var.eks_node_groups
 
   # RDS Configuration
   db_subnets                     = module.vpc.database_subnets
@@ -353,6 +353,7 @@ module "checkmarx-one" {
   es_volume_size                   = var.es_volume_size
   es_tls_security_policy           = var.es_tls_security_policy
   es_password                      = var.password_override != null ? var.password_override : random_password.elasticsearch.result
+  opensearch_log_retention_in_days = var.opensearch_log_retention_in_days
 }
 
 

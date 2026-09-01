@@ -57,6 +57,25 @@ resource "aws_opensearch_domain" "es" {
 
   access_policies = data.aws_iam_policy_document.opensearch.json
 
+  log_publishing_options {
+    cloudwatch_log_group_arn = aws_cloudwatch_log_group.opensearch_index_slow_logs.arn
+    log_type                 = "INDEX_SLOW_LOGS"
+  }
+
+  log_publishing_options {
+    cloudwatch_log_group_arn = aws_cloudwatch_log_group.opensearch_search_slow_logs.arn
+    log_type                 = "SEARCH_SLOW_LOGS"
+  }
+
+  log_publishing_options {
+    cloudwatch_log_group_arn = aws_cloudwatch_log_group.opensearch_es_application_logs.arn
+    log_type                 = "ES_APPLICATION_LOGS"
+  }
+
+  log_publishing_options {
+    cloudwatch_log_group_arn = aws_cloudwatch_log_group.opensearch_audit_logs.arn
+    log_type                 = "AUDIT_LOGS"
+  }
 }
 
 data "aws_iam_policy_document" "opensearch" {
@@ -70,6 +89,7 @@ data "aws_iam_policy_document" "opensearch" {
 
     actions   = ["es:*"]
     resources = ["arn:${data.aws_partition.current.partition}:es:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:domain/${var.deployment_id}-os/*"]
+
   }
 }
 
@@ -97,4 +117,73 @@ output "es_username" {
 output "es_password" {
   value     = var.es_create ? var.es_password : ""
   sensitive = true
+}
+
+
+
+
+
+
+resource "aws_cloudwatch_log_group" "opensearch_index_slow_logs" {
+  name              = "/aws/opensearch/${module.eks.cluster_name}/INDEX_SLOW_LOGS"
+  retention_in_days = var.opensearch_log_retention_in_days
+}
+
+resource "aws_cloudwatch_log_group" "opensearch_search_slow_logs" {
+  name              = "/aws/opensearch/${module.eks.cluster_name}/SEARCH_SLOW_LOGS"
+  retention_in_days = var.opensearch_log_retention_in_days
+}
+
+resource "aws_cloudwatch_log_group" "opensearch_es_application_logs" {
+  name              = "/aws/opensearch/${module.eks.cluster_name}/ES_APPLICATION_LOGS"
+  retention_in_days = var.opensearch_log_retention_in_days
+}
+
+resource "aws_cloudwatch_log_group" "opensearch_audit_logs" {
+  name              = "/aws/opensearch/${module.eks.cluster_name}/AUDIT_LOGS"
+  retention_in_days = var.opensearch_log_retention_in_days
+}
+
+data "aws_iam_policy_document" "opensearch_logs" {
+  statement {
+    sid = "AllowOpenSearchToWriteLogs"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams",
+    ]
+
+    principals {
+      type        = "Service"
+      identifiers = ["es.amazonaws.com"]
+    }
+
+    resources = [
+      "${aws_cloudwatch_log_group.opensearch_index_slow_logs.arn}:*",
+      "${aws_cloudwatch_log_group.opensearch_search_slow_logs.arn}:*",
+      "${aws_cloudwatch_log_group.opensearch_es_application_logs.arn}:*",
+      "${aws_cloudwatch_log_group.opensearch_audit_logs.arn}:*",
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+
+    # Scope it to your domain
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values = [
+        "arn:${data.aws_partition.current.partition}:es:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:domain/${var.deployment_id}-os"
+      ]
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_resource_policy" "opensearch" {
+  policy_name     = "opensearch-to-cwl"
+  policy_document = data.aws_iam_policy_document.opensearch_logs.json
 }

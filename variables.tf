@@ -168,10 +168,10 @@ variable "eks_public_endpoint_enabled" {
   default     = false
 }
 
-variable "eks_cluster_endpoint_public_access_cidrs" {
+variable "eks_public_endpoint_remote_management_cidrs" {
+  description = "The list of CIDRs that need access to the bastion host"
   type        = list(string)
-  description = " List of CIDR blocks which can access the Amazon EKS public API server endpoint"
-  default     = ["0.0.0.0/0"]
+  default     = ["0.0.0.0/32"] # intentionally nothing, if you want public you must open it up.
 }
 
 variable "eks_enabled_log_types" {
@@ -943,5 +943,11 @@ variable "es_password" {
   description = "The password for the elasticsearch user"
   type        = string
   sensitive   = true
+}
+
+variable "opensearch_log_retention_in_days" {
+  description = "The number of days to retain OpenSearch CloudWatch log groups."
+  type        = number
+  default     = 90
 }
 

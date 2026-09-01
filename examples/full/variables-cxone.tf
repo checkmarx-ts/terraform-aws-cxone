@@ -84,6 +84,13 @@ variable "create_node_s3_iam_role" {
   description = "Attach a policy to EKS nodes to access S3 buckets."
 }
 
+variable "eks_public_endpoint_remote_management_cidrs" {
+  description = "The list of CIDRs that need access to the bastion host"
+  type        = list(string)
+  default     = ["0.0.0.0/32"] # intentionally nothing, if you want public you must open it up.
+}
+
+
 variable "eks_enable_externalsnat" {
   type        = bool
   description = "Enables [External SNAT](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html) for the EKS VPC CNI. When true, the EKS pods must have a route to a NAT Gateway for outbound communication."
@@ -915,6 +922,12 @@ variable "es_username" {
   description = "The username for the elasticsearch user"
   type        = string
   default     = "ast"
+}
+
+variable "opensearch_log_retention_in_days" {
+  description = "The number of days to retain OpenSearch CloudWatch log groups."
+  type        = number
+  default     = 90
 }
 
 # variable "es_password" {
