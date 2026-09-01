@@ -147,8 +147,9 @@ kots-admin-console:
 rollout-restart:
 	kubectl rollout restart statefulset ast-platform-rabbitmq -n $${NAMESPACE}
 	kubectl rollout status statefulset ast-platform-rabbitmq -n $${NAMESPACE}
-	kubectl rollout restart statefulset ast-platform-elasticsearch-master -n $${NAMESPACE}
-	kubectl rollout status statefulset ast-platform-elasticsearch-master -n $${NAMESPACE}
+	kubectl get statefulset ast-platform-elasticsearch-master -n $${NAMESPACE} > /dev/null 2>&1 && \
+		kubectl rollout restart statefulset ast-platform-elasticsearch-master -n $${NAMESPACE} && \
+		kubectl rollout status statefulset ast-platform-elasticsearch-master -n $${NAMESPACE} || true
 	kubectl rollout restart statefulset ast-platform-zeebe -n $${NAMESPACE}
 	kubectl rollout status statefulset ast-platform-zeebe -n $${NAMESPACE}
 	kubectl rollout restart statefulset ast-platform-cxiam -n $${NAMESPACE}
